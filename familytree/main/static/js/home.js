@@ -21,9 +21,6 @@ function draw() {
             },
         },
         groups: colorPalettes.greenish,
-        interaction: {
-            dragNodes: false,
-        },
         layout: {
             hierarchical: {
                 direction: "DU",

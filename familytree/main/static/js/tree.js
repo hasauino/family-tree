@@ -40,7 +40,7 @@ function draw() {
                 sortMethod: "directed",
                 shakeTowards: 'roots',
                 levelSeparation: 70,
-                nodeSpacing: 100,
+                nodeSpacing: 150,
             },
         },
         physics: false,
