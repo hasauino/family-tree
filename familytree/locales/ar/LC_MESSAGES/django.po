@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-19 15:30+0000\n"
+"POT-Creation-Date: 2023-09-26 19:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,132 +19,132 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: home/templates/home/index.html:160
+#: familytree/home/templates/home/index.html:160
 msgid "Move Lock"
 msgstr "قفل التحريك"
 
-#: main/models.py:11
+#: familytree/main/models.py:15
 msgid "Name"
 msgstr "الاسم"
 
-#: main/models.py:16
+#: familytree/main/models.py:21
 msgid "Parent"
 msgstr "الأب"
 
-#: main/models.py:19
+#: familytree/main/models.py:25
 #, fuzzy
 #| msgid "Reference of authentication"
 msgid "Reference of authentication (optional)"
 msgstr "مرجع التوثيق (اختياري)"
 
-#: main/models.py:22
+#: familytree/main/models.py:28
 #, fuzzy
 #| msgid "Designation"
 msgid "Designation (optional)"
 msgstr "وصف (اختياري)"
 
-#: main/models.py:25
+#: familytree/main/models.py:32
 #, fuzzy
 #| msgid "Historical Background"
 msgid "Historical Background (optional)"
 msgstr "نبذة تاريخية (اختياري)"
 
-#: main/models.py:26
+#: familytree/main/models.py:33
 msgid "Editor"
 msgstr "المحرر"
 
-#: main/models.py:51
+#: familytree/main/models.py:142
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: main/models.py:54
+#: familytree/main/models.py:145
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: main/models.py:59
+#: familytree/main/models.py:150
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: main/models.py:63
+#: familytree/main/models.py:154
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: main/models.py:67
+#: familytree/main/models.py:158
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: main/models.py:71
+#: familytree/main/models.py:162
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: main/models.py:76
+#: familytree/main/models.py:167
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
-#: main/templates/main/base.html:15 main/templates/main/base.html:90
+#: familytree/main/templates/main/base.html:14
 msgid "Show Tools"
 msgstr "إظهار الأدوات"
 
-#: main/templates/main/base.html:16
+#: familytree/main/templates/main/base.html:15
 msgid "Hide Tools"
 msgstr "إخفاء الأدوات"
 
-#: main/templates/main/base.html:56
+#: familytree/main/templates/main/navbar.html:15
 msgid "Home"
 msgstr "الرئيسية"
 
-#: main/templates/main/base.html:61
+#: familytree/main/templates/main/navbar.html:18
 msgid "Help"
 msgstr "المساعدة"
 
-#: main/templates/main/base.html:66
+#: familytree/main/templates/main/navbar.html:21
 msgid "About"
 msgstr "عن الموقع"
 
-#: main/templates/main/base.html:72
-msgid "Search by name"
-msgstr "ابحث عن اسم"
-
-#: main/templates/main/base.html:81
+#: familytree/main/templates/main/navbar.html:26
 msgid "Login"
 msgstr "دخول"
 
-#: main/templates/main/base.html:92
+#: familytree/main/templates/main/navbar.html:36
 msgid "Account"
 msgstr "حسابي"
 
-#: main/templates/main/base.html:95
+#: familytree/main/templates/main/navbar.html:38
 msgid "Logout"
 msgstr "خروج"
 
-#: main/templates/main/test.html:6
+#: familytree/main/templates/main/navbar.html:55
+msgid "Search by name"
+msgstr "ابحث عن اسم"
+
+#: familytree/main/templates/main/test.html:5
 msgid "hello world"
 msgstr "مرحبا جميعا"
 
-#: main/templates/registration/login.html:38
+#: familytree/main/templates/registration/login.html:38
 msgid "Sign In"
 msgstr "الدخول"
 
-#: main/templates/registration/login.html:41
+#: familytree/main/templates/registration/login.html:41
 msgid "Forgot Password?"
 msgstr "نسيت حسابي؟"
 
-#: main/templates/registration/login.html:48
+#: familytree/main/templates/registration/login.html:48
 msgid "Don't have an account?"
 msgstr "ليس لديك حساب؟"
 
-#: main/templates/registration/login.html:51
+#: familytree/main/templates/registration/login.html:51
 msgid "Sign Up"
 msgstr "إنشاء حساب جديد"
 
-#: main/views.py:274
+#: familytree/main/views.py:293
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
-#: project/settings/base.py:123
+#: familytree/project/settings/base.py:125
 msgid "Arabic"
 msgstr "عربي"
 
-#: project/settings/base.py:124
+#: familytree/project/settings/base.py:126
 msgid "English"
 msgstr "إنجليزي"
