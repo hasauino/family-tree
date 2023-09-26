@@ -1,0 +1,10 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+
+<h1> {% translate "hello world" %} </h1>
+
+<script>
+  console.log("{{language_code}}");
+</script>
+{% endblock %}

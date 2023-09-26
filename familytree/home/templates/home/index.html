@@ -1,0 +1,277 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block header %}
+<style>
+  .sky {
+    position: absolute;
+    width: 100%;
+    height: 49em;
+    background-color: rgb(217, 239, 255)
+  }
+
+  body {
+    background-color: rgb(119, 91, 75);
+  }
+
+  .bookmark {
+    background-color: rgba(255, 157, 0, 0.897);
+    border-style: solid;
+    border-color: black;
+    font-weight: bold;
+    border-width: 0.1em;
+    width: 12em;
+  }
+
+
+
+  /* The switch - the box around the slider */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+
+  /* Hide default HTML checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+
+
+    {
+    % if user.is_staff %
+  }
+
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked+.slider {
+    background-color: #2196F3;
+  }
+
+  input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  input:checked+.slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+    {
+    % endif %
+  }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sky"></div>
+
+
+<div style="position: absolute; top:10em; left: 50vw;">
+
+  <img src="{% static "img/landscape.svg" %}" alt="#"
+    style="position: absolute; left: 50%; width: 100em; margin-left: -50em;">
+
+  {% for bookmark in bookmarks %}
+
+  <button style="position: absolute;  top:{{bookmark.y}}px; left:{{bookmark.x}}px;" id="btn_{{bookmark.id}}"
+    data-toggle="tooltip" data-placement="right" title=".{{bookmark.person.designation}}
+  {{bookmark.person.history}}" class="btn bookmark">
+    {{bookmark.person.name}}
+    {% if bookmark.person.designation and bookmark.person.designation.strip %}
+    <br>
+    <span style="font-size:x-small"> ({{bookmark.person.designation}})</span>
+
+    {% endif %}
+  </button>
+
+  {% endfor %}
+
+</div>
+
+
+
+<div id="grid_div" style="position: absolute; width: 100%;height: 100vh; visibility: hidden;">
+  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="gray" stroke-width="0.5" />
+      </pattern>
+      <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="url(#smallGrid)" />
+        <path d="M 100 0 L 0 0 0 100" fill="none" stroke="gray" stroke-width="1" />
+      </pattern>
+    </defs>
+
+    <rect width="100%" height="100%" fill="url(#grid)" />
+  </svg>
+</div>
+
+
+{% if user.is_staff %}
+<div style="position: fixed; top:92vh; left: 2vw;">
+  <!-- Rounded switch -->
+  <label class="switch">
+    <input type="checkbox" id="motion-lock">
+    <span class="slider round"></span>
+  </label>
+  <p>
+    {% translate "Move Lock" %}
+  </p>
+</div>
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+  // Make the DIV element draggable:
+
+  {% for bookmark in bookmarks %}
+  dragElement("{{bookmark.id}}", "{{bookmark.person.id}}");
+  {% endfor %}
+
+
+  function dragElement(id, url) {
+    var url = url;
+    var id = id;
+    var elmID = "btn_".concat(id);
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, time = 0;
+    var elmnt = document.getElementById(elmID);
+    var grid = document.getElementById("grid_div");
+
+    var y_snapped = 0;
+    var x_snapped = 0;
+
+    if (document.getElementById(elmnt.id + "header")) {
+      // if present, the header is where you move the DIV from:
+      document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+    } else {
+      // otherwise, move the DIV from anywhere inside the DIV:
+      elmnt.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+      {% if user.is_staff %}
+      if (document.getElementById("motion-lock").checked) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        time = Date.now();
+
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        {% if user.is_staff %}
+        document.onmousemove = elementDrag;
+        {% endif %}
+      }
+      else {
+        window.location = url;
+      }
+      {% else %}
+      window.location = url;
+      {% endif %}
+
+
+    };
+    {% if user.is_staff %}
+    function elementDrag(e) {
+      grid.style.visibility = "visible";
+
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      y_snapped = (elmnt.offsetTop - pos2);
+      x_snapped = (elmnt.offsetLeft - pos1);
+
+
+      elmnt.style.top = y_snapped + "px";
+      elmnt.style.left = x_snapped + "px";
+    };
+    {% endif %}
+    function closeDragElement() {
+      grid.style.visibility = "hidden";
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+      savePosition(id);
+      if ((Date.now() - time) < 500) {
+        window.location = url;
+      };
+    };
+
+
+
+    function savePosition(id) {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var json = JSON.parse(this.responseText);
+        }
+
+      };
+      var url = "{% url 'home:place_bookmark' 1 0 0%}";
+      url = url.substring(0, url.length - 5);
+      url = url.concat(id, '/', x_snapped, '/', y_snapped)
+      xhttp.open("GET", url, true);
+      xhttp.send();
+    };
+
+
+  };
+</script>
+
+{% endblock %}

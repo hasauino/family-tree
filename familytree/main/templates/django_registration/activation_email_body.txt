@@ -1,0 +1,20 @@
+{% load read_settings %}
+
+,السلام عليكم
+
+مرحبا بك
+{{user}} 
+.و شكراً على الانضمام لبرنامج {% read_settings "SITE_NAME" %} 
+
+
+
+لتفعيل اشتراكك, قم بالضغط الرابط الأدنى:
+
+
+{{scheme}}://{{site}}/accounts/activate/{{activation_key}}
+
+تنتهي صلاحية الرابط بعد{{expiration_days}} أيام.
+
+,مع تحيات
+أسرة برنامج {% read_settings "SITE_NAME" %}
+

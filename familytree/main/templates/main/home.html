@@ -1,0 +1,25 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<script src="{% static "js/tree_color_palettes.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/vis-network.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/vis-data.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/home.css" %}">
+<script src="{% static "js/home.js" %}"></script>
+
+<div class="tree-wrapper">
+    <!-- Tree canvas -->
+    <div id="tree"></div>
+</div>
+
+<script type="text/javascript">
+    var nodes, edges, network;
+    nodes = new vis.DataSet();
+    edges = new vis.DataSet();
+    nodes.add({{ data| safe }});
+    edges.add({{ links| safe }});
+</script>
+{% endblock %}

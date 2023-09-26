@@ -1,0 +1,150 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-19 15:30+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: home/templates/home/index.html:160
+msgid "Move Lock"
+msgstr "قفل التحريك"
+
+#: main/models.py:11
+msgid "Name"
+msgstr "الاسم"
+
+#: main/models.py:16
+msgid "Parent"
+msgstr "الأب"
+
+#: main/models.py:19
+#, fuzzy
+#| msgid "Reference of authentication"
+msgid "Reference of authentication (optional)"
+msgstr "مرجع التوثيق (اختياري)"
+
+#: main/models.py:22
+#, fuzzy
+#| msgid "Designation"
+msgid "Designation (optional)"
+msgstr "وصف (اختياري)"
+
+#: main/models.py:25
+#, fuzzy
+#| msgid "Historical Background"
+msgid "Historical Background (optional)"
+msgstr "نبذة تاريخية (اختياري)"
+
+#: main/models.py:26
+msgid "Editor"
+msgstr "المحرر"
+
+#: main/models.py:51
+msgid "Enter a valid email address"
+msgstr "الرجاء إدخال أيميل صحيح"
+
+#: main/models.py:54
+msgid "Date of birth"
+msgstr "تاريخ الميلاد"
+
+#: main/models.py:59
+msgid "First name"
+msgstr "الاسم الأول"
+
+#: main/models.py:63
+msgid "Father's name"
+msgstr "اسم الأب"
+
+#: main/models.py:67
+msgid "Grandfather's name"
+msgstr "اسم الجد"
+
+#: main/models.py:71
+msgid "Last name"
+msgstr "اسم العائلة"
+
+#: main/models.py:76
+msgid "Place of birth"
+msgstr "مكان الميلاد"
+
+#: main/templates/main/base.html:15 main/templates/main/base.html:90
+msgid "Show Tools"
+msgstr "إظهار الأدوات"
+
+#: main/templates/main/base.html:16
+msgid "Hide Tools"
+msgstr "إخفاء الأدوات"
+
+#: main/templates/main/base.html:56
+msgid "Home"
+msgstr "الرئيسية"
+
+#: main/templates/main/base.html:61
+msgid "Help"
+msgstr "المساعدة"
+
+#: main/templates/main/base.html:66
+msgid "About"
+msgstr "عن الموقع"
+
+#: main/templates/main/base.html:72
+msgid "Search by name"
+msgstr "ابحث عن اسم"
+
+#: main/templates/main/base.html:81
+msgid "Login"
+msgstr "دخول"
+
+#: main/templates/main/base.html:92
+msgid "Account"
+msgstr "حسابي"
+
+#: main/templates/main/base.html:95
+msgid "Logout"
+msgstr "خروج"
+
+#: main/templates/main/test.html:6
+msgid "hello world"
+msgstr "مرحبا جميعا"
+
+#: main/templates/registration/login.html:38
+msgid "Sign In"
+msgstr "الدخول"
+
+#: main/templates/registration/login.html:41
+msgid "Forgot Password?"
+msgstr "نسيت حسابي؟"
+
+#: main/templates/registration/login.html:48
+msgid "Don't have an account?"
+msgstr "ليس لديك حساب؟"
+
+#: main/templates/registration/login.html:51
+msgid "Sign Up"
+msgstr "إنشاء حساب جديد"
+
+#: main/views.py:274
+msgid "You are not logged in!"
+msgstr "أنت لم تسجل دخولك!"
+
+#: project/settings/base.py:123
+msgid "Arabic"
+msgstr "عربي"
+
+#: project/settings/base.py:124
+msgid "English"
+msgstr "إنجليزي"

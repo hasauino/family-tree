@@ -1,0 +1,25 @@
+.main-edit-page {
+    width: 100%;
+    height: 100vh;
+}
+
+.text_field{
+font-size: 2vw;
+height: 7vh;
+width: 30vw;  
+display: inline;
+
+}
+
+
+
+.del-btn{
+    width: 2em;
+    height: 2em;
+    padding: 0.2em 0.2em;
+    border-radius: 50%;
+    font-size: 2em;
+    display: inline;
+    margin-top: -2%;
+    margin-right: 5%;
+}

@@ -1,0 +1,62 @@
+{% load static %}
+{% load i18n %}
+
+<link href="{% static "css/navbar.css" %}" rel="stylesheet" type="text/css">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav {% if text_direction == 'rtl' %} ml-auto {% else %} mr-auto {% endif %} no-padding">
+            <li class="nav-item active nav-link-custom nav-item-margin">
+                <a class="nav-link" href={% url 'home:index' %}> {% translate "Home" %} </a>
+            </li>
+            <li class="nav-item active nav-link-custom nav-item-margin">
+                <a class="nav-link" href="/help"> {% translate "Help" %}</a>
+            </li>
+            <li class="nav-item active nav-link-custom nav-item-margin">
+                <a class="nav-link" href="/about"> {% translate "About" %}</a>
+            </li>
+        </ul>
+        {% if not user.is_authenticated %}
+        <button onclick="window.location = '{% url 'login' %}?next={{ request.path }}' " type="button"
+            class="btn btn-primary nav-item-margin"> {% translate "Login" %} </button>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <ul class="navbar-nav no-padding">
+            <li class="nav-item active dropdown">
+                <a class="dropdown-toggle btn btn-danger nav-item-margin expand-on-small" href="" role="button"
+                    data-toggle="dropdown" aria-expanded="false">
+                    {{ user }} <i class="fas fa-wrench"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'main:settingsPanel' %}"> {% translate "Account" %} </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'logout' %}?next={{ request.path }}"> {% translate "Logout" %}
+                    </a>
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+        {% if user.is_staff %}
+        <button onclick="window.location = '{% url 'main:undo_choose' %}' " type="button"
+            class="btn btn-danger nav-item-margin expand-on-small">
+            <i class="fas fa-history extra-padding"></i>
+        </button>
+        <button onclick="window.location = '{% url 'main:changes' %}' " type="button"
+            class="btn btn-danger nav-item-margin expand-on-small">
+            <i class="far fa-eye extra-padding"></i>
+        </button>
+        {% endif %}
+        <div class="btn-group search-container nav-item-margin expand-on-small search-box">
+            <input oninput="search()" id="searchTxt" class="form-control" placeholder="{% translate 'Search by name' %}"
+                aria-label="Search">
+            <div id="searchBox" class="dropdown-menu">
+                <div class="list-group" id="searchItems"></div>
+            </div>
+        </div>
+    </div>
+</nav>

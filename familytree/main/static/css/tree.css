@@ -1,0 +1,29 @@
+#tree {
+    width: 100%;
+}
+
+.tree-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.options {
+    display: none;
+    position: absolute;
+}
+
+#bookmarkBtn {
+    display: none;
+}
+
+#unBookmarkBtn {
+    display: none;
+}
+
+#publishBtn {
+    display: none;
+}
+
+#unPublishBtn {
+    display: none;
+}

@@ -1,0 +1,34 @@
+.nav-link-custom {
+    padding: 0 10px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.nav-link-custom:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.nav-item-margin {
+    margin: 0 10px;
+}
+
+.extra-padding {
+    padding: 0 10px;
+}
+
+.expand-on-small {
+    @media (max-width: 991px) {
+        margin: 10px;
+    }
+}
+
+.search-box {
+    width: 25%;
+    @media (max-width: 991px) {
+        width: 90%;
+    }
+}
+
+.no-padding{
+    padding: 0;
+}

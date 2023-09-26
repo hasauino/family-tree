@@ -1,0 +1,45 @@
+<style>
+    ,mask {
+        background: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .modal-dialog-custom {
+        margin-top: 30vh;
+    }
+</style>
+
+<div id="{{namespace}}Modal" class="modal">
+    <div class="mask"></div>
+    <div class="modal-dialog modal-dialog-custom">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> {{title}} </h5>
+                <button type="button" class="close" onclick="hide{{namespace}}Modal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ body }}
+                    <br />
+                    هل تريد فعلاً تأكيد العملية؟
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="{{namespace}}Button" class="btn btn-danger" type="button""> نعم </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function hide{{namespace}}Modal() {
+        const modal = document.getElementById("{{namespace}}Modal");
+        modal.style.display = "none";
+    }
+</script>

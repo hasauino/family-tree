@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    command: bash -c "python manage.py collectstatic --noinput --clear && gunicorn --bind 0.0.0.0:3000 project.wsgi"
+    working_dir: /app
+    volumes:
+      - ./familytree/:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      PORT: ${PORT}
+      SITE_NAME: ${SITE_NAME}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      LANGUAGE_CODE: ${LANGUAGE_CODE}
+      SECRET_KEY: ${SECRET_KEY}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./familytree/:/app
+    ports:
+      - "${PORT}:80"

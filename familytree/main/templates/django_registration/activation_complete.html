@@ -1,0 +1,33 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<br>
+<br>
+<div style="position: relative; top:15%; width: 40%; margin: 0 auto 0 auto; text-align: center;">
+        <span style="font-size: 3em; color: #0eb15a;">
+                <i class="fas fa-check-square fa-4x"></i>
+        </span>
+    </div>
+    <br>
+<br>
+    <div style="position: relative; top:20%; width: 40%; margin: 0 auto 10em auto;">
+        <h1>!تم التفعيل بنجاح</h1>
+        <hr>
+        <br>
+        <p>
+.تستطيع الآن الدخول باستخدام الحساب الذي قمت بإنشائه
+        </p>
+
+        <br>
+        <p>
+.يمكنك كمستخدم أن تضيف على المشجرة و التعديل على ما قمت بإضافته, ما تقوم بإضافته يظهر لك فقط و لا يظهر عند باقي المستخدمين
+<br>
+.عند الموافقة على تعديلاتك, سيظهر ما قمت بإدخاله عند الجميع
+<br>
+.يقوم مشرفو الموقع على التحقق و الموافقة على التعديلات بشكل دوري لكن قد تأخذ عملية الموافقة بعض الوقت
+</p>
+    
+        <button class="btn btn-success btn-lg"
+                        onclick="window.location = '{% url 'login'%}' "> دخول</button>
+    </div>
+{% endblock %}

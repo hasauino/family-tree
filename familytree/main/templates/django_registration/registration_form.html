@@ -1,0 +1,203 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<style>
+    #{{form.username.id_for_label}},
+    #{{form.email.id_for_label}},
+    #{{form.email.id_for_label}},
+    #{{form.email.id_for_label}},
+    #{{form.password1.id_for_label}},
+    #{{form.password2.id_for_label}},
+    #{{form.first_name.id_for_label}},
+    #{{form.father_name.id_for_label}},
+    #{{form.grandfather_name.id_for_label}},
+    #{{form.last_name.id_for_label}},
+    #{{form.birth_place.id_for_label}},
+    #{{form.birth_date.id_for_label}}
+
+        {
+        display: block;
+        width: 90%;
+        height: calc(1.5em + .75rem + 2px);
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+    }
+
+    .errorlist {
+        color: red;
+    }
+</style>
+<br>
+<br>
+<div style="position: relative; top:10%; width:60%; margin: 0 auto 0 auto;>
+    <p>
+    الرجاء تعبئة بياناتك (كافة الحقول مطلوبة):
+    </p>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="{{form.username.id_for_label}}"> اسم المستخدم</label>
+                <br>
+                {{form.username}}
+                {{ form.username.errors }}
+                <div id="username_help" style="display: none">
+                    {{ form.username.help_text }}
+                </div>
+            </div>
+            <div class="form-group col-md-6 ">
+                <label for="{{form.email.id_for_label}}">البريد الإلكتروني</label>
+                <br>
+                {{form.email}}
+                {{ form.email.errors }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6 ">
+                <label for="{{form.first_name.id_for_label}}">الاسم الأول</label>
+                <br>
+                {{form.first_name}}
+                {{ form.first_name.errors }}
+            </div>
+            <div class="form-group col-md-6 ">
+                <label for="{{form.first_name.id_for_label}}"> اسم الأب </label>
+                <br>
+                {{form.father_name}}
+                {{ form.father_name.errors }}
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group col-md-6 ">
+                <label for="{{form.first_name.id_for_label}}"> اسم الجد </label>
+                <br>
+                {{form.grandfather_name}}
+                {{ form.grandfather_name.errors }}
+            </div>
+
+            <div class="form-group col-md-6 ">
+                <label for="{{form.last_name.id_for_label}}">اسم العائلة</label>
+                <br>
+                {{form.last_name}}
+                {{ form.last_name.errors }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6 ">
+                <label for="{{form.username.id_for_label}}"> كلمة المرور <button type="button" class="btn btn-link"
+                        onclick="
+                        toggle_display('pass_help')
+                        ">(؟)</button> </label>
+                <br>
+                {{form.password1}}
+                {{ form.password1.errors }}
+                <div id="pass_help" style="display: none">
+                    {{ form.password1.help_text }}
+                </div>
+            </div>
+
+            <div class="form-group col-md-6 ">
+                <label for="{{form.username.id_for_label}}">تأكيد كلمة المرور</label>
+                <br>
+                {{form.password2}}
+                {{ form.password2.errors }}
+
+            </div>
+
+        </div>
+
+
+        <div class="form-row">
+            <div data-locale="ar" class="form-group col-md-6 ">
+                <label for="{{form.birth_date.id_for_label}}">تاريخ الولادة</label>
+                <br>
+                {{form.birth_date}}
+                {{ form.birth_date.errors }}
+
+            </div>
+
+            <div class="form-group col-md-6 ">
+                <label for="{{form.first_name.id_for_label}}"> مكان الولادة </label>
+                <br>
+                {{form.birth_place}}
+                {{ form.birth_place.errors }}
+            </div>
+
+        </div>
+
+
+
+        <div class="form-row">
+            <div data-locale="ar" class="form-group col-md-6 ">
+                {{form.tos}}
+                {{ form.tos.errors }}
+                <label for="{{form.tos.id_for_label}}">أوافق على <a target="blank" href="{% url 'main:tos' %}">شروط
+                        الاستخدام</a> . </label>
+
+
+            </div>
+        </div>
+
+        <br>
+        <br>
+
+        <button type="submit" class="btn btn-success">إنشاء الحساب</button>
+    </form>
+</div>
+<div style="position: relative; top:10%; width:60%; margin: 0 auto 0 auto; text-align:right;">
+    <br>
+    <hr>
+    .إذا كنت تملك حساب بالفعل, قم عوضاً <a href="{% url 'login' %}"><strong>بالدخول</strong></a>
+
+    <br>
+
+
+
+</div>
+
+<script>
+    function toggle_display(id) {
+        var x = document.getElementById(id);
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    } 
+</script>
+
+<script>
+    //moment.locale('ar');
+    var picker = new Pikaday({
+
+        field: document.getElementById('{{form.birth_date.id_for_label}}'),
+        firstDay: 1,
+        minDate: new Date(1900, 1, 1),
+        maxDate: new Date({% now "Y" %}, 12, 31),
+        yearRange: [1900, {% now "Y" %}],
+    format: 'YYYY-MM-DD',
+        isRTL: true,
+            i18n: {
+        previousMonth: 'الشهر السابق',
+            nextMonth     : 'الشهر التالي',
+                months        : ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                    weekdays      : ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+                        weekdaysShort : ['حد', 'ثن', 'ثل', 'ربع', 'خمس', 'جمع', 'سبت']
+    },
+    onSelect: function() {}
+    });
+</script>
+
+
+{% endblock %}

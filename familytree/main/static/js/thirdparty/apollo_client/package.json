@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "esbuild": "0.19.3"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.8.4",
+    "graphql": "^16.8.1",
+    "react": "^18.2.0"
+  },
+  "scripts": {
+    "build": "esbuild main.js --minify --bundle --outfile=../apollo-client.min.js"
+  }
+}

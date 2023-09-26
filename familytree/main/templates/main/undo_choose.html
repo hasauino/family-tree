@@ -1,0 +1,23 @@
+{% extends 'main/base.html' %}
+{% block content %}
+{% if user.is_staff %}
+<br>
+<br>
+<br>
+
+<div style="position: relative; width:50em; top: 20%; margin: 0 auto 10em auto;">
+    <h4> :اختر النقطة الزمنية التي ترغب بالرجوع إليها </h4>
+    <br><br>
+    <div class="list-group">
+
+        {% for file in files_str %}
+        <a href="{% url 'main:undo_do' forloop.counter0 %}" class="list-group-item list-group-item-action"> {{file}} </a>
+        {% endfor %}
+
+    </div>
+    <br><br>
+    <button onclick="window.history.back()" class="btn btn-danger btn-lg" type="button" style="width: 7em">إلغاء</button>
+</div>
+
+{% endif %}
+{% endblock %}

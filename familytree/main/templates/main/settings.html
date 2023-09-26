@@ -1,0 +1,113 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <style>
+    #</style>
+    <br />
+    <br />
+    <br />
+    <br />
+    <div style="position: relative; top:10%; width:30%; margin: 0 auto 0 auto;">
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <br />
+        <br />
+        <button type="submit" class="btn btn-success btn-lg">حفظ</button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="btn btn-danger btn-lg" type="button" onclick="window.location = '{% url 'home:index' %}' ">إلغاء</button>
+
+        <br />
+        <br />
+        <br />
+        <br />
+        <hr />
+        <p>هل ترغب بإغلاق حسابك و حذفه كلياً؟</p>
+        <button id="Btn-del" class="btn btn-danger" type="button">حذف الحساب</button>
+      </form>
+    </div>
+
+    <div id="mask" style="  background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: none;
+    "></div>
+
+    <div style="z-index: 100; top: 20%" id="warn" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">تأكيد طلب الحذف</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها و التي لم يتم دمجها بعد مع المشجرة الرئيسية.
+              <br />
+              هل تريد فعلاً حذف الحساب؟
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-danger" type="button" onclick="window.location = '{% url 'main:delete_user' %}' ">نعم احذف حسابي</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        var modal = document.getElementById("warn");
+        var btn_del = document.getElementById("Btn-del");
+        var btn_canc = document.getElementById("Btn-canc");
+        var mask = document.getElementById("mask");
+        
+        // Get the <span> element that closes the modal
+        var btn_canc = document.getElementsByClassName("close")[0];
+        
+        btn_del.onclick = function() {
+            modal.style.display = "block";
+            mask.style.display = "block";
+        }
+        
+        btn_canc.onclick = function() {
+          modal.style.display = "none";
+          mask.style.display = "none";
+        }
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+            mask.style.display = "none";
+          }
+        }
+        </script>
+
+    <script>
+
+        //moment.locale('ar');
+        var picker = new Pikaday({
+                 
+                 field: document.getElementById('{{form.birth_date.id_for_label}}'),
+                 firstDay: 1,
+                 minDate: new Date(1900, 1, 1),
+                 maxDate: new Date({%now "Y" %}, 12, 31),
+                 yearRange: [1900,{%now "Y" %}],
+                 format: 'YYYY-MM-DD',
+                 isRTL: true,
+                 i18n: {
+                     previousMonth : 'الشهر السابق',
+                     nextMonth     : 'الشهر التالي',
+                     months        : ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+                     weekdays      : ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
+                     weekdaysShort : ['حد','ثن','ثل','ربع','خمس','جمع','سبت']
+                         },
+                  onSelect: function() {
+                 }
+             });
+             
+</script>
+  {% endif %}
+{% endblock %}

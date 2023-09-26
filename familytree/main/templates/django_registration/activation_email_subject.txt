@@ -1,0 +1,3 @@
+{% load read_settings %}
+
+تفعيل الإشتراك ب{% read_settings "SITE_NAME" %}

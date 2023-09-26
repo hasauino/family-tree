@@ -1,0 +1,70 @@
+{% load static %}
+{% load read_settings %}
+{% load i18n %}
+
+
+<html lang="{{language_code}}">
+
+<head>
+    <script>
+        // context variable used to pass template context to javascript files
+        const context = {
+            user: { is_authenticated: '{{user.is_authenticated}}' == 'True' },
+            toolsDisplay: '{{request.session.tools_display}}',
+            showToolsText: '{% translate "Show Tools" %}',
+            hideToolsText: '{% translate "Hide Tools" %}',
+            urls: {
+                main: {
+                    sessionSet: '{% url "main:session_set" 1 2 %}'.slice(0, -4),
+                    searchByName: "{% url 'main:searchByName' 1 %}".slice(0, -2),
+                    personTree: "{% url 'main:person_tree' 1 %}".slice(0, -2),
+                    edit: "{% url 'main:edit' 1 2 %}".slice(0, -4),
+                }
+            }
+        }
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% read_settings "SITE_NAME" %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{% static 'favicon.svg' %}">
+    <link href="{% static "css/base.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "css/thirdparty/pikaday.css" %}" rel="stylesheet" type="text/css">
+    <script src="{% static "js/thirdparty/moment.js" %}"></script>
+    <script src="{% static "js/thirdparty/pikaday.js" %}"></script>
+    <link href="{% static "css/edit_page.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "css/accounts.css" %}" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/8d80fe0cea.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static "css/thirdparty/choices.css" %}">
+    <script src="{% static "js/thirdparty/choices.min.js" %}"></script>
+    <script src="{% static "js/base.js" %}"></script>
+    {% block header %}{% endblock %}
+</head>
+
+<body class="{{ text_direction }}" dir="{{ text_direction }}">
+
+    <div class="flex-container">
+        <div class="header">
+            {% include "main/navbar.html" %}
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+
+</html>

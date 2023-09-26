@@ -1,0 +1,62 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<script src="{% static "js/tree_color_palettes.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/vis-network.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/vis-data.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/apollo-client.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/tree.css" %}">
+
+<script src="{% static "js/tree.js" %}"></script>
+
+<div class="tree-wrapper">
+    <!-- Tree canvas -->
+    <div id="tree"></div>
+    {% if user.is_authenticated %}
+    <!-- Right click menu -->
+    <div class="options" id="options">
+        <div class="list-group">
+            <button id="editBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-wrench"></i> &nbsp; Edit
+            </button>
+            <button id="addChildBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-plus"></i> &nbsp; Add Child
+            </button>
+            {% if user.is_staff %}
+            <button id="bookmarkBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-star"></i> &nbsp; Bookmark
+            </button>
+            <button id="unBookmarkBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-star"></i> &nbsp; Remove Bookmark
+            </button>
+            <button id="publishBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-eye"></i> &nbsp; Publish
+            </button>
+            <button id="unPublishBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fas fa-eye"></i> &nbsp; Unpublish
+            </button>
+            {% endif %}
+            <button id="deleteBtn" type="button" class="list-group-item list-group-item-action">
+                <i class="fa fa-trash"></i> &nbsp; Delete
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% include "main/confirmation_modal.html" with namespace="confirm" title="Confirm" body="Do you really wanna delete" %}
+{% include "main/input_text_modal.html" with namespace="addChild" title="Adding a child" body="Child's name" %}
+
+<script type="text/javascript">
+    var nodes, edges, network;
+    nodes = new vis.DataSet();
+    edges = new vis.DataSet();
+    nodes.add({{ data| safe }});
+    edges.add({{ links| safe }});
+    const currentPersonID = "{{main_id}}";
+</script>
+{% endblock %}

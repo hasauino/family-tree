@@ -1,0 +1,54 @@
+{% extends 'main/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<style>
+    #{{form.username.id_for_label}}, #{{form.password.id_for_label}}
+            {
+                display: block;
+                width: 30em;
+                height: calc(1.5em + .75rem + 2px);
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #495057;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid #ced4da;
+                border-radius: .25rem;
+                transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+            }
+    .errorlist{
+                color: red;
+            }    
+</style>
+
+<br>
+<br>
+<div style="position: relative; top:15%; width: 100%;   font-size: 1.5em; ">
+  <form method="post" style="width:60%;  margin: 0 auto 0 auto;">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+
+    <hr>
+
+    <button class="btn btn-primary" style="font-size: 0.8em; margin-left: 2em;" type="submit"> {% translate "Sign In" %} </button>
+    <button 
+    onclick="window.location = '{% url 'password_reset' %}' "
+    class="btn btn-primary" style="font-size: 0.8em;" type="button" > {% translate "Forgot Password?" %} </button>
+  </form>
+  
+</div>
+<br>
+<br>
+<div style="position: relative; top:30%; width: 60%;   font-size: 1.5em; margin: 0 auto 0 auto;">
+<p> {% translate "Don't have an account?" %} </p>
+<button 
+onclick="window.location = '{% url 'django_registration_register' %}' "
+class="btn btn-success" style="font-size: 0.8em;" > {% translate "Sign Up" %} </button>
+</div>
+
+{% endblock %}

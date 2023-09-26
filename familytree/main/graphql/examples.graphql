@@ -1,0 +1,71 @@
+query connectedNodes {
+  connectedNodes(id: 10009) {
+    parent {
+      id
+      label
+      group
+      opacity
+    }
+    children {
+      id
+      label
+      group
+      opacity
+    }
+  }
+}
+
+query person {
+  person(id: 6916) {
+    name
+    published
+    bookmarked
+  }
+}
+
+query canDelete {
+  canDelete(id: 450100)
+}
+
+mutation addPerson{
+  addPerson(id: 4501, childName: "c1"){
+    id
+    ok
+    message
+  }
+}
+
+mutation deletePerson {
+  deletePerson(id: 680099) {
+    ok
+    message
+  }
+}
+
+mutation bookmark{
+  bookmarkPerson(id: 4501){
+    ok
+    message
+  }
+}
+
+mutation unbookmark{
+  unbookmarkPerson(id: 6916){
+    ok
+    message
+  }
+}
+
+mutation publish{
+  publishPerson(id: 6916){
+    ok
+    message
+  }
+}
+
+mutation unpublish{
+  unpublishPerson(id: 6916){
+    ok
+    message
+  }
+}
