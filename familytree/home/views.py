@@ -20,20 +20,29 @@ def place_bookmark(req, id, x, y):
     })
 
 
-def common_root(root, orphans):
+def find_common_root(nodes):
+    """
+    Given a set of persons (nodes), it will return the 
+    closest common root to all of them
+    """
+    persons = list(set(nodes))
+    visited = []
     matched = []
-    while root is not None:
-        root = root.parent
-        for i, _ in enumerate(orphans):
-            if orphans[i] in matched:
+    while len(matched) < len(persons):
+        for i, _ in enumerate(persons):
+            if persons[i] in matched:
                 continue
-            if orphans[i].parent is None:
-                return orphans[i]
-            orphans[i] = orphans[i].parent
-            if orphans[i] == root:
-                matched.append(root)
-        if len(matched) == len(orphans):
-            return root
+            parent = persons[i].parent
+            if parent is None:
+                return persons[i]
+            if parent in visited:
+                matched.append(persons[i])
+            visited.append(persons[i])
+            persons[i] = parent
+    if len(matched) > 0:
+        for p in matched:
+            print(p)
+        return matched[-1]
     return None
 
 
@@ -47,36 +56,51 @@ def get_bookmark_depth(person, links):
     return depth
 
 
+def calculate_link_width(width_min, width_max, tree_depth, link_depth):
+    slope = (width_max - width_min) / (1 - tree_depth)
+    c = (tree_depth * width_max - width_min) / (tree_depth - 1)
+    return slope * link_depth + c
+
+
 def index(req):
-    bookmarked = [bookmark.person for bookmark in Bookmark.objects.all()]
+    bookmarked = list({bookmark.person for bookmark in Bookmark.objects.all()})
     data = [person.as_node(forced_group=2) for person in bookmarked]
-    links = {}
-    root = None
+    links = dict()
+    orphans = []
     for person in bookmarked:
         parent, _ = person.find_closest_parent(bookmarked)
         if parent is None:
-            root = person
+            orphans.append(person)
             continue
-        link_id = person.pk
-        links[link_id] = {
-            "id": link_id,
+        links[person.pk] = {
+            "id": person.pk,
             "from": parent.pk,
             "to": person.pk,
         }
-
+    if len(orphans) > 1:  # current root is among orphans
+        common_root = find_common_root(orphans)
+        bookmarked.append(common_root)
+        data.append(common_root.as_node(forced_group=2))
+        for person in orphans:
+            links[person.pk] = {
+                "id": person.pk,
+                "from": common_root.pk,
+                "to": person.pk,
+            }
     bookmark_depths = {}
     for person in bookmarked:
         depth = get_bookmark_depth(person, links)
         if not person.pk in links:
             continue
         bookmark_depths[person.pk] = depth
-
-    max_depth = max(bookmark_depths.values()) - 1
-    width_max = 30
-    width_min = 5
+    tree_depth = max(bookmark_depths.values())
     for link in links.values():
-        link["width"] = width_max + ((width_min - width_max) /
-                                     max_depth) * (bookmark_depths[link["to"]])
+        link["width"] = calculate_link_width(
+            width_max=30,
+            width_min=5,
+            tree_depth=tree_depth,
+            link_depth=bookmark_depths[link["to"]],
+        )
     return render(req, 'main/home.html', {
         "data": json.dumps(data),
         "links": json.dumps(list(links.values()))

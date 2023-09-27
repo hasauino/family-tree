@@ -6,7 +6,7 @@ function draw() {
     };
     const options = {
         interaction: {
-            dragNodes: true,
+            dragNodes: false,
             hover: true,
         },
         nodes: { shape: "box", font: { size: 20 }, },
