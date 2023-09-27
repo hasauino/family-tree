@@ -1,10 +1,7 @@
 query connectedNodes {
-  connectedNodes(id: 10009) {
+  connectedNodes(id: 4501) {
     parent {
       id
-      label
-      group
-      opacity
     }
     children {
       id
@@ -27,44 +24,68 @@ query canDelete {
   canDelete(id: 450100)
 }
 
-mutation addPerson{
-  addPerson(id: 4501, childName: "c1"){
+mutation addPerson {
+  addPerson(id: 4501, childName: "c10") {
     id
+    label
+    group
+    opacity
     ok
     message
   }
 }
 
 mutation deletePerson {
-  deletePerson(id: 680099) {
+  deletePerson(id: 6914) {
     ok
     message
   }
 }
 
-mutation bookmark{
-  bookmarkPerson(id: 4501){
+mutation bookmark {
+  bookmarkPerson(id: 4501) {
     ok
     message
   }
 }
 
-mutation unbookmark{
-  unbookmarkPerson(id: 6916){
+mutation unbookmark {
+  unbookmarkPerson(id: 6916) {
     ok
     message
   }
 }
 
-mutation publish{
-  publishPerson(id: 6916){
+mutation publish {
+  publishPerson(id: 6916) {
     ok
     message
   }
 }
 
-mutation unpublish{
-  unpublishPerson(id: 6916){
+mutation unpublish {
+  unpublishPerson(id: 6916) {
+    ok
+    message
+  }
+}
+
+query listBookmarks {
+  listBookmarks {
+    person {
+      name
+      parent{name}
+    }
+    label
+    color
+    id
+    fontSize
+    fontColor
+  }
+}
+
+mutation editBookmark{
+  editBookmark(id:1, fontSize: 30){
     ok
     message
   }

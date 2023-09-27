@@ -48,12 +48,13 @@ def calculate_link_width(width_min, width_max, tree_depth, link_depth):
 
 
 def index(req):
-    bookmarked = list({bookmark.person for bookmark in Bookmark.objects.all()})
-    data = [person.as_node(forced_group=2) for person in bookmarked]
+    bookmarks = Bookmark.objects.all()
+    bookmarked_persons = [bookmark.person for bookmark in bookmarks]
+    data = [bookmark.as_node(forced_group=2) for bookmark in bookmarks]
     links = dict()
     orphans = []
-    for person in bookmarked:
-        parent, _ = person.find_closest_parent(bookmarked)
+    for person in bookmarked_persons:
+        parent, _ = person.find_closest_parent(bookmarked_persons)
         if parent is None:
             orphans.append(person)
             continue
@@ -64,7 +65,7 @@ def index(req):
         }
     if len(orphans) > 1:  # current root is among orphans
         common_root = find_common_root(orphans)
-        bookmarked.append(common_root)
+        bookmarked_persons.append(common_root)
         data.append(common_root.as_node(forced_group=2))
         for person in orphans:
             links[person.pk] = {
@@ -73,7 +74,7 @@ def index(req):
                 "to": person.pk,
             }
     bookmark_depths = {}
-    for person in bookmarked:
+    for person in bookmarked_persons:
         depth = get_bookmark_depth(person, links)
         if not person.pk in links:
             continue

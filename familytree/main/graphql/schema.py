@@ -5,6 +5,7 @@ import graphene
 from main.graphql import types
 from main.models import Person
 from home.models import Bookmark
+from home.types import BookmarkType
 
 
 def authenticated_only(function):
@@ -44,6 +45,8 @@ class Query(graphene.ObjectType):
         description="Check if given person can be deleted by the current user",
         id=graphene.Int(required=True, description="Node's ID to be checked"),
     )
+    list_bookmarks = graphene.List(BookmarkType,
+                                   description="Get lis of bookmarks")
 
     def resolve_connected_nodes(parent, info, id):
         user = info.context.user
@@ -64,6 +67,10 @@ class Query(graphene.ObjectType):
     @authenticated_only
     def resolve_can_delete(parent, info, id):
         return Person.objects.get(pk=id).is_editable_by(info.context.user)
+
+    @authenticated_only
+    def resolve_list_bookmarks(parent, info):
+        return Bookmark.objects.all()
 
 
 class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
@@ -218,6 +225,52 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
         return MutationReply.success()
 
 
+class EditBookmark(graphene.Mutation, MutationReply):
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        label = graphene.String(
+            required=False,
+            description="Overwrite default label (person's name)")
+        color = graphene.String(
+            required=False,
+            description="Overwrite default color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Example: ff0011")
+        font_color = graphene.String(
+            required=False,
+            description="Overwrite default font color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Example: ff0011. Empty string to reset",
+        )
+        font_size = graphene.Float(required=False,
+                                   description="Overwrite default font size. Set to -1 to reset")
+
+    @authenticated_only
+    def mutate(root,
+               info,
+               id,
+               label=None,
+               color=None,
+               font_color=None,
+               font_size=None):
+        bookmark = Bookmark.objects.get(pk=id)
+        if font_size == -1:
+            bookmark.font_size = None
+            font_size = None
+        fields = {
+            "label": label,
+            "color": color,
+            "font_color": font_color,
+            "font_size": font_size
+        }
+        for key, value in fields.items():
+            if value is not None:
+                setattr(bookmark, key, value)
+        bookmark.save()
+        return MutationReply.success()
+
+
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
     delete_person = DeletePerson.Field()
@@ -225,6 +278,7 @@ class Mutations(graphene.ObjectType):
     unbookmark_person = UnBookmarkPerson.Field()
     publish_person = PublishPerson.Field()
     unpublish_person = UnPublishPerson.Field()
+    edit_bookmark = EditBookmark.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

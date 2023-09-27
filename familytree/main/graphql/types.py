@@ -1,5 +1,5 @@
-from graphene_django import DjangoObjectType
 import graphene
+from graphene_django import DjangoObjectType
 from main.models import Person, User
 
 
@@ -23,7 +23,7 @@ class PersonType(DjangoObjectType):
             "reference",
             "designation",
             "history",
-            "editor",
+            "editors",
         ]
 
     def resolve_published(person, info):
