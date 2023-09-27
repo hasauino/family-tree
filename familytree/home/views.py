@@ -1,23 +1,8 @@
 import json
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
-
-from .models import Bookmark
+from django.shortcuts import render
+from home.models import Bookmark
 from main.models import Person
-
-
-def place_bookmark(req, id, x, y):
-    if req.user.is_staff:
-        bookmark = get_object_or_404(Bookmark, pk=id)
-        bookmark.x = x
-        bookmark.y = y
-        bookmark.save()
-        return JsonResponse({'result': 'bookmark new coordinates saved'})
-    return JsonResponse({
-        'result':
-        'you don\'t have permission to change bookmark coordinates'
-    })
 
 
 def find_common_root(nodes):
