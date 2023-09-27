@@ -46,7 +46,7 @@ class Query(graphene.ObjectType):
         id=graphene.Int(required=True, description="Node's ID to be checked"),
     )
     list_bookmarks = graphene.List(BookmarkType,
-                                   description="Get lis of bookmarks")
+                                   description="Get list of all bookmarks")
 
     def resolve_connected_nodes(parent, info, id):
         user = info.context.user
@@ -243,8 +243,9 @@ class EditBookmark(graphene.Mutation, MutationReply):
             "It should be an HTML color hex value without the leading #. "
             "Example: ff0011. Empty string to reset",
         )
-        font_size = graphene.Float(required=False,
-                                   description="Overwrite default font size. Set to -1 to reset")
+        font_size = graphene.Float(
+            required=False,
+            description="Overwrite default font size. Set to -1 to reset")
 
     @authenticated_only
     def mutate(root,
