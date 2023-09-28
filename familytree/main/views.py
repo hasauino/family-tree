@@ -166,7 +166,7 @@ def unbookmark_entry(req, person_id, orig_id):
     person = get_object_or_404(Person, pk=person_id)
 
     if req.user.is_authenticated:
-        person.bookmark_set.all()[0].delete()
+        person.bookmark.delete()
 
     return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
 

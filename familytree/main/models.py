@@ -100,7 +100,7 @@ class Person(models.Model):
         return self.access == "public"
 
     def is_bookmarked(self):
-        return self.bookmark_set.all().exists()
+        return hasattr(self, "bookmark")
 
     def as_node(self, user: User = None, forced_group=None):
         """

@@ -169,7 +169,7 @@ class UnBookmarkPerson(graphene.Mutation, MutationReply):
         if not user.is_staff:
             return MutationReply.fail(
                 "Current user is not a staff, cannot un-bookmark person")
-        person.bookmark_set.all()[0].delete()
+        person.bookmark.delete()
         return MutationReply.success()
 
 
