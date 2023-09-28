@@ -141,11 +141,20 @@ function unbookmarkPerson(personID) {
   })
 }
 
-function editBookmark(bookmarkID, label = null, color = null, fontColor = null, fontSize = null) {
+function editBookmark(bookmarkID, label = null, color = null, fontColor = null, fSize = null) {
+  if (label != null) {
+    label = JSON.stringify(label);
+  }
+  if (color != null) {
+    color = JSON.stringify(color);
+  }
+  if (fontColor != null) {
+    fontColor = JSON.stringify(fontColor);
+  }
   return client.mutate({
     mutation: gql`
         mutation {
-            editBookmark(id: ${bookmarkID}, fontSize: -1, label: "${label}", fontColor: "${fontColor}", color: "${color}") {
+            editBookmark(id: ${bookmarkID}, label: ${label}, fontColor: ${fontColor}, color: ${color}, fontSize: ${fSize}) {
               ok
               message
             }

@@ -1,6 +1,6 @@
 import { setRightClickMenuEventListeners } from "./modules/right_click.js";
 import { colorPalettes } from "./modules/tree_color_palettes.js";
-import { unbookmarkPerson, resetBookmark } from "./modules/api.js";
+import { unbookmarkPerson, resetBookmark, editBookmark } from "./modules/api.js";
 import { deleteNode } from "./modules/vis_helpers.js";
 
 function draw() {
@@ -47,13 +47,43 @@ function draw() {
         if (params.nodes.length < 1) { return; }
         window.location.href = `${context.urls.main.personTree}/${params.nodes[0]}`;
     }
-    function handleRightClick(node_id, params) {
+    function handleRightClick(node_id) {
         const optionsElm = document.getElementById("options");
         const buttons = optionsElm.children[0].children;
         // Edit button
         if (buttons["editBtn"]) {
             buttons["editBtn"].onclick = () => {
-                window.location = `${context.urls.main.edit}/${node_id}/${currentPersonID}`;
+                const modal = document.getElementById("EditBookmarkModal");
+                modal.style.display = "block";
+                const bookmarkModalSaveBtn = document.getElementById("bookmarkModalSaveBtn");
+                bookmarkModalSaveBtn.onclick = () => {
+                    const labelElm = document.getElementById("bookmarkModalLabel");
+                    const colorElm = document.getElementById("bookmarkModalColor");
+                    const fontSizeElm = document.getElementById("bookmarkModalFontSize");
+                    const fontColorElm = document.getElementById("bookmarkModalFontColor");
+                    let label = labelElm.value === "" ? null : labelElm.value;
+                    let color = colorElm.value === "" ? null : colorElm.value;
+                    let fontColor = fontColorElm.value === "" ? null : fontColorElm.value;
+                    let fontSize = fontSizeElm.value;
+                    if (fontSize === "") {
+                        fontSize = null;
+                    }
+                    editBookmark(node_id, label, color, fontColor, fontSize).then(
+                        (result) => {
+                            if (result.data.editBookmark.ok) {
+                                window.location = "/";
+                            }
+                            else {
+                                console.error(result.data.editBookmark.message);
+                            }
+                        }
+                    ).catch(
+                        (error) => {
+                            console.error(error);
+                            modal.style.display = "none";
+                        }
+                    );
+                }
             };
         }
         // Remove Bookmark
