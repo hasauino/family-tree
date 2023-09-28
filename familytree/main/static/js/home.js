@@ -1,17 +1,7 @@
 import { setRightClickMenuEventListeners } from "./modules/right_click.js";
 import { colorPalettes } from "./modules/tree_color_palettes.js";
-import {
-    addPerson,
-    deletePerson,
-    connectedNodes,
-    canDelete,
-    publishPerson,
-    getPublishBookmarkStatus,
-    unbookmarkPerson,
-    unpublishPerson,
-    bookmarkPerson,
-} from "./modules/api.js";
-import { addNode, deleteNode, addEdge } from "./modules/vis_helpers.js";
+import { unbookmarkPerson, resetBookmark } from "./modules/api.js";
+import { deleteNode } from "./modules/vis_helpers.js";
 
 function draw() {
 
@@ -71,7 +61,17 @@ function draw() {
             unbookmarkPerson(node_id);
             deleteNode(network, node_id);
         }
-
+        // Reset Button
+        buttons["resetBtn"].onclick = () => {
+            resetBookmark(node_id).then((result) => {
+                if (result.data.editBookmark.ok) {
+                    window.location = "/";
+                }
+                else {
+                    console.error(result.data.editBookmark.message);
+                }
+            }).catch((error) => { console.error(error); });
+        }
     }
 }
 

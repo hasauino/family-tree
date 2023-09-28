@@ -1,17 +1,17 @@
 const link = HttpLink({
-    uri: '/graphql',
-    credentials: 'same-origin'
+  uri: '/graphql',
+  credentials: 'same-origin'
 });
 
 const client = new ApolloClient({
-    cache: new InMemoryCache(),
-    link,
+  cache: new InMemoryCache(),
+  link,
 });
 
 function connectedNodes(personID) {
-    return client.query({
-        // Query
-        query: gql`
+  return client.query({
+    // Query
+    query: gql`
         query {
             connectedNodes(id: ${personID}) {
                 parent {
@@ -29,13 +29,13 @@ function connectedNodes(personID) {
               }
           }
         `,
-        fetchPolicy: 'no-cache'
-    })
+    fetchPolicy: 'no-cache'
+  })
 }
 
 function addPerson(personID, childName) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             addPerson(id: ${personID}, childName: \"${childName}\") {
                 id
@@ -47,24 +47,24 @@ function addPerson(personID, childName) {
             }
           }
         `
-    })
+  })
 }
 
 function canDelete(personID) {
-    return client.query({
-        // Query
-        query: gql`
+  return client.query({
+    // Query
+    query: gql`
         query {
             canDelete(id: ${personID})
           }
         `,
-        fetchPolicy: 'no-cache'
-    })
+    fetchPolicy: 'no-cache'
+  })
 }
 
 function deletePerson(personID) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             deletePerson(id: ${personID}) {
               ok
@@ -72,13 +72,13 @@ function deletePerson(personID) {
             }
           }
         `
-    })
+  })
 }
 
 function getPublishBookmarkStatus(personID) {
-    return client.query({
-        // Query
-        query: gql`
+  return client.query({
+    // Query
+    query: gql`
         query {
             person(id: ${personID}){
                 published
@@ -86,13 +86,13 @@ function getPublishBookmarkStatus(personID) {
             }
           }
         `,
-        fetchPolicy: 'no-cache'
-    })
+    fetchPolicy: 'no-cache'
+  })
 }
 
 function publishPerson(personID) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             publishPerson(id: ${personID}) {
               ok
@@ -100,12 +100,12 @@ function publishPerson(personID) {
             }
           }
         `
-    })
+  })
 }
 
 function unpublishPerson(personID) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             unpublishPerson(id: ${personID}) {
               ok
@@ -113,12 +113,12 @@ function unpublishPerson(personID) {
             }
           }
         `
-    })
+  })
 }
 
 function bookmarkPerson(personID) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             bookmarkPerson(id: ${personID}) {
               ok
@@ -126,11 +126,11 @@ function bookmarkPerson(personID) {
             }
           }
         `
-    })
+  })
 }
 function unbookmarkPerson(personID) {
-    return client.mutate({
-        mutation: gql`
+  return client.mutate({
+    mutation: gql`
         mutation {
             unbookmarkPerson(id: ${personID}) {
               ok
@@ -138,18 +138,38 @@ function unbookmarkPerson(personID) {
             }
           }
         `
-    })
+  })
+}
+
+function editBookmark(bookmarkID, label = null, color = null, fontColor = null, fontSize = null) {
+  return client.mutate({
+    mutation: gql`
+        mutation {
+            editBookmark(id: ${bookmarkID}, fontSize: -1, label: "${label}", fontColor: "${fontColor}", color: "${color}") {
+              ok
+              message
+            }
+          }
+        `
+  })
+}
+
+
+function resetBookmark(bookmarkID) {
+  return editBookmark(bookmarkID, "", "", "", -1);
 }
 
 
 export {
-    addPerson,
-    deletePerson,
-    connectedNodes,
-    canDelete,
-    publishPerson,
-    getPublishBookmarkStatus,
-    unbookmarkPerson,
-    unpublishPerson,
-    bookmarkPerson,
+  addPerson,
+  deletePerson,
+  connectedNodes,
+  canDelete,
+  publishPerson,
+  getPublishBookmarkStatus,
+  unbookmarkPerson,
+  unpublishPerson,
+  bookmarkPerson,
+  editBookmark,
+  resetBookmark,
 };
