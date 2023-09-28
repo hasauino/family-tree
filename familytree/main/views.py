@@ -1,3 +1,5 @@
+import json
+import pathlib
 import subprocess
 from datetime import datetime
 from os import listdir
@@ -8,12 +10,11 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-
 from home.models import Bookmark
 from main.forms import SettingsForm
 from main.models import Person
 from main.session_configs import configs
-import json
+from home.home_tree_generator import generate_home_tree
 
 PROJECT_DIR = str(settings.PROJECT_DIR.absolute())
 
@@ -46,10 +47,8 @@ def person_tree(req, person_id):
         "main_id": person_id
     })
 
-def edit(req, person_id, orig_id):
-    if req.user.is_superuser:
-        backup()
 
+def edit(req, person_id, orig_id):
     person = get_object_or_404(Person, pk=person_id)
 
     childs = ''
@@ -191,13 +190,16 @@ def searchByName(req, names_str):
 def undo_choose(req):
     files_str = []
     file_names = []
-    ls = listdir(PROJECT_DIR)
-    ls.sort(reverse=True)
-    for f in ls:
-        if f[:3] == 'db-' and f[-8:] == '.sqlite3':
-            files_str.append(f[3:7] + '/' + f[7:9] + '/' + f[9:11] + ' - ' +
-                             f[11:13] + ':' + f[13:15] + ':' + f[15:17])
-            file_names.append(f)
+    files = sorted(settings.DB_BACKUP_DIR.glob("*.sqlite3"), reverse=True)
+    for file in files:
+        year = file.name[6:10]
+        month = file.name[10:12]
+        day = file.name[12:14]
+        hour = file.name[14:16]
+        minutes = file.name[16:18]
+        seconds = file.name[18:20]
+        file_names.append(file.name)
+        files_str.append(f"{year}/{month}/{day} - {hour}:{minutes}:{seconds}")
     return render(req, 'main/undo_choose.html', {
         'files_str': files_str,
         'file_names': file_names
@@ -205,43 +207,16 @@ def undo_choose(req):
 
 
 def undo_do(req, file_id):
-    file_names = []
-    ls = listdir(PROJECT_DIR)
-    ls.sort(reverse=True)
-    for f in ls:
-        if f[:3] == 'db-' and f[-8:] == '.sqlite3':
-            file_names.append(f)
-    chosesn_file = file_names[file_id]
-    subprocess.call('cp ' + PROJECT_DIR + '/' + chosesn_file + ' ' +
-                    PROJECT_DIR + '/' + 'db.sqlite3',
-                    shell=True)
+    if req.user.is_staff:
+        files = list(sorted(settings.DB_BACKUP_DIR.glob("*.sqlite3"),
+                            reverse=True))
+        chosen_file = files[file_id]
+        current_db_path_rel = pathlib.Path(settings.DATABASES['default']['NAME'])
+        root_dir = pathlib.Path(settings.BASE_DIR).parent
+        current_db_path = root_dir / current_db_path_rel
+        subprocess.call(f"cp {chosen_file} {current_db_path}", shell=True)
+        generate_home_tree()
     return HttpResponseRedirect('/')
-
-
-def backup():
-    file_names = []
-    ls = listdir(PROJECT_DIR)
-    ls.sort(reverse=True)
-    for f in ls:
-        if f[:3] == 'db-' and f[-8:] == '.sqlite3':
-            file_names.append(f)
-
-    if len(file_names) > 50:
-        subprocess.call('rm ' + PROJECT_DIR + '/' + file_names[-1], shell=True)
-    date = datetime.now()
-
-    year = str("{:02d}".format(date.date().year))
-    month = str("{:02d}".format(date.date().month))
-    day = str("{:02d}".format(date.date().day))
-
-    hour = str("{:02d}".format(date.time().hour))
-    minute = str("{:02d}".format(date.time().minute))
-    second = str("{:02d}".format(date.time().second))
-
-    fileappend = year + month + day + hour + minute + second
-    subprocess.call('cp ' + PROJECT_DIR + '/' + 'db.sqlite3 ' + PROJECT_DIR +
-                    '/' + 'db-' + fileappend + '.sqlite3',
-                    shell=True)
 
 
 def get_client_ip(request):

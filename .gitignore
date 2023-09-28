@@ -1,5 +1,5 @@
 *.log
 __pycache__/
-db-*
+familytree/project/backups/
 familytree/project/static/
 .env
