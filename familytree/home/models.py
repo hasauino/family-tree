@@ -4,9 +4,9 @@ from main.models import Person
 
 
 class Bookmark(models.Model):
-    person = models.ForeignKey(Person,
-                               on_delete=models.CASCADE,
-                               verbose_name=_("Person"))
+    person = models.OneToOneField(Person,
+                                  on_delete=models.CASCADE,
+                                  verbose_name=_("Person"))
     color = models.CharField(max_length=6,
                              null=True,
                              blank=True,
@@ -28,15 +28,16 @@ class Bookmark(models.Model):
 
     def as_node(self, **args):
         value = self.person.as_node(**args)
-        if self.label is not None:
+
+        if self.label is not None and len(self.label) > 0:
             value["label"] = self.label
-        if self.color is not None:
+        if self.color is not None and len(self.color) > 0:
             value["color"] = self.color
-        if self.font_size is not None or self.font_color is not None:
-            value["font"] = dict()
+
+        value["font"] = dict()
         if self.font_size is not None:
             value["font"]["size"] = self.font_size
-        if self.font_color is not None:
+        if self.font_color is not None and len(self.font_color) > 0:
             value["font"]["color"] = self.font_color
         return value
 

@@ -228,7 +228,11 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
 class EditBookmark(graphene.Mutation, MutationReply):
 
     class Arguments:
-        id = graphene.Int(required=True)
+        id = graphene.Int(
+            required=True,
+            description=
+            "ID of the person associated with the bookmark (not bookmark's ID)"
+        )
         label = graphene.String(
             required=False,
             description="Overwrite default label (person's name)")
@@ -255,7 +259,7 @@ class EditBookmark(graphene.Mutation, MutationReply):
                color=None,
                font_color=None,
                font_size=None):
-        bookmark = Bookmark.objects.get(pk=id)
+        bookmark = Bookmark.objects.get(person__pk=id)
         if font_size == -1:
             bookmark.font_size = None
             font_size = None
