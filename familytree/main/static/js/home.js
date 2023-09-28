@@ -1,5 +1,17 @@
 import { setRightClickMenuEventListeners } from "./modules/right_click.js";
 import { colorPalettes } from "./modules/tree_color_palettes.js";
+import {
+    addPerson,
+    deletePerson,
+    connectedNodes,
+    canDelete,
+    publishPerson,
+    getPublishBookmarkStatus,
+    unbookmarkPerson,
+    unpublishPerson,
+    bookmarkPerson,
+} from "./modules/api.js";
+import { addNode, deleteNode, addEdge } from "./modules/vis_helpers.js";
 
 function draw() {
 
@@ -48,6 +60,18 @@ function draw() {
     function handleRightClick(node_id, params) {
         const optionsElm = document.getElementById("options");
         const buttons = optionsElm.children[0].children;
+        // Edit button
+        if (buttons["editBtn"]) {
+            buttons["editBtn"].onclick = () => {
+                window.location = `${context.urls.main.edit}/${node_id}/${currentPersonID}`;
+            };
+        }
+        // Remove Bookmark
+        buttons["unBookmarkBtn"].onclick = () => {
+            unbookmarkPerson(node_id);
+            deleteNode(network, node_id);
+        }
+
     }
 }
 

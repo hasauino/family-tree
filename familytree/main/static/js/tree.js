@@ -11,6 +11,7 @@ import {
     bookmarkPerson,
 } from "./modules/api.js";
 import { colorPalettes } from "./modules/tree_color_palettes.js";
+import { addNode, deleteNode, addEdge } from "./modules/vis_helpers.js";
 
 function draw() {
     const data = {
@@ -72,11 +73,11 @@ function draw() {
             const children = result.data.connectedNodes.children;
             const parent = result.data.connectedNodes.parent;
             children.forEach(node => {
-                addNode(node.id, node.label, node.group, node.opacity);
-                addEdge(params.nodes[0], node.id);
+                addNode(nodes, node.id, node.label, node.group, node.opacity);
+                addEdge(edges, params.nodes[0], node.id);
             });
-            addNode(parent.id, parent.label, parent.group, parent.opacity);
-            addEdge(parent.id, params.nodes[0]);
+            addNode(nodes, parent.id, parent.label, parent.group, parent.opacity);
+            addEdge(edges, parent.id, params.nodes[0]);
             network.focus(params.nodes[0], {
                 scale: 1.0,
                 animation: {
@@ -94,28 +95,7 @@ function draw() {
         window.location.href = `${context.urls.main.personTree}/${params.nodes[0]}`;
     }
 
-    function addNode(id, label, group, opacity) {
-        try {
-            nodes.add({
-                id: id,
-                label: label,
-                group: group,
-                opacity: opacity,
-            });
-        } catch (err) {
-        }
-    }
 
-    function addEdge(from_id, to_id) {
-        try {
-            edges.add({
-                id: to_id,
-                from: from_id,
-                to: to_id,
-            });
-        } catch (err) {
-        }
-    }
 
     function handleRightClick(node_id, params) {
         const optionsElm = document.getElementById("options");
@@ -135,8 +115,8 @@ function draw() {
                         return;
                     }
                     const newNode = result.data.addPerson;
-                    addNode(newNode.id, newNode.label, newNode.group, newNode.opacity);
-                    addEdge(node_id, newNode.id);
+                    addNode(nodes, newNode.id, newNode.label, newNode.group, newNode.opacity);
+                    addEdge(edges, node_id, newNode.id);
                 }).catch((error) => { console.error(error); })
             }
 
@@ -147,7 +127,6 @@ function draw() {
                 if (buttons["deleteBtn"]) {
                     buttons["deleteBtn"].disabled = !result.data.canDelete;
                     buttons["deleteBtn"].onclick = () => {
-                        network.selectNodes([node_id]);
                         const modal = document.getElementById("confirmModal");
                         modal.style.display = "block";
                         const confirmButton = document.getElementById("confirmButton");
@@ -155,7 +134,7 @@ function draw() {
                             modal.style.display = "none";
                             deletePerson(node_id).then((result) => {
                                 if (result.data.deletePerson.ok) {
-                                    network.deleteSelected();
+                                    deleteNode(network, node_id);
                                 }
                                 else {
                                     console.error(result.data.deletePerson.message)
@@ -222,7 +201,5 @@ function draw() {
         ).catch((error) => { console.error(error) });
     }
 }
-
-
 
 window.addEventListener('load', draw);

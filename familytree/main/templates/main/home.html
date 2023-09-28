@@ -6,6 +6,7 @@
 {% block content %}
 <script type="text/javascript" src="{% static "js/thirdparty/vis-network.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/thirdparty/vis-data.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/apollo-client.min.js" %}"></script>
 <link rel="stylesheet" href="{% static "css/home.css" %}">
 
 <script type="module" src="{% static "js/home.js" %}"></script>
@@ -20,7 +21,7 @@
             <button id="editBtn" type="button" class="list-group-item list-group-item-action">
                 <i class="fas fa-wrench"></i> &nbsp; Edit
             </button>
-            <button id="unBookmarkBtn" type="button" class="list-group-item list-group-item-action">
+            <button id="resetBtn" type="button" class="list-group-item list-group-item-action">
                 <i class="fas fa-undo-alt"></i> &nbsp; Reset
             </button>            
             <button id="unBookmarkBtn" type="button" class="list-group-item list-group-item-action">
