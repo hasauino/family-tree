@@ -1,3 +1,5 @@
+import { setRightClickMenuEventListeners } from "./rightClick.js";
+
 function draw() {
 
     const data = {
@@ -36,10 +38,15 @@ function draw() {
     var network = new vis.Network(container, data, options);
     document.addEventListener('contextmenu', event => event.preventDefault());
     network.on("click", clickListener);
+    setRightClickMenuEventListeners(network, handleRightClick)
 
     function clickListener(params) {
         if (params.nodes.length < 1) { return; }
         window.location.href = `${context.urls.main.personTree}/${params.nodes[0]}`;
+    }
+    function handleRightClick(node_id, params) {
+        const optionsElm = document.getElementById("options");
+        const buttons = optionsElm.children[0].children;
     }
 }
 

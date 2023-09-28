@@ -1,3 +1,5 @@
+import { setRightClickMenuEventListeners } from "./rightClick.js";
+
 function draw() {
     const link = HttpLink({
         uri: '/graphql',
@@ -54,17 +56,12 @@ function draw() {
             easingFunction: "easeInOutCubic"
         },
     });
-    document.addEventListener('contextmenu', event => event.preventDefault());
     network.on("doubleClick", doubleClickListener);
     network.on("click", clickListener);
-    network.on("oncontext", canvasRightClickListener);
-    network.on("hold", holdListener);
-    network.on("dragStart", removeRightClickMenu);
-    network.on("zoom", removeRightClickMenu);
+    setRightClickMenuEventListeners(network, handleRightClick);
 
 
     function clickListener(params) {
-        removeRightClickMenu();
         if (params.nodes.length < 1) {
             return;
         }
@@ -95,22 +92,6 @@ function draw() {
         window.location.href = `${context.urls.main.personTree}/${params.nodes[0]}`;
     }
 
-    function canvasRightClickListener(params) {
-        const node = this.getNodeAt(params.pointer.DOM);
-        if (node == null) {
-            removeRightClickMenu();
-            return;
-        }
-        showRightClickMenu(node, params);
-    }
-
-    function holdListener(params) {
-        const node = this.getNodeAt(params.pointer.DOM);
-        const canvas_dimensions = document.getElementById('tree').getBoundingClientRect();
-        params.pointer.DOM = { x: canvas_dimensions.width / 2.0, y: canvas_dimensions.height / 2.0 };
-        showRightClickMenu(node, params);
-    }
-
     function addNode(id, label, group, opacity) {
         try {
             nodes.add({
@@ -134,16 +115,11 @@ function draw() {
         }
     }
 
-    function showRightClickMenu(node_id, params) {
+    function handleRightClick(node_id, params) {
         const optionsElm = document.getElementById("options");
-        if (optionsElm == null) { return; }
-        optionsElm.style.display = "block";
-        optionsElm.style.top = `${params.pointer.DOM.y}px`;
-        optionsElm.style.left = `${params.pointer.DOM.x}px`;
         const buttons = optionsElm.children[0].children;
         // Add child button
         buttons["addChildBtn"].onclick = () => {
-            removeRightClickMenu();
             const modal = document.getElementById("addChildModal");
             modal.style.display = "block";
             const addChildButton = document.getElementById("addChildButton");
@@ -169,7 +145,6 @@ function draw() {
                 if (buttons["deleteBtn"]) {
                     buttons["deleteBtn"].disabled = !result.data.canDelete;
                     buttons["deleteBtn"].onclick = () => {
-                        removeRightClickMenu();
                         network.selectNodes([node_id]);
                         const modal = document.getElementById("confirmModal");
                         modal.style.display = "block";
@@ -214,7 +189,6 @@ function draw() {
                                 nodes.update({ id: node_id, opacity: 0.3 });
                             }
                         ).catch((error) => { console.error(error); });
-                        removeRightClickMenu();
                     }
                 }
                 else {
@@ -226,7 +200,6 @@ function draw() {
                                 nodes.update({ id: node_id, opacity: 1.0 });
                             }
                         ).catch((error) => { console.error(error); });
-                        removeRightClickMenu();
                     }
                 }
                 if (is_bookmarked) {
@@ -234,7 +207,6 @@ function draw() {
                     buttons["unBookmarkBtn"].style.display = "inline";
                     buttons["unBookmarkBtn"].onclick = () => {
                         unbookmarkPerson(node_id);
-                        removeRightClickMenu();
                     }
                 }
                 else {
@@ -242,17 +214,10 @@ function draw() {
                     buttons["bookmarkBtn"].style.display = "inline";
                     buttons["bookmarkBtn"].onclick = () => {
                         bookmarkPerson(node_id);
-                        removeRightClickMenu();
                     }
                 }
             }
         ).catch((error) => { console.error(error) });
-    }
-
-    function removeRightClickMenu() {
-        const optionsElm = document.getElementById("options");
-        if (optionsElm == null) { return; }
-        optionsElm.style.display = "none";
     }
 
     function connectedNodes(personID) {
@@ -279,6 +244,7 @@ function draw() {
             fetchPolicy: 'no-cache'
         })
     }
+
     function addPerson(personID, childName) {
         return client.mutate({
             mutation: gql`
