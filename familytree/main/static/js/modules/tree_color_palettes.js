@@ -1,5 +1,5 @@
 function getPalette(...colors) {
-    palette = {}
+    let palette = {}
     for (const [index, color] of colors.entries()) {
         palette[`g${index}`] = {
             color: { background: color.back, border: color.back, hover: { background: color.back, border: color.back }, highlight: { background: color.back, border: color.back } },
@@ -17,3 +17,6 @@ const colorPalettes = {
     greenish: getPalette({ back: "#22577A", font: "white" }, { back: "#38A3A5", font: "white" }, { back: "#57CC99", font: "black" }, { back: "#80ED99", font: "black" }, { back: "#C7F9CC", font: "black" }),
     mango: getPalette({ back: "#233D4D", font: "white" }, { back: "#FE7F2D", font: "white" }, { back: "#FCCA46", font: "black" }, { back: "#A1C181", font: "black" }, { back: "#619B8A", font: "white" }),
 }
+
+
+export { colorPalettes };

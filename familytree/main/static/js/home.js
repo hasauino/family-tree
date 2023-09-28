@@ -1,4 +1,5 @@
-import { setRightClickMenuEventListeners } from "./rightClick.js";
+import { setRightClickMenuEventListeners } from "./modules/right_click.js";
+import { colorPalettes } from "./modules/tree_color_palettes.js";
 
 function draw() {
 
