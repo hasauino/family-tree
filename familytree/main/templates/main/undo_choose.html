@@ -1,22 +1,37 @@
 {% extends 'main/base.html' %}
+{% load i18n %}
+
+{% block header %}
+<style>
+    .container {
+        margin: 100px auto;
+        max-width: 90%;
+    }
+
+    #cancelBtn {
+        width: 7em;
+    }
+</style>
+{% endblock %}
+
+
 {% block content %}
 {% if user.is_staff %}
-<br>
-<br>
-<br>
 
-<div style="position: relative; width:50em; top: 20%; margin: 0 auto 10em auto;">
-    <h4> :اختر النقطة الزمنية التي ترغب بالرجوع إليها </h4>
+<div class="container">
+    <h4> {% translate "Pick a restore point of the database:" %}</h4>
     <br><br>
     <div class="list-group">
 
         {% for file in files_str %}
-        <a href="{% url 'main:undo_do' forloop.counter0 %}" class="list-group-item list-group-item-action"> {{file}} </a>
+        <a href="{% url 'main:undo_do' forloop.counter0 %}" class="list-group-item list-group-item-action"> {{file}}
+        </a>
         {% endfor %}
 
     </div>
     <br><br>
-    <button onclick="window.history.back()" class="btn btn-danger btn-lg" type="button" style="width: 7em">إلغاء</button>
+    <button id="cancelBtn" onclick="window.history.back()" class="btn btn-danger btn-lg" type="button">
+        {% translate "Cancel" %} </button>
 </div>
 
 {% endif %}

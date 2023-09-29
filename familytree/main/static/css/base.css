@@ -19,10 +19,6 @@ body {
     height: 100%;
 }
 
-.flex-container .header {
-    flex: auto;
-}
-
 .flex-container .content {
     flex: auto;
 }
