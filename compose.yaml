@@ -1,12 +1,14 @@
 services:
   app:
     build: .
-    command: bash -c "python manage.py collectstatic --noinput --clear && gunicorn --bind 0.0.0.0:3000 project.wsgi"
+    command: bash -c "cron && python manage.py collectstatic --noinput --clear && gunicorn --bind 0.0.0.0:3000 project.wsgi"
     working_dir: /app
     volumes:
       - ./familytree/:/app
+      - ./.env:/.env
     environment:
       DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      DATABASE: ${DATABASE}
       PORT: ${PORT}
       SITE_NAME: ${SITE_NAME}
       DOMAIN_NAME: ${DOMAIN_NAME}

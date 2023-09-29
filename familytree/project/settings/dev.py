@@ -2,6 +2,7 @@ from .base import *  # noqa: F403
 
 ALLOWED_HOSTS = ["*"]
 DEBUG = True
+CSRF_TRUSTED_ORIGINS = [f"http://localhost:{os.environ.get('PORT', '8000')}"]
 
 LOGGING = {
     "version": 1,

@@ -1,8 +1,6 @@
 import json
 import pathlib
 import subprocess
-from datetime import datetime
-from os import listdir
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
@@ -10,11 +8,12 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from home.home_tree_generator import generate_home_tree
 from home.models import Bookmark
 from main.forms import SettingsForm
+from main.management.commands.create_db_backup import list_backups
 from main.models import Person
 from main.session_configs import configs
-from home.home_tree_generator import generate_home_tree
 
 PROJECT_DIR = str(settings.PROJECT_DIR.absolute())
 
@@ -190,7 +189,7 @@ def searchByName(req, names_str):
 def undo_choose(req):
     files_str = []
     file_names = []
-    files = sorted(settings.DB_BACKUP_DIR.glob("*.sqlite3"), reverse=True)
+    files = list_backups()
     for file in files:
         year = file.name[6:10]
         month = file.name[10:12]
@@ -208,10 +207,10 @@ def undo_choose(req):
 
 def undo_do(req, file_id):
     if req.user.is_staff:
-        files = list(sorted(settings.DB_BACKUP_DIR.glob("*.sqlite3"),
-                            reverse=True))
+        files = list_backups()
         chosen_file = files[file_id]
-        current_db_path_rel = pathlib.Path(settings.DATABASES['default']['NAME'])
+        current_db_path_rel = pathlib.Path(
+            settings.DATABASES['default']['NAME'])
         root_dir = pathlib.Path(settings.BASE_DIR).parent
         current_db_path = root_dir / current_db_path_rel
         subprocess.call(f"cp {chosen_file} {current_db_path}", shell=True)

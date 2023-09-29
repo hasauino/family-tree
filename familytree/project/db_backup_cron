@@ -1,0 +1,4 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0 3 * * * . /.env; DATABASE=${DATABASE} python /app/manage.py create_db_backup
