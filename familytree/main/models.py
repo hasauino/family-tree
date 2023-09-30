@@ -35,6 +35,10 @@ class Person(models.Model):
     access = models.CharField(max_length=200,
                               choices=access_choices,
                               default='public')
+    creation_time = models.DateTimeField(auto_now_add=True,
+                                         verbose_name=_("Date of creation"))
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name=_("Date of last modification"))
 
     def is_visible_to(self, user: User):
         """
@@ -133,6 +137,13 @@ class Person(models.Model):
             parent = parent.parent
         return None, -1
 
+    def remove_editor(self, user):
+        editors = list(self.editors.all())
+        if len(editors) == 1 and editors[0].is_staff:
+            return
+        self.editors.remove(user)
+        self.save()
+
 
 class User(AbstractUser):
     email = models.EmailField(
@@ -165,3 +176,13 @@ class User(AbstractUser):
                                    null=True,
                                    blank=False,
                                    verbose_name=_("Place of birth"))
+
+    @property
+    def user_type(self):
+        if self.is_superuser:
+            return "Super User"
+        if self.is_staff:
+            return "Staff"
+        if self.is_authenticated:
+            return "normal"
+        return "Anonymous"

@@ -1,36 +1,87 @@
 {% extends 'main/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block header %}
+<script type="text/javascript" src="{% static "js/thirdparty/apollo-client.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/thirdparty/tablefilter/tablefilter.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/changes.css" %}">
+{% endblock %}
+
 {% block content %}
+<script type="module" src="{% static "js/changes.js" %}"></script>
 {% if user.is_staff %}
 <br>
 <br>
 <br>
 
-<div style="position: relative; width:50em; top: 20%; margin: 0 auto 10em auto;">
-    <h4> الأسماء التي لم توثق بعد: </h4>
+<div class="container">
+    <h4> {% translate "Unpublished Additions" %} </h4>
     <br><br>
-    <div class="list-group">
 
-     
-        {% for change in changes %}
-       
-            
-            <a href="{% url 'main:person_tree' change.id %}" class="list-group-item list-group-item-action"> 
-             إضافة من قبل :
-             {% for editor in change.editors.all %}
-             {{editor}},
-             {% endfor %}
-                  
-                &nbsp;&nbsp; |  &nbsp;&nbsp;
-                الاسم المضاف:
-                {{change}}
+    <div class="table-responsive-lg">
+        <table id="changesTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col"> User </th>
+                    <th scope="col"> User Email </th>
+                    <th scope="col"> User Type </th>
+                    <th scope="col"> Added Person</th>
+                    <th scope="col"> Creation Time </th>
+                    <th scope="col"> Last Modification </th>
+                    <th scope="col"> Actions </th>
+                </tr>
+            </thead>
+            <tbody>
 
-             </a>
-        {% endfor %}
-        
+                {% for person in changes %}
+                {% for editor in person.editors.all %}
+                <tr>
+                    <td> {{editor}} </td>
+                    <td> {{editor.email}} </td>
+                    <td> {{editor.user_type}} </td>
+                    <td> {{person}} </td>
+                    <td> {{person.creation_time}} </td>
+                    <td> {{person.last_modified}} </td>
+                    <td>
+                        <button class="btn btn-success btn-lg actionBtn" type="button" data-person-id="{{person.id}}"><i
+                                class="fas fa-check"></i></button>
+                        <button class="btn btn-primary btn-lg actionBtn" type="button"
+                            onclick="window.location = '{% url 'main:person_tree' person.id %}' ">
+                            {% if text_direction == "ltr" %}
+                            <i class="fas fa-arrow-right"></i>
+                            {% else %}
+                            <i class="fas fa-arrow-left"></i>
+                            {% endif %}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+
+            </tbody>
+        </table>
     </div>
     <br><br>
-    <button onclick="window.history.back()" class="btn btn-danger btn-lg" type="button" style="width: 7em">إلغاء</button>
-</div>
+    <button id="cancelBtn" onclick="window.history.back()" class="btn btn-danger btn-lg" type="button">إلغاء</button>
 
+</div>
 {% endif %}
+
+<script>
+    var tf = new TableFilter(document.getElementById('changesTable'), {
+        base_path: "{% static 'js/thirdparty/tablefilter' %}",
+        locale: "{{language_code}}",
+        themes: [{
+            name: 'transparent'
+        }],
+        alternate_rows: true,
+        btn_reset: true,
+        rows_counter: true,
+        loader: true,
+        no_results_message: true,
+    });
+    tf.init();
+</script>
+
 {% endblock %}

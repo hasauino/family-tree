@@ -24,6 +24,8 @@ class PersonType(DjangoObjectType):
             "designation",
             "history",
             "editors",
+            "creation_time",
+            "last_modified",
         ]
 
     def resolve_published(person, info):

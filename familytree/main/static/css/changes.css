@@ -1,0 +1,20 @@
+.container {
+    margin: 10px auto;
+    max-width: 90%;
+}
+
+#cancelBtn {
+    width: 7em;
+}
+
+.actionBtn {
+    margin: 0 10px;
+
+    @media (max-width: 991px) {
+        margin: 10px;
+    }
+}
+
+#changesTable {
+    background-color: white;
+}

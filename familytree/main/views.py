@@ -144,7 +144,7 @@ def disapprove_entry(req, person_id, orig_id):
 
         for child in person.children.all():
             child.access = "private"
-            child.editors.add(req.user)
+            child.editors.remove(req.user)
             child.save()
 
     return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
@@ -274,8 +274,7 @@ def delete_user(req):
 
 
 def changes(req):
-    changes = []
-    for person in Person.objects.all():
-        if person.access == 'private':
-            changes.append(person)
+    changes = [
+        person for person in Person.objects.all() if person.access == 'private'
+    ]
     return render(req, 'main/changes.html', {'changes': changes})

@@ -20,6 +20,18 @@ def authenticated_only(function):
     return wrapper
 
 
+def staff_only(function):
+
+    def wrapper(root, info, **args):
+        if not info.context.user.is_staff:
+            raise Exception(
+                "Access Denied! you must be a logged in user to access this API"
+            )
+        return function(root, info, **args)
+
+    return wrapper
+
+
 class MutationReply:
 
     ok = graphene.Boolean()
@@ -136,7 +148,7 @@ class BookmarkPerson(graphene.Mutation, MutationReply):
     class Arguments:
         id = graphene.Int(required=True)
 
-    @authenticated_only
+    @staff_only
     def mutate(root, info, id):
         logging.debug(f"Called bookmark person mutation with id: {id}")
         user = info.context.user
@@ -158,7 +170,7 @@ class UnBookmarkPerson(graphene.Mutation, MutationReply):
     class Arguments:
         id = graphene.Int(required=True)
 
-    @authenticated_only
+    @staff_only
     def mutate(root, info, id):
         logging.debug(f"Called un-bookmark person mutation with id: {id}")
         user = info.context.user
@@ -178,7 +190,7 @@ class PublishPerson(graphene.Mutation, MutationReply):
     class Arguments:
         id = graphene.Int(required=True)
 
-    @authenticated_only
+    @staff_only
     def mutate(root, info, id):
         logging.debug(f"Called publish person mutation with id: {id}")
         user = info.context.user
@@ -204,7 +216,7 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
     class Arguments:
         id = graphene.Int(required=True)
 
-    @authenticated_only
+    @staff_only
     def mutate(root, info, id):
         logging.debug(f"Called unpublish person mutation with id: {id}")
         user = info.context.user
@@ -216,11 +228,11 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
             return MutationReply.fail(
                 "Current user is not a staff, cannot unpublish person")
         person.access = "private"
-        person.editors.remove(user)
+        person.remove_editor(user)
         person.save()
         for child in person.children.all():
             child.access = "private"
-            child.editors.add(user)
+            child.remove_editor(user)
             child.save()
         return MutationReply.success()
 
@@ -251,7 +263,7 @@ class EditBookmark(graphene.Mutation, MutationReply):
             required=False,
             description="Overwrite default font size. Set to -1 to reset")
 
-    @authenticated_only
+    @staff_only
     def mutate(root,
                info,
                id,
