@@ -3,7 +3,7 @@
     font-size: 1.5em;
 }
 
-.forgot-section {
+.custom-section {
     margin-top: 50px;
 }
 
@@ -11,7 +11,7 @@
     color: red;
 }
 
-input {
+input[type=text], input[type=password], input[type=email] {
     display: block;
     width: 80vw !important;
     max-width: 500px !important;

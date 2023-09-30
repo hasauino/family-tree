@@ -1,52 +1,23 @@
 {% extends 'main/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" href="{% static "css/login.css" %}">
+{% endblock %}
 
 {% block content %}
-<style>
-    #{{form.username.id_for_label}},
-    #{{form.email.id_for_label}},
-    #{{form.email.id_for_label}},
-    #{{form.email.id_for_label}},
-    #{{form.password1.id_for_label}},
-    #{{form.password2.id_for_label}},
-    #{{form.first_name.id_for_label}},
-    #{{form.father_name.id_for_label}},
-    #{{form.grandfather_name.id_for_label}},
-    #{{form.last_name.id_for_label}},
-    #{{form.birth_place.id_for_label}},
-    #{{form.birth_date.id_for_label}}
-
-        {
-        display: block;
-        width: 90%;
-        height: calc(1.5em + .75rem + 2px);
-        padding: .375rem .75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: .25rem;
-        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
-    }
-
-    .errorlist {
-        color: red;
-    }
-</style>
-<br>
-<br>
-<div style="position: relative; top:10%; width:60%; margin: 0 auto 0 auto;>
-    <p>
-    الرجاء تعبئة بياناتك (كافة الحقول مطلوبة):
-    </p>
+<div class="container custom-section">
+    <h5>
+        {% translate "Please fill-in below you data (all fields)" %}
+    </h5>
+    <br>
     <form method="POST">
         {% csrf_token %}
 
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="{{form.username.id_for_label}}"> اسم المستخدم</label>
+                <label for="{{form.username.id_for_label}}"> {% translate "Username" %} </label>
                 <br>
                 {{form.username}}
                 {{ form.username.errors }}
@@ -55,7 +26,7 @@
                 </div>
             </div>
             <div class="form-group col-md-6 ">
-                <label for="{{form.email.id_for_label}}">البريد الإلكتروني</label>
+                <label for="{{form.email.id_for_label}}"> {% translate "Email" %} </label>
                 <br>
                 {{form.email}}
                 {{ form.email.errors }}
@@ -64,29 +35,29 @@
 
         <div class="form-row">
             <div class="form-group col-md-6 ">
-                <label for="{{form.first_name.id_for_label}}">الاسم الأول</label>
+                <label for="{{form.first_name.id_for_label}}"> {% translate "First Name" %} </label>
                 <br>
                 {{form.first_name}}
                 {{ form.first_name.errors }}
             </div>
             <div class="form-group col-md-6 ">
-                <label for="{{form.first_name.id_for_label}}"> اسم الأب </label>
+                <label for="{{form.first_name.id_for_label}}"> {% translate "Father's Name" %} </label>
                 <br>
                 {{form.father_name}}
                 {{ form.father_name.errors }}
             </div>
         </div>
-        
+
         <div class="form-row">
             <div class="form-group col-md-6 ">
-                <label for="{{form.first_name.id_for_label}}"> اسم الجد </label>
+                <label for="{{form.first_name.id_for_label}}"> {% translate "Grandfather's Name" %} </label>
                 <br>
                 {{form.grandfather_name}}
                 {{ form.grandfather_name.errors }}
             </div>
 
             <div class="form-group col-md-6 ">
-                <label for="{{form.last_name.id_for_label}}">اسم العائلة</label>
+                <label for="{{form.last_name.id_for_label}}"> {% translate "Family Name" %} </label>
                 <br>
                 {{form.last_name}}
                 {{ form.last_name.errors }}
@@ -95,10 +66,10 @@
 
         <div class="form-row">
             <div class="form-group col-md-6 ">
-                <label for="{{form.username.id_for_label}}"> كلمة المرور <button type="button" class="btn btn-link"
-                        onclick="
+                <label for="{{form.username.id_for_label}}"> {% translate "Password" %} <button type="button"
+                        class="btn btn-link" onclick="
                         toggle_display('pass_help')
-                        ">(؟)</button> </label>
+                        ">({% translate "?" %})</button> </label>
                 <br>
                 {{form.password1}}
                 {{ form.password1.errors }}
@@ -108,7 +79,7 @@
             </div>
 
             <div class="form-group col-md-6 ">
-                <label for="{{form.username.id_for_label}}">تأكيد كلمة المرور</label>
+                <label for="{{form.username.id_for_label}}"> {% translate "Confirm Password" %} </label>
                 <br>
                 {{form.password2}}
                 {{ form.password2.errors }}
@@ -120,7 +91,7 @@
 
         <div class="form-row">
             <div data-locale="ar" class="form-group col-md-6 ">
-                <label for="{{form.birth_date.id_for_label}}">تاريخ الولادة</label>
+                <label for="{{form.birth_date.id_for_label}}"> {% translate "Date of Birth" %} </label>
                 <br>
                 {{form.birth_date}}
                 {{ form.birth_date.errors }}
@@ -128,7 +99,7 @@
             </div>
 
             <div class="form-group col-md-6 ">
-                <label for="{{form.first_name.id_for_label}}"> مكان الولادة </label>
+                <label for="{{form.first_name.id_for_label}}"> {% translate "Place of Birth" %} </label>
                 <br>
                 {{form.birth_place}}
                 {{ form.birth_place.errors }}
@@ -139,32 +110,29 @@
 
 
         <div class="form-row">
-            <div data-locale="ar" class="form-group col-md-6 ">
+            <div class="form-group col-md-6">
                 {{form.tos}}
                 {{ form.tos.errors }}
-                <label for="{{form.tos.id_for_label}}">أوافق على <a target="blank" href="{% url 'main:tos' %}">شروط
-                        الاستخدام</a> . </label>
-
-
+                <label for="{{form.tos.id_for_label}}"> {% translate "I agree on the" %}
+                    <a target="blank" href="{% url 'main:tos' %}">
+                        {% translate "terms of use" %}
+                    </a> . 
+                </label>
             </div>
         </div>
 
         <br>
-        <br>
 
-        <button type="submit" class="btn btn-success">إنشاء الحساب</button>
+        <button type="submit" class="btn btn-success"> {% translate "Create Account" %} </button>
+
+        <br><br>
+        <hr>
+        {% translate "Already have an account? Go to " %}
+        <a href="{% url 'login' %}"><strong> {% translate "Login" %} </strong></a>
+        <br>
     </form>
 </div>
-<div style="position: relative; top:10%; width:60%; margin: 0 auto 0 auto; text-align:right;">
-    <br>
-    <hr>
-    .إذا كنت تملك حساب بالفعل, قم عوضاً <a href="{% url 'login' %}"><strong>بالدخول</strong></a>
 
-    <br>
-
-
-
-</div>
 
 <script>
     function toggle_display(id) {
@@ -195,7 +163,7 @@
                     weekdays      : ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
                         weekdaysShort : ['حد', 'ثن', 'ثل', 'ربع', 'خمس', 'جمع', 'سبت']
     },
-    onSelect: function() {}
+    onSelect: function() { }
     });
 </script>
 
