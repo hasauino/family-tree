@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-30 21:12+0000\n"
-"PO-Revision-Date: 2023-09-30 23:15+0200\n"
+"POT-Creation-Date: 2023-09-30 21:20+0000\n"
+"PO-Revision-Date: 2023-09-30 23:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -188,10 +188,38 @@ msgstr "إخفاء الأدوات"
 msgid "Unpublished Additions"
 msgstr "الإضافات الغير موثقة"
 
+#: familytree/main/templates/main/changes.html:26
+msgid "User"
+msgstr "المستخدم"
+
+#: familytree/main/templates/main/changes.html:27
+msgid "User Email"
+msgstr "أيميل المستخدم"
+
+#: familytree/main/templates/main/changes.html:28
+msgid "User Type"
+msgstr "نوع المستخدم"
+
+#: familytree/main/templates/main/changes.html:29
+msgid "Added Person"
+msgstr "الشخص المضاف"
+
+#: familytree/main/templates/main/changes.html:30
+msgid "Creation Time"
+msgstr "وقت الإضافة"
+
+#: familytree/main/templates/main/changes.html:31
+msgid "Last Modification"
+msgstr "آخر تحديث"
+
+#: familytree/main/templates/main/changes.html:32
+msgid "Actions"
+msgstr "الأوامر"
+
 #: familytree/main/templates/main/changes.html:66
 #: familytree/main/templates/main/edit.html:23
 #: familytree/main/templates/main/settings.html:21
-#: familytree/main/templates/main/undo_choose.html:34
+#: familytree/main/templates/main/undo_choose.html:35
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -309,7 +337,7 @@ msgstr ""
 "أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم "
 "إدخاله من المستخدمين."
 
-#: familytree/main/templates/main/undo_choose.html:22
+#: familytree/main/templates/main/undo_choose.html:23
 msgid "Pick a restore point of the database:"
 msgstr "اختر نقطة الرجوع الزمنية لقاعدة البيانات:"
 
