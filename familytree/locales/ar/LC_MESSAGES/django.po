@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-30 21:45+0000\n"
-"PO-Revision-Date: 2023-09-30 23:38+0200\n"
+"POT-Creation-Date: 2023-09-30 22:00+0000\n"
+"PO-Revision-Date: 2023-10-01 00:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -175,6 +175,118 @@ msgstr "إذا كنت تملك حساب بالفعل, قم عوضاً "
 #: familytree/main/templates/main/navbar.html:26
 msgid "Login"
 msgstr "بالدخول"
+
+#: familytree/main/templates/django_registration/registration_form.html:162
+msgid "Previous Month"
+msgstr "الشهر السابق"
+
+#: familytree/main/templates/django_registration/registration_form.html:163
+msgid "Next Month"
+msgstr "الشهر التالي"
+
+#: familytree/main/templates/django_registration/registration_form.html:164
+msgid "January"
+msgstr "يناير"
+
+#: familytree/main/templates/django_registration/registration_form.html:165
+msgid "February"
+msgstr "فبراير"
+
+#: familytree/main/templates/django_registration/registration_form.html:166
+msgid "March"
+msgstr "مارس"
+
+#: familytree/main/templates/django_registration/registration_form.html:167
+msgid "April"
+msgstr "أبريل"
+
+#: familytree/main/templates/django_registration/registration_form.html:168
+msgid "May"
+msgstr "مايو"
+
+#: familytree/main/templates/django_registration/registration_form.html:169
+msgid "June"
+msgstr "يونيو"
+
+#: familytree/main/templates/django_registration/registration_form.html:170
+msgid "July"
+msgstr "يوليو"
+
+#: familytree/main/templates/django_registration/registration_form.html:171
+msgid "August"
+msgstr "أغسطس"
+
+#: familytree/main/templates/django_registration/registration_form.html:172
+msgid "September"
+msgstr "سبتمبر"
+
+#: familytree/main/templates/django_registration/registration_form.html:173
+msgid "October"
+msgstr "أكتوبر"
+
+#: familytree/main/templates/django_registration/registration_form.html:174
+msgid "November"
+msgstr "نوفمر"
+
+#: familytree/main/templates/django_registration/registration_form.html:175
+msgid "December"
+msgstr "ديسمبر"
+
+#: familytree/main/templates/django_registration/registration_form.html:176
+msgid "Sunday"
+msgstr "الأحد"
+
+#: familytree/main/templates/django_registration/registration_form.html:177
+msgid "Monday"
+msgstr "الإثنين"
+
+#: familytree/main/templates/django_registration/registration_form.html:178
+msgid "Tuesday"
+msgstr "الثلاثاء"
+
+#: familytree/main/templates/django_registration/registration_form.html:179
+msgid "Wednesday"
+msgstr "الأربعاء"
+
+#: familytree/main/templates/django_registration/registration_form.html:180
+msgid "Thursday"
+msgstr "الخميس"
+
+#: familytree/main/templates/django_registration/registration_form.html:181
+msgid "Friday"
+msgstr "الجمعة"
+
+#: familytree/main/templates/django_registration/registration_form.html:182
+msgid "Saturday"
+msgstr "السبت"
+
+#: familytree/main/templates/django_registration/registration_form.html:183
+msgid "Sun"
+msgstr "الأحد"
+
+#: familytree/main/templates/django_registration/registration_form.html:184
+msgid "Mon"
+msgstr "ثن"
+
+#: familytree/main/templates/django_registration/registration_form.html:185
+msgid "Tue"
+msgstr "ثل"
+
+#: familytree/main/templates/django_registration/registration_form.html:186
+msgid "Wed"
+msgstr "ربع"
+
+#: familytree/main/templates/django_registration/registration_form.html:187
+msgid "Thu"
+msgstr "خمس"
+
+#: familytree/main/templates/django_registration/registration_form.html:188
+msgid "Fri"
+msgstr "جمع"
+
+#: familytree/main/templates/django_registration/registration_form.html:189
+msgid "Sat"
+msgstr "سبت"
 
 #: familytree/main/templates/main/base.html:14
 msgid "Show Tools"
