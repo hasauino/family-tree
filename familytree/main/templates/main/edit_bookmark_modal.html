@@ -22,40 +22,48 @@
     .colorLabel {
         margin: 20px;
     }
+    .custom-close{
+        background-color: transparent;
+        border: none;
+        font-size: 1.5em;
+        color: rgb(125, 125, 125);
+    }
 </style>
 
 <div id="EditBookmarkModal" class="modal" style="z-index: 1;">
     <div class="mask"></div>
     <div class="modal-dialog modal-dialog-custom">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"> Edit Bookmark </h5>
-                <button type="button" class="close" onclick="hideBookmarkModal()">
-                    <span aria-hidden="true">&times;</span>
+            <div class="modal-header header-custom">
+                <h5 class="modal-title"> {% translate "Edit Bookmark" %} </h5>
+                <button class="custom-close" type="button" onclick="hideBookmarkModal()">
+                    <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="bookmarkModalLabel"> Label </label>
-                    <textarea id="bookmarkModalLabel" class="form-control" placeholder="leave empty for no change" cols="40"></textarea>
+                    <label for="bookmarkModalLabel"> {% translate "Label" %} </label>
+                    <textarea id="bookmarkModalLabel" class="form-control" placeholder="{% translate 'leave empty for no change' %}"
+                        cols="40"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="bookmarkModalColor"> Color </label><br>
-                    <input type="text" class="form-control" id="bookmarkModalColor" placeholder="leave empty for no change"
-                        data-coloris>
+                    <label for="bookmarkModalColor"> {% translate "Color" %} </label><br>
+                    <input type="text" class="form-control" id="bookmarkModalColor"
+                        placeholder="{% translate 'leave empty for no change' %}" data-coloris>
                 </div>
                 <div class="form-group">
-                    <label for="bookmarkModalFontColor"> Font Color </label><br>
-                    <input type="text" class="form-control" id="bookmarkModalFontColor" placeholder="leave empty for no change"
-                        data-coloris>
+                    <label for="bookmarkModalFontColor"> {% translate "Font Color" %} </label><br>
+                    <input type="text" class="form-control" id="bookmarkModalFontColor"
+                        placeholder="{% translate 'leave empty for no change' %}" data-coloris>
                 </div>
                 <div class="form-group">
-                    <label for="bookmarkModalFontSize"> Font Size </label>
-                    <input type="number" class="form-control" id="bookmarkModalFontSize" placeholder="leave empty for no change">
+                    <label for="bookmarkModalFontSize"> {% translate "Font Size" %} </label>
+                    <input type="number" class="form-control" id="bookmarkModalFontSize"
+                        placeholder="{% translate 'leave empty for no change' %}">
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="bookmarkModalSaveBtn" class="btn btn-danger" type="button"> Save </button>
+                <button id="bookmarkModalSaveBtn" class="btn btn-danger" type="button"> {% translate "Save" %} </button>
             </div>
         </div>
     </div>
