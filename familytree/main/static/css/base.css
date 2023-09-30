@@ -22,3 +22,7 @@ body {
 .flex-container .content {
     flex: auto;
 }
+
+.custom-section {
+    margin-top: 50px;
+}

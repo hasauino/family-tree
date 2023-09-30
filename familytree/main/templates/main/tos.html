@@ -1,33 +1,36 @@
 {% extends 'main/base.html' %}
+{% load i18n %}
+{% load static %}
 
 {% block content %}
 
-<br>
-<br>
-<br>
+<style>
+    li {
+        margin: 30px 0;
+    }
+</style>
+<div class="container custom-section">
 
-<div style="position: relative; top: 15%; width: 60%; margin: 0 auto 0 auto;">
-
-    <h1>شروط الاستخدام</h1>
+    <h1> {% translate "Terms of Use" %} </h1>
     <hr>
     <p>
-        <ul>
-            <li>
-                لا يحق لي المطالبة بحذف البيانات التي أقوم بإدخالها بعد قيامي بطلب دمجها مع المشجرة الأصلية.
-            </li>
-            <li>
-                لا يحق لي طلب حذف بياناتي الشخصية.
-            </li>
-            <li>
-                أتحمل مسؤولية أي خطأ في البيانات التي أقوم بإدخالها.
-            </li>
-            <li>
-                أدرك بأن المشجرة قد تحوي أخطاء.
-            </li>
-            <li>
-              أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم إدخاله من المستخدمين.
-            </li>
-        </ul>
+    <ul class="tos">
+        <li>
+            {% translate "I don't own the data I add to the family tree. I don't have the right to remove the data" %}
+        </li>
+        <li>
+            {% translate "I don't have the right to remove my own account data." %}
+        </li>
+        <li>
+            {% translate "I'm fully responsible and accountable for the correctness of the data I enter." %}
+        </li>
+        <li>
+            {% translate "I understand that the family tree data may contain wrong information." %}
+        </li>
+        <li>
+            {% translate "I understand that the family tree on this website is not a reliable source of information, it's just a way to ease exploring data other users have entered." %}
+        </li>
+    </ul>
     </p>
 </div>
 
