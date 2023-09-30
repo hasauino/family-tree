@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <style>
     .mask {
         background: rgba(0, 0, 0, 0.5);
@@ -11,6 +13,13 @@
     .modal-dialog-custom {
         margin-top: 30vh;
     }
+
+    .custom-close {
+        background-color: transparent;
+        border: none;
+        font-size: 1.5em;
+        color: rgb(125, 125, 125);
+    }
 </style>
 
 <div id="{{namespace}}Modal" class="modal">
@@ -19,17 +28,17 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"> {{title}} </h5>
-                <button type="button" class="close" onclick="hide{{namespace}}Modal()">
+                <button type="button" class="custom-close" onclick="hide{{namespace}}Modal()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <input id="{{namespace}}Input" type="text" class="form-control" placeholder="{{body}}">
-                  </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button id="{{namespace}}Button" class="btn btn-danger" type="button""> Save </button>
+                <button id="{{namespace}}Button" class="btn btn-danger" type="button""> {% translate "Save" %} </button>
             </div>
         </div>
     </div>
