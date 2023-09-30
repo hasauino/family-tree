@@ -12,7 +12,7 @@
 <div class="container login-section">
   <form method="post" class="sub-section">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form }}
     <hr>
     <button class="btn btn-primary" type="submit"> {% translate "Sign In" %}
     </button>

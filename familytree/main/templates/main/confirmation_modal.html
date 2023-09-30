@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <style>
     .mask {
         background: rgba(0, 0, 0, 0.5);
@@ -26,12 +28,10 @@
             <div class="modal-body">
                 <p>
                     {{ body }}
-                    <br />
-                    هل تريد فعلاً تأكيد العملية؟
                 </p>
             </div>
             <div class="modal-footer">
-                <button id="{{namespace}}Button" class="btn btn-danger" type="button""> نعم </button>
+                <button id="{{namespace}}Button" class="btn btn-danger" type="button""> {% translate "Confirm" %} </button>
             </div>
         </div>
     </div>
@@ -41,5 +41,13 @@
     function hide{{namespace}}Modal() {
         const modal = document.getElementById("{{namespace}}Modal");
         modal.style.display = "none";
+    }
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = (event)=> {
+        const mask = document.getElementsByClassName("mask")[0];
+    if (event.target == mask) {
+        const modal = document.getElementById("{{namespace}}Modal");
+        modal.style.display = "none";
+        }
     }
 </script>
