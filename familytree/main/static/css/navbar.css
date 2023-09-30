@@ -24,11 +24,23 @@
 
 .search-box {
     width: 25%;
+
     @media (max-width: 991px) {
         width: 90%;
     }
 }
 
-.no-padding{
+.no-padding {
     padding: 0;
+}
+
+.badge {
+    position: relative;
+    vertical-align: bottom;
+    font-size: x-small;
+    padding: 2px 4px;
+    left: -12px;
+    border-radius: 30%;
+    background: rgb(255, 204, 0);
+    color: rgb(0, 0, 0);
 }

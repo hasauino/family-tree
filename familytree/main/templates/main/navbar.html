@@ -49,6 +49,9 @@
         <button onclick="window.location = '{% url 'main:changes' %}' " type="button"
             class="btn btn-danger nav-item-margin expand-on-small">
             <i class="fas fa-bell extra-padding"></i>
+            {% if notifications > 0 %}
+                <span class="badge">{{notifications}}</span>
+            {% endif %}
         </button>
         {% endif %}
         <div class="btn-group search-container nav-item-margin expand-on-small search-box">
