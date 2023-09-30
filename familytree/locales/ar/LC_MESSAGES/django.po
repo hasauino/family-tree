@@ -3,25 +3,44 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-26 19:54+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2023-09-30 20:15+0000\n"
+"PO-Revision-Date: 2023-09-30 22:41+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Generator: Poedit 3.3.2\n"
 
-#: familytree/home/templates/home/index.html:160
-msgid "Move Lock"
-msgstr "قفل التحريك"
+#: familytree/home/models.py:9
+msgid "Person"
+msgstr "الشخص"
+
+#: familytree/home/models.py:14
+msgid "Color"
+msgstr "اللون"
+
+#: familytree/home/models.py:19
+msgid "Font Color"
+msgstr "لون الخط"
+
+#: familytree/home/models.py:23
+msgid "Font Size"
+msgstr "حجم الخط"
+
+#: familytree/home/models.py:27
+msgid "Label"
+msgstr "التسمية"
+
+#: familytree/main/forms.py:43
+msgid "Children"
+msgstr "الأولاد"
 
 #: familytree/main/models.py:15
 msgid "Name"
@@ -32,20 +51,14 @@ msgid "Parent"
 msgstr "الأب"
 
 #: familytree/main/models.py:25
-#, fuzzy
-#| msgid "Reference of authentication"
 msgid "Reference of authentication (optional)"
 msgstr "مرجع التوثيق (اختياري)"
 
 #: familytree/main/models.py:28
-#, fuzzy
-#| msgid "Designation"
 msgid "Designation (optional)"
 msgstr "وصف (اختياري)"
 
 #: familytree/main/models.py:32
-#, fuzzy
-#| msgid "Historical Background"
 msgid "Historical Background (optional)"
 msgstr "نبذة تاريخية (اختياري)"
 
@@ -53,33 +66,109 @@ msgstr "نبذة تاريخية (اختياري)"
 msgid "Editor"
 msgstr "المحرر"
 
-#: familytree/main/models.py:142
+#: familytree/main/models.py:39
+msgid "Date of creation"
+msgstr "تاريخ الميلاد"
+
+#: familytree/main/models.py:41
+msgid "Date of last modification"
+msgstr "تاريخ آخر تحديث"
+
+#: familytree/main/models.py:153
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: familytree/main/models.py:145
+#: familytree/main/models.py:156
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:150
+#: familytree/main/models.py:161
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: familytree/main/models.py:154
+#: familytree/main/models.py:165
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: familytree/main/models.py:158
+#: familytree/main/models.py:169
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: familytree/main/models.py:162
+#: familytree/main/models.py:173
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: familytree/main/models.py:167
+#: familytree/main/models.py:178
 msgid "Place of birth"
 msgstr "مكان الميلاد"
+
+#: familytree/main/templates/django_registration/registration_form.html:12
+msgid "Please fill-in below your data (all fields)"
+msgstr "الرجاء تعبئة بياناتك (كافة الحقول)"
+
+#: familytree/main/templates/django_registration/registration_form.html:20
+msgid "Username"
+msgstr "اسم المستخدم"
+
+#: familytree/main/templates/django_registration/registration_form.html:29
+msgid "Email"
+msgstr "الإيميل"
+
+#: familytree/main/templates/django_registration/registration_form.html:38
+msgid "First Name"
+msgstr "الاسم الأول"
+
+#: familytree/main/templates/django_registration/registration_form.html:44
+msgid "Father's Name"
+msgstr "اسم الأب"
+
+#: familytree/main/templates/django_registration/registration_form.html:53
+msgid "Grandfather's Name"
+msgstr "اسم الجد"
+
+#: familytree/main/templates/django_registration/registration_form.html:60
+msgid "Family Name"
+msgstr "اسم العائلة"
+
+#: familytree/main/templates/django_registration/registration_form.html:69
+msgid "Password"
+msgstr "كلمة السر"
+
+#: familytree/main/templates/django_registration/registration_form.html:72
+msgid "?"
+msgstr "؟"
+
+#: familytree/main/templates/django_registration/registration_form.html:82
+msgid "Confirm Password"
+msgstr "تأكيد كلمة المرور"
+
+#: familytree/main/templates/django_registration/registration_form.html:94
+msgid "Date of Birth"
+msgstr "تاريخ الميلاد"
+
+#: familytree/main/templates/django_registration/registration_form.html:102
+msgid "Place of Birth"
+msgstr "مكان الميلاد"
+
+#: familytree/main/templates/django_registration/registration_form.html:116
+msgid "I agree on the"
+msgstr "أوافق على"
+
+#: familytree/main/templates/django_registration/registration_form.html:118
+msgid "terms of use"
+msgstr "شروط الاستخدام"
+
+#: familytree/main/templates/django_registration/registration_form.html:126
+msgid "Create Account"
+msgstr "إنشاء الحساب"
+
+#: familytree/main/templates/django_registration/registration_form.html:130
+msgid "Already have an account? Go to "
+msgstr "إذا كنت تملك حساب بالفعل, قم عوضاً "
+
+#: familytree/main/templates/django_registration/registration_form.html:131 familytree/main/templates/main/navbar.html:26
+msgid "Login"
+msgstr "بالدخول"
 
 #: familytree/main/templates/main/base.html:14
 msgid "Show Tools"
@@ -88,6 +177,23 @@ msgstr "إظهار الأدوات"
 #: familytree/main/templates/main/base.html:15
 msgid "Hide Tools"
 msgstr "إخفاء الأدوات"
+
+#: familytree/main/templates/main/changes.html:19
+msgid "Unpublished Additions"
+msgstr "الإضافات الغير موثقة"
+
+#: familytree/main/templates/main/changes.html:66 familytree/main/templates/main/edit.html:23
+#: familytree/main/templates/main/settings.html:21 familytree/main/templates/main/undo_choose.html:34
+msgid "Cancel"
+msgstr "إلغاء"
+
+#: familytree/main/templates/main/confirmation_modal.html:34
+msgid "Confirm"
+msgstr "تأكيد"
+
+#: familytree/main/templates/main/edit.html:21 familytree/main/templates/main/settings.html:18
+msgid "Save"
+msgstr "حفظ"
 
 #: familytree/main/templates/main/navbar.html:15
 msgid "Home"
@@ -101,10 +207,6 @@ msgstr "المساعدة"
 msgid "About"
 msgstr "عن الموقع"
 
-#: familytree/main/templates/main/navbar.html:26
-msgid "Login"
-msgstr "دخول"
-
 #: familytree/main/templates/main/navbar.html:36
 msgid "Account"
 msgstr "حسابي"
@@ -113,31 +215,86 @@ msgstr "حسابي"
 msgid "Logout"
 msgstr "خروج"
 
-#: familytree/main/templates/main/navbar.html:55
+#: familytree/main/templates/main/navbar.html:58
 msgid "Search by name"
 msgstr "ابحث عن اسم"
+
+#: familytree/main/templates/main/settings.html:25
+msgid "Do you want to close your account and delete permanently?"
+msgstr "هل ترغب بإغلاق حسابك وحذفه كلياً؟"
+
+#: familytree/main/templates/main/settings.html:26
+msgid "Delete Account"
+msgstr "حذف حسابي"
+
+#: familytree/main/templates/main/settings.html:33
+msgid "Confirm Deletion"
+msgstr "تأكيد الحذف"
+
+#: familytree/main/templates/main/settings.html:33
+msgid ""
+"Deleting your account will delete all your data including persons you added to the family tree which have not been published yet"
+msgstr "عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها و التي لم يتم دمجها بعد مع المشجرة الرئيسية"
 
 #: familytree/main/templates/main/test.html:5
 msgid "hello world"
 msgstr "مرحبا جميعا"
 
-#: familytree/main/templates/registration/login.html:38
+#: familytree/main/templates/main/tos.html:14
+msgid "Terms of Use"
+msgstr "شروط الاستخدام"
+
+#: familytree/main/templates/main/tos.html:19
+msgid "I don't own the data I add to the family tree. I don't have the right to remove the data"
+msgstr "لا يحق لي المطالبة بحذف البيانات التي أقوم بإدخالها"
+
+#: familytree/main/templates/main/tos.html:22
+msgid "I don't have the right to remove my own account data."
+msgstr "لا يحق لي طلب حذف بياناتي الشخصية."
+
+#: familytree/main/templates/main/tos.html:25
+msgid "I'm fully responsible and accountable for the correctness of the data I enter."
+msgstr "أتحمل مسؤولية أي خطأ في البيانات التي أقوم بإدخالها."
+
+#: familytree/main/templates/main/tos.html:28
+msgid "I understand that the family tree data may contain wrong information."
+msgstr "أدرك بأن المشجرة قد تحوي أخطاء."
+
+#: familytree/main/templates/main/tos.html:31
+msgid ""
+"I understand that the family tree on this website is not a reliable source of information, it's just a way to ease exploring data "
+"other users have entered."
+msgstr "أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم إدخاله من المستخدمين."
+
+#: familytree/main/templates/main/undo_choose.html:22
+msgid "Pick a restore point of the database:"
+msgstr "اختر نقطة الرجوع الزمنية لقاعدة البيانات:"
+
+#: familytree/main/templates/registration/login.html:17
 msgid "Sign In"
 msgstr "الدخول"
 
-#: familytree/main/templates/registration/login.html:41
+#: familytree/main/templates/registration/login.html:21
 msgid "Forgot Password?"
 msgstr "نسيت حسابي؟"
 
-#: familytree/main/templates/registration/login.html:48
+#: familytree/main/templates/registration/login.html:25
 msgid "Don't have an account?"
 msgstr "ليس لديك حساب؟"
 
-#: familytree/main/templates/registration/login.html:51
+#: familytree/main/templates/registration/login.html:27
 msgid "Sign Up"
 msgstr "إنشاء حساب جديد"
 
-#: familytree/main/views.py:293
+#: familytree/main/templates/registration/password_reset_form.html:18
+msgid "Please enter your email. We will send you an email with a link to reset your password"
+msgstr "أدخل بريدك الإلكتروني و سنقوم بإرسال اسم المستخدم الخاص بك و تزويدك برابط لإعادة ضبط كلمة المرور إذا كنت مسجل لدينا بالفعل"
+
+#: familytree/main/templates/registration/password_reset_form.html:32
+msgid "Recover Password"
+msgstr "استرجاع كلمة السر"
+
+#: familytree/main/views.py:272
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
@@ -148,3 +305,6 @@ msgstr "عربي"
 #: familytree/project/settings/base.py:126
 msgid "English"
 msgstr "إنجليزي"
+
+#~ msgid "Move Lock"
+#~ msgstr "قفل التحريك"
