@@ -1,152 +1,89 @@
 {% extends 'main/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" href="{% static "css/edit.css" %}">
+{% endblock %}
+
 
 {% block content %}
-
 {% if user.is_authenticated %}
-{% if person.access == "public" or user in person.editors.all or user.is_staff %}
-
-<div class="main-edit-page">
-
-    <form action="{% url 'main:save' orig_id person.id %}" method="post">
-        {% csrf_token %}
 
 
-        <div style="position: absolute; top: 15%; width:90%;   margin: 0 50px;">
-
-
-            <div style="position: relative; width: 50%; margin: 0 0 auto auto; ">
-                <label for="person_name">:اسم الشخص</label>
-            </div>
-            <div style="position: relative; width: 50%;  margin: 0 0 auto auto;">
-                <input name="name" {% if person.access == "public" and not user.is_staff %} disabled {% endif %}
-                    id="person_name" type="text" class="form-control text_field" value="{{person.name}}"
-                    placeholder="اسم الشخص">
-            </div>
-
-
-            <br>
-            <br>
-
-            <div style="position: relative; width: 50%; margin: 0 0 auto auto; ">
-                <label for="person_name">:(اختياري) وصف</label>
-            </div>
-            <div style="position: relative; width: 50%;  margin: 0 0 auto auto; ">
-                <input style="font-size: 1em" name="designation" id="person_designation" type="text"
+<div class="container custom-section">
+    <div class="row justify-content-center">
+        <div class="col-sm-6">
+            <form action="{% url 'main:save' orig_id person.id %}" method="post">
+                {% csrf_token %}
+                {{ form }}
+                <div class="edit-buttons-container">
+                    <input type="submit" value='{% translate "Save" %}' class="btn btn-primary btn-lg editFormButtons">
+                    <button class="btn btn-danger btn-lg editFormButtons" type="button"
+                        onclick="window.location = '{% url 'main:person_tree' orig_id%}'"> {% translate "Cancel" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-1"></div>
+        <div class="col-sm-1">
+            <div class="edit-buttons-container">
+                {% if user.is_staff %}
+                {% if person.access == "public"%}
+                <button title="إزالة التوثيق"
+                    onclick="window.location = '{% url 'main:disapprove'  person.id orig_id%}' "
+                    class="btn btn-link bigGrayButton"><i class="fas fa-lock-open"></i></button>
+                {% else %}
+                <button title="توثيق" onclick="window.location = '{% url 'main:approve'  person.id orig_id%}' "
+                    class="btn btn-link bigBlueButton"><i class="fas fa-lock"></i></button>
+                {% endif %}
+                {% if person.bookmark %}
+                <button title="إزالة العلامة"
+                    onclick="window.location = '{% url 'main:unbookmark'  person.id orig_id%}' "
+                    class="btn btn-link bigGrayButton"><i class="far fa-star"></i></button>
+                {% else %}
+                <button title="أضف علامة" onclick="window.location = '{% url 'main:bookmark'  person.id orig_id%}' "
+                    class="btn btn-link bigBlueButton"><i class="fas fa-star"></i></button>
+                {% endif %}
+                {% endif %}
+                <button title="حذف الشخص و جميع ذريته"
+                    onclick="window.location = '{% url 'main:delete'  person.id orig_id%}' "
                     {% if person.access == "public" and not user.is_staff %} disabled {% endif %}
-                    class="form-control text_field" value="{{person.designation}}"
-                    placeholder="مثال: جد العمرية في بلاد الشام">
+                    class="btn btn-link bigRedButton"><i class="fa fa-trash"></i>
+                </button>
             </div>
-
-            <br>
-            <br>
-
-
-            <div style="position: relative; width: 50%; margin: 0 0 auto auto; ">
-                <label for="person_name">:(اختياري) نبذة تاريخية</label>
-            </div>
-            <div style="position: relative; width: 50%;  margin: 0 0 auto auto; ">
-                <textarea style="font-size: 1em" name="history" id="person_history" type="text"
-                    {% if person.access == "public" and not user.is_staff %} disabled {% endif %}
-                    class="form-control text_field" 
-                    placeholder="مثال: ملقب بكذا, دفن في, كاتب سر, منصب سياسي, عرف بكذا و غيرها من المعلومات التاريخية">{{person.history}}</textarea>
-            </div>
-
-            <br>
-            <br>
-
-
-            <div style="position: relative; width: 50%; margin: 0 0 auto auto; ">
-                <label for="person_name">:الأولاد </label>
-            </div>
-
-            <div style="position: relative; text-align: left; width: 50%; margin: 0 0 auto auto; ">
-                <input name="childs" id="childs" type="text" value="{{childs}}" placeholder="">
-            </div>
-
-            <div style="position: relative; width: 50%; margin: 100px; ">
-
-                    <input class="btn btn-primary btn-lg" style="width: 7em; margin: 0 auto auto 0" type="submit"
-                        value="حفظ">
-                    <div style="display: inline-block; width:1em;"></div>
-
-
-                    <button class="btn btn-danger btn-lg" type="button" style="width: 7em"
-                        onclick="window.location = '{% url 'main:person_tree' orig_id%}'">إلغاء</button>
-
-            </div>
-
-
-
 
         </div>
-
-
-
-
-
-
-
-
-
-    </form>
+    </div>
+    <br>
+    <br>
+    <br>
 
 </div>
-{% endif %}
-{% endif %}
 
 
-{% if user.is_authenticated %}
-{% if person.access == "public" or user in person.editors.all or user.is_staff%}
-<div style="position: absolute; top:25%; left:40%;">
-    <button style="font-size: 4em; color: #dc3545" title="حذف الشخص و جميع ذريته"
-        onclick="window.location = '{% url 'main:delete'  person.id orig_id%}' "
-        {% if person.access == "public" and not user.is_staff %} disabled {% endif %} class="btn btn-link"><i
-            class="fa fa-trash"></i></button></div>
 {% endif %}
-{% endif %}
-
-
-{% if user.is_staff %}
-{% if person.access == "public"%}
-<div style=" position: absolute; top:25%; left:33%;">
-    <button style="color: #6e6e6e; font-size: 4em" title="إزالة التوثيق"
-        onclick="window.location = '{% url 'main:disapprove'  person.id orig_id%}' " class="btn btn-link"><i
-            class="fas fa-lock-open"></i></button>
-</div>
-{% else %}
-<div style="position: absolute; top:25%; left:33%;">
-    <button style="font-size: 4em" title="توثيق"
-        onclick="window.location = '{% url 'main:approve'  person.id orig_id%}' " class="btn btn-link"><i
-            class="fas fa-lock"></i></button>
-</div>
-{% endif %}
-{% endif %}
-
-{% if user.is_staff %}
-{% if person.bookmark %}
-<div style="position: absolute; top:25%; left:27%;">
-    <button style="color: #6e6e6e; font-size: 4em" title="إزالة العلامة"
-        onclick="window.location = '{% url 'main:unbookmark'  person.id orig_id%}' " class="btn btn-link"><i
-            class="far fa-star"></i></button>
-</div>
-{% else %}
-<div style=" position: absolute; top:25%; left:27%;">
-    <button style="font-size: 4em" title="أضف علامة"
-        onclick="window.location = '{% url 'main:bookmark'  person.id orig_id%}' " class="btn btn-link"><i
-            class="fas fa-star"></i></button>
-</div>
-{% endif %}
-{% endif %}
-
 
 
 <script>
-    var firstElement = document.getElementById('childs');
-    var choices1 = new Choices(firstElement, {
-        delimiter: ',',
-        editItems: true,
-        maxItems: 100,
-        removeItems: false,
+
+    window.addEventListener("load", () => {
+        const childrenInput = document.getElementById("{{form.children.id_for_label}}");
+        const choices1 = new Choices(childrenInput, {
+            delimiter: ',',
+            editItems: true,
+            maxItems: 100,
+            removeItems: false,
+        });
+
+        {% if person.access == "public" and not user.is_staff %}
+        const disabledFields = ["name", "reference", "history", "designation"]
+        disabledFields.forEach((field_name) => {
+            const field = document.getElementById(`id_${field_name}`);
+            field.disabled = true;
+            field.style.background = "#e9ecef";
+        })
+        {% endif %}
 
     });
 </script>

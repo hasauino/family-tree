@@ -19,14 +19,14 @@ class Person(models.Model):
                                blank=True,
                                related_name="children",
                                verbose_name=_("Parent"))
-    reference = models.CharField(
+    reference = models.TextField(
         max_length=1000,
         blank=True,
         verbose_name=_("Reference of authentication (optional)"))
-    designation = models.CharField(max_length=500,
+    designation = models.TextField(max_length=500,
                                    blank=True,
                                    verbose_name=_("Designation (optional)"))
-    history = models.CharField(
+    history = models.TextField(
         max_length=2000,
         blank=True,
         verbose_name=_("Historical Background (optional)"))

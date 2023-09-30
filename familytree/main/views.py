@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from home.home_tree_generator import generate_home_tree
 from home.models import Bookmark
-from main.forms import SettingsForm
+from main.forms import SettingsForm, PersonForm
 from main.management.commands.create_db_backup import list_backups
 from main.models import Person
 from main.session_configs import configs
@@ -49,26 +49,31 @@ def person_tree(req, person_id):
 
 def edit(req, person_id, orig_id):
     person = get_object_or_404(Person, pk=person_id)
-
-    childs = ''
+    children = ''
     for child in person.children.all():
         if req.user.is_staff or req.user in child.editors.all():
-            childs += child.name + ','
-
-    context = {'person': person, 'orig_id': orig_id, 'childs': childs[0:-1]}
+            children += child.name + ','
+    init_data = person.__dict__
+    init_data["children"] = children[0:-1]
+    form = PersonForm(initial=init_data)
+    context = {
+        'person': person,
+        'orig_id': orig_id,
+        'form': form,
+    }
     return render(req, 'main/edit.html', context)
 
 
 def save(req, orig_id, person_id):
     person = get_object_or_404(Person, pk=person_id)
 
-    person_childs = []
+    person_children = []
     for child in person.children.all():
-        person_childs.append(child.name)
+        person_children.append(child.name)
 
     if req.user.is_authenticated:
-        for child in req.POST['childs'].split(','):
-            if not child in person_childs and child != '':
+        for child in req.POST['children'].split(','):
+            if not child in person_children and child != '':
                 new_child = Person(name=child, parent=person)
 
                 if req.user.is_staff:
@@ -79,7 +84,7 @@ def save(req, orig_id, person_id):
                 new_child.editors.add(req.user)
 
         for child in person.children.all():
-            if child.name in req.POST['childs'].split(',') and not (
+            if child.name in req.POST['children'].split(',') and not (
                     req.user in child.editors.all()):
                 child.editors.add(req.user)
                 child.save()
