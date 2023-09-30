@@ -3,6 +3,10 @@
     font-size: 1.5em;
 }
 
+.forgot-section {
+    margin-top: 50px;
+}
+
 .errorlist {
     color: red;
 }
