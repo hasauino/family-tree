@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-30 22:00+0000\n"
-"PO-Revision-Date: 2023-10-01 00:07+0200\n"
+"POT-Creation-Date: 2023-10-01 00:07+0000\n"
+"PO-Revision-Date: 2023-10-01 02:09+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -173,6 +173,7 @@ msgstr "إذا كنت تملك حساب بالفعل, قم عوضاً "
 
 #: familytree/main/templates/django_registration/registration_form.html:131
 #: familytree/main/templates/main/navbar.html:26
+#: familytree/main/templates/registration/password_reset_complete.html:18
 msgid "Login"
 msgstr "بالدخول"
 
@@ -505,6 +506,80 @@ msgstr "ليس لديك حساب؟"
 msgid "Sign Up"
 msgstr "إنشاء حساب جديد"
 
+#: familytree/main/templates/registration/password_reset_complete.html:11
+msgid "Password Changed Successfully"
+msgstr "لقد تم تغيير كلمة المرور بنجاح"
+
+#: familytree/main/templates/registration/password_reset_complete.html:15
+msgid "You can now login with your new password"
+msgstr "يمكنك الآن الدخول بكلمة المرور الجديدة"
+
+#: familytree/main/templates/registration/password_reset_confirm.html:12
+msgid "Reset Password"
+msgstr "إعادة ضبط كلمة المرور"
+
+#: familytree/main/templates/registration/password_reset_confirm.html:18
+msgid "Change Password"
+msgstr "تغيير كلمة المرور"
+
+#: familytree/main/templates/registration/password_reset_confirm.html:24
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used. Please request a new password reset."
+msgstr ""
+"رابط إعادة ضبط كلمة المرور غير صحيح, من الممكن أنه تم استخدام هذا الرابط "
+"مسبقًا. لطفًا، قم بإعادة طلب كلمة مرور جديدة."
+
+#: familytree/main/templates/registration/password_reset_done.html:15
+msgid "E-mail Sent"
+msgstr "تم إرسال الإيميل"
+
+#: familytree/main/templates/registration/password_reset_done.html:19
+msgid ""
+"You will shortly receive an Email with instructions on how to reset your "
+"password"
+msgstr "سيصلك قريبًا إيميل مع إرشادات إعادة ضبط كلمة المرور"
+
+#: familytree/main/templates/registration/password_reset_done.html:21
+msgid "Note"
+msgstr "ملاحظة"
+
+#: familytree/main/templates/registration/password_reset_done.html:22
+msgid "please also check your spam/junk folder"
+msgstr "الرجاء التحقق أيضا من صندوق البريد العشوائي (spam/junk)"
+
+#: familytree/main/templates/registration/password_reset_done.html:24
+msgid "Home Page"
+msgstr "الرئيسية"
+
+#: familytree/main/templates/registration/password_reset_email.html:4
+msgid "Dear"
+msgstr "السلام عليكم"
+
+#: familytree/main/templates/registration/password_reset_email.html:6
+msgid "We have received a password reset request for your account at"
+msgstr "وصلنا من حضرتكم طلب إعادة ضبط كلمة المرور لحسابك على موقع"
+
+#: familytree/main/templates/registration/password_reset_email.html:8
+msgid "Username:"
+msgstr "اسم المستخدم:"
+
+#: familytree/main/templates/registration/password_reset_email.html:10
+msgid "Please click the following link to reset your password:"
+msgstr "انقر على الرابط التالي لإعادة ضبط كلمة المرور:"
+
+#: familytree/main/templates/registration/password_reset_email.html:17
+msgid "If you haven't made this request, please ignore this email."
+msgstr "نعتذر إذا لم تقم بهذا الطلب، الرجاء إهمال الرسالة."
+
+#: familytree/main/templates/registration/password_reset_email.html:20
+msgid "Best Regards"
+msgstr "مع تحيات"
+
+#: familytree/main/templates/registration/password_reset_email.html:21
+msgid "Admins of"
+msgstr "أسرة برنامج"
+
 #: familytree/main/templates/registration/password_reset_form.html:18
 msgid ""
 "Please enter your email. We will send you an email with a link to reset your "
@@ -516,6 +591,10 @@ msgstr ""
 #: familytree/main/templates/registration/password_reset_form.html:32
 msgid "Recover Password"
 msgstr "استرجاع كلمة السر"
+
+#: familytree/main/templates/registration/password_reset_subject.txt:4
+msgid "Password Reset for"
+msgstr "إعادة ضبط كلمة المرور لموقع"
 
 #: familytree/main/views.py:272
 msgid "You are not logged in!"
