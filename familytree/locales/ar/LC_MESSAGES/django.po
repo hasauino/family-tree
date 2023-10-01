@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 00:07+0000\n"
-"PO-Revision-Date: 2023-10-01 02:09+0200\n"
+"POT-Creation-Date: 2023-10-01 00:23+0000\n"
+"PO-Revision-Date: 2023-10-01 02:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -106,6 +106,30 @@ msgstr "اسم العائلة"
 #: familytree/main/models.py:178
 msgid "Place of birth"
 msgstr "مكان الميلاد"
+
+#: familytree/main/templates/django_registration/registration_complete.html:11
+msgid "Thanks for Joining!"
+msgstr "شكرًا على انضمامك!"
+
+#: familytree/main/templates/django_registration/registration_complete.html:15
+msgid "We have sent an email to you"
+msgstr "أرسلنا إليك إيميل"
+
+#: familytree/main/templates/django_registration/registration_complete.html:17
+msgid ""
+"Please activate your account by clicking on the activation link included in "
+"the email"
+msgstr "الرجاء الضغط على رابط تفعيل الحساب المرفق في الإيميل"
+
+#: familytree/main/templates/django_registration/registration_complete.html:19
+#: familytree/main/templates/registration/password_reset_done.html:21
+msgid "Note"
+msgstr "ملاحظة"
+
+#: familytree/main/templates/django_registration/registration_complete.html:20
+#: familytree/main/templates/registration/password_reset_done.html:22
+msgid "please also check your spam/junk folder"
+msgstr "الرجاء التحقق أيضا من صندوق البريد العشوائي (spam/junk)"
 
 #: familytree/main/templates/django_registration/registration_form.html:12
 msgid "Please fill-in below your data (all fields)"
@@ -539,14 +563,6 @@ msgid ""
 "You will shortly receive an Email with instructions on how to reset your "
 "password"
 msgstr "سيصلك قريبًا إيميل مع إرشادات إعادة ضبط كلمة المرور"
-
-#: familytree/main/templates/registration/password_reset_done.html:21
-msgid "Note"
-msgstr "ملاحظة"
-
-#: familytree/main/templates/registration/password_reset_done.html:22
-msgid "please also check your spam/junk folder"
-msgstr "الرجاء التحقق أيضا من صندوق البريد العشوائي (spam/junk)"
 
 #: familytree/main/templates/registration/password_reset_done.html:24
 msgid "Home Page"
