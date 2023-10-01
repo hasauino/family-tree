@@ -1,7 +1,7 @@
 server {
     listen ${PORT};
     location / {
-        proxy_set_header Host $host;
+        proxy_set_header Host $host:$server_port;
         proxy_pass http://app:3000;
     }
     location /static/ {

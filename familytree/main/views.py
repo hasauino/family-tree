@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 import subprocess
 
@@ -10,7 +11,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from home.home_tree_generator import generate_home_tree
 from home.models import Bookmark
-from main.forms import SettingsForm, PersonForm
+from main.forms import PersonForm, SettingsForm
 from main.management.commands.create_db_backup import list_backups
 from main.models import Person
 from main.session_configs import configs
@@ -237,6 +238,7 @@ def tos(req):
 
 
 def test(req):
+    logging.info("Hello")
     return render(req, 'main/test.html')
 
 
