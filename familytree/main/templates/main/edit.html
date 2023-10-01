@@ -13,7 +13,7 @@
 
 <div class="container custom-section">
     <div class="row justify-content-center">
-        <div class="col-sm-6">
+        <div class="col-sm-7">
             <form action="{% url 'main:save' orig_id person.id %}" method="post">
                 {% csrf_token %}
                 {{ form }}
@@ -24,35 +24,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-        <div class="col-sm-1"></div>
-        <div class="col-sm-1">
-            <div class="edit-buttons-container">
-                {% if user.is_staff %}
-                {% if person.access == "public"%}
-                <button title="إزالة التوثيق"
-                    onclick="window.location = '{% url 'main:disapprove'  person.id orig_id%}' "
-                    class="btn btn-link bigGrayButton"><i class="fas fa-lock-open"></i></button>
-                {% else %}
-                <button title="توثيق" onclick="window.location = '{% url 'main:approve'  person.id orig_id%}' "
-                    class="btn btn-link bigBlueButton"><i class="fas fa-lock"></i></button>
-                {% endif %}
-                {% if person.bookmark %}
-                <button title="إزالة العلامة"
-                    onclick="window.location = '{% url 'main:unbookmark'  person.id orig_id%}' "
-                    class="btn btn-link bigGrayButton"><i class="far fa-star"></i></button>
-                {% else %}
-                <button title="أضف علامة" onclick="window.location = '{% url 'main:bookmark'  person.id orig_id%}' "
-                    class="btn btn-link bigBlueButton"><i class="fas fa-star"></i></button>
-                {% endif %}
-                {% endif %}
-                <button title="حذف الشخص و جميع ذريته"
-                    onclick="window.location = '{% url 'main:delete'  person.id orig_id%}' "
-                    {% if person.access == "public" and not user.is_staff %} disabled {% endif %}
-                    class="btn btn-link bigRedButton"><i class="fa fa-trash"></i>
-                </button>
-            </div>
-
         </div>
     </div>
     <br>

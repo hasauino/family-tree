@@ -100,81 +100,6 @@ def save(req, orig_id, person_id):
     return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
 
 
-def delete_entry(req, person_id, orig_id):
-    person = get_object_or_404(Person, pk=person_id)
-    parent_id = person.parent.id
-    person_id = person.id
-
-    if req.user.is_staff or req.user in person.editors.all():
-        if req.user.is_staff:
-            person.delete()
-        else:
-            person.editors.remove(req.user)
-            person.save()
-            if person.access == 'private' and len(person.editors.all()) == 0:
-                person.delete()
-
-    if person_id != orig_id:
-        return HttpResponseRedirect(
-            reverse('main:person_tree', args=(orig_id, )))
-    else:
-        return HttpResponseRedirect(
-            reverse('main:person_tree', args=(parent_id, )))
-
-
-def approve_entry(req, person_id, orig_id):
-    person = get_object_or_404(Person, pk=person_id)
-    person_id = person.id
-
-    if req.user.is_staff:
-        person.access = "public"
-        person.editors.add(req.user)
-        person.save()
-
-        for child in person.children.all():
-            child.access = "public"
-            child.editors.add(req.user)
-            child.save()
-
-    return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
-
-
-def disapprove_entry(req, person_id, orig_id):
-    person = get_object_or_404(Person, pk=person_id)
-    person_id = person.id
-
-    if req.user.is_staff:
-        person.access = "private"
-        person.editors.remove(req.user)
-        person.save()
-
-        for child in person.children.all():
-            child.access = "private"
-            child.editors.remove(req.user)
-            child.save()
-
-    return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
-
-
-def bookmark_entry(req, person_id, orig_id):
-    person = get_object_or_404(Person, pk=person_id)
-
-    if req.user.is_authenticated:
-        bookmark = Bookmark(person=person)
-        bookmark.save()
-
-    return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
-
-
-def unbookmark_entry(req, person_id, orig_id):
-    person = get_object_or_404(Person, pk=person_id)
-
-    if req.user.is_authenticated:
-        person.bookmark.delete()
-
-    return HttpResponseRedirect(reverse('main:person_tree', args=(orig_id, )))
-
-
 def searchByName(req, names_str):
     start = names_str.split(' ')[0]
 
@@ -222,6 +147,7 @@ def undo_do(req, file_id):
         subprocess.call(f"cp {chosen_file} {current_db_path}", shell=True)
         generate_home_tree()
     return HttpResponseRedirect('/')
+
 
 def tos(req):
     return render(req, 'main/tos.html')

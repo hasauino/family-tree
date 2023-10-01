@@ -156,6 +156,8 @@ class BookmarkPerson(graphene.Mutation, MutationReply):
         if not found.exists():
             return MutationReply.fail(f"Person with ID ${id} does not exist")
         person = found.first()
+        if not person.is_public():
+            return MutationReply.fail("Cannot bookmark private person")
         if not user.is_staff:
             return MutationReply.fail(
                 "Current user is not a staff, cannot bookmark person")
@@ -230,10 +232,12 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
         person.access = "private"
         person.remove_editor(user)
         person.save()
+        Bookmark.objects.filter(person=person).delete()
         for child in person.children.all():
             child.access = "private"
             child.remove_editor(user)
             child.save()
+            Bookmark.objects.filter(person=child).delete()
         return MutationReply.success()
 
 

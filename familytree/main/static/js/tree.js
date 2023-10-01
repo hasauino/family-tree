@@ -171,9 +171,25 @@ function draw() {
                             }
                         ).catch((error) => { console.error(error); });
                     }
+                    if (is_bookmarked) {
+                        buttons["bookmarkBtn"].style.display = "none";
+                        buttons["unBookmarkBtn"].style.display = "inline";
+                        buttons["unBookmarkBtn"].onclick = () => {
+                            unbookmarkPerson(node_id);
+                        }
+                    }
+                    else {
+                        buttons["unBookmarkBtn"].style.display = "none";
+                        buttons["bookmarkBtn"].style.display = "inline";
+                        buttons["bookmarkBtn"].onclick = () => {
+                            bookmarkPerson(node_id);
+                        }
+                    }
                 }
                 else {
                     buttons["unPublishBtn"].style.display = "none";
+                    buttons["unBookmarkBtn"].style.display = "none";
+                    buttons["bookmarkBtn"].style.display = "none";
                     buttons["publishBtn"].style.display = "inline";
                     buttons["publishBtn"].onclick = () => {
                         publishPerson(node_id).then(
@@ -181,20 +197,6 @@ function draw() {
                                 nodes.update({ id: node_id, opacity: 1.0 });
                             }
                         ).catch((error) => { console.error(error); });
-                    }
-                }
-                if (is_bookmarked) {
-                    buttons["bookmarkBtn"].style.display = "none";
-                    buttons["unBookmarkBtn"].style.display = "inline";
-                    buttons["unBookmarkBtn"].onclick = () => {
-                        unbookmarkPerson(node_id);
-                    }
-                }
-                else {
-                    buttons["unBookmarkBtn"].style.display = "none";
-                    buttons["bookmarkBtn"].style.display = "inline";
-                    buttons["bookmarkBtn"].onclick = () => {
-                        bookmarkPerson(node_id);
                     }
                 }
             }
