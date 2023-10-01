@@ -1,7 +1,6 @@
 {% load i18n %}
 {% load read_settings %}
 
-,السلام عليكم
 {% translate "Dear" %} {{user}},
 
 
@@ -10,7 +9,8 @@
 {% translate "In order to activate your account, please click on the following activation link:" %}
 
 
-{{scheme}}://{{domain}}/accounts/activate/{{activation_key}}
+{{scheme}}://{{site}}/accounts/activate/{{activation_key}}
+
 
 {% translate "This activation link will expire in" %} {{expiration_days}}  {% translate "days" %}.
 

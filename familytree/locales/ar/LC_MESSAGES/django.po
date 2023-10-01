@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 01:08+0000\n"
+"POT-Creation-Date: 2023-10-01 01:29+0000\n"
 "PO-Revision-Date: 2023-10-01 03:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -150,16 +150,16 @@ msgstr "قد يقوم كذلك أحد مدراء الموقع بالتواصل �
 msgid "Login"
 msgstr "بالدخول"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:5
+#: familytree/main/templates/django_registration/activation_email_body.txt:4
 #: familytree/main/templates/registration/password_reset_email.html:4
 msgid "Dear"
 msgstr "السلام عليكم"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:8
+#: familytree/main/templates/django_registration/activation_email_body.txt:7
 msgid "Thank you for joining"
 msgstr "شكرًا على انضمامك"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:10
+#: familytree/main/templates/django_registration/activation_email_body.txt:9
 msgid ""
 "In order to activate your account, please click on the following activation "
 "link:"
@@ -192,9 +192,19 @@ msgid "Account Activation Failed!"
 msgstr "فشلت عملية تفعيل الحساب!"
 
 #: familytree/main/templates/django_registration/activation_failed.html:22
+#: familytree/main/templates/django_registration/registration_closed.html:19
+#: familytree/main/templates/django_registration/registration_complete.html:23
 #: familytree/main/templates/registration/password_reset_done.html:24
 msgid "Home Page"
 msgstr "الرئيسية"
+
+#: familytree/main/templates/django_registration/registration_closed.html:11
+msgid "Registration Closed!"
+msgstr "التسجيل مغلق!"
+
+#: familytree/main/templates/django_registration/registration_closed.html:15
+msgid "We have temporally closed account registration"
+msgstr "عذرًا، التسجيل مغلق لفترة محدودة"
 
 #: familytree/main/templates/django_registration/registration_complete.html:11
 msgid "Thanks for Joining!"

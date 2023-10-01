@@ -5,19 +5,15 @@
 <br>
 <div class="container" style="text-align: center;">
     <span style="font-size: 3em; color: #f02b45;">
-        <i class="fas fa-envelope-open-text fa-4x"></i>
+        <i class="fas fa-door-closed fa-4x"></i>
     </span>
     <br><br>
-    <h1> {% translate "Thanks for Joining!" %} </h1>
+    <h1> {% translate "Registration Closed!" %} </h1>
     <hr>
     <br>
     <p>
-        {% translate "We have sent an email to you" %}
+        {% translate "We have temporally closed account registration" %}
         <br><br>
-        {% translate "Please activate your account by clicking on the activation link included in the email" %}
-        <br><br>
-        {% translate "Note"%}: <br>
-        {% translate "please also check your spam/junk folder" %}
     </p>
     <br><br>
     <button class="btn btn-success btn-lg" onclick="window.location = '{% url 'home:index'%}' "> {% translate "Home Page" %} </button>
