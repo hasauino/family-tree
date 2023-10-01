@@ -1,10 +1,13 @@
 import os
-from django.core.management.commands.runserver import Command as BaseCommand
+
 from main.utils import get_host_port
-import logging
+
+# import runserver from staticfiles app (since it overrides django runserver)
+# https://stackoverflow.com/a/34993964/14447629
+from django.contrib.staticfiles.management.commands import runserver
 
 
-class Command(BaseCommand):
+class Command(runserver.Command):
     """
     Extending runserver command to update PORT env variable.
     The PORT env variable is used though out all setups:
