@@ -223,16 +223,6 @@ def undo_do(req, file_id):
         generate_home_tree()
     return HttpResponseRedirect('/')
 
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
 def tos(req):
     return render(req, 'main/tos.html')
 
@@ -240,13 +230,6 @@ def tos(req):
 def test(req):
     logging.info("Hello")
     return render(req, 'main/test.html')
-
-
-def session_set(req, key, value):
-    if key not in configs:
-        raise SuspiciousOperation()
-    req.session[key] = value
-    return JsonResponse({key: value})
 
 
 def settingsPanel(req):

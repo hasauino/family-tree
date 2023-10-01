@@ -17,11 +17,6 @@ urlpatterns = [
     path('test', views.test, name='test'),
     path('changes', views.changes, name='changes'),
     path('api/<str:names_str>', views.searchByName, name='searchByName'),
-    path(
-        'api/session_set/<str:key>/<str:value>',
-        views.session_set,
-        name='session_set',
-    ),
     path('delete/<int:person_id>/<int:orig_id>',
          views.delete_entry,
          name='delete'),
