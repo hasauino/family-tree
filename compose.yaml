@@ -23,9 +23,8 @@ services:
   nginx:
     image: nginx
     volumes:
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./familytree/:/app
     ports:
-      - "${PORT}:${PORT}"
-    environment:
-      PORT: ${PORT}      
+      - "${PORT}:80"
+

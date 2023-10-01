@@ -14,7 +14,7 @@ urlpatterns = [
     path('undo/<int:file_id>', views.undo_do, name='undo_do'),
     path('undo', views.undo_choose, name='undo_choose'),
     path('tos', views.tos, name='tos'),
-    #path('test', views.test, name='test'),
+    path('test', views.test, name='test'),
     path('changes', views.changes, name='changes'),
     path('api/<str:names_str>', views.searchByName, name='searchByName'),
     path(
