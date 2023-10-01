@@ -35,7 +35,7 @@
                 <div class="dropdown-menu">
                     <a class="dropdown-item" href="{% url 'main:settingsPanel' %}"> {% translate "Account" %} </a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'logout' %}?next={{ request.path }}"> {% translate "Logout" %}
+                    <a class="dropdown-item" href="{% url 'logout' %}?next={% url 'home:index' %}"> {% translate "Logout" %}
                     </a>
                 </div>
             </li>

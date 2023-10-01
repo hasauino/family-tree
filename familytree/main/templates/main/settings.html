@@ -37,6 +37,10 @@
   btn_del.onclick = function () {
     const modal = document.getElementById("confirmModal");
     modal.style.display = "block";
+    const confirmButton = document.getElementById("confirmButton");
+    confirmButton.onclick = () => {
+      window.location = '{% url 'main:delete_user' %}';
+    }
   }
 </script>
 
