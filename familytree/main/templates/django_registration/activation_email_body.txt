@@ -9,7 +9,7 @@
 {% translate "In order to activate your account, please click on the following activation link:" %}
 
 
-{{scheme}}://{{site}}/accounts/activate/{{activation_key}}
+{{scheme}}://{{current_domain}}/accounts/activate/{{activation_key}}
 
 
 {% translate "This activation link will expire in" %} {{expiration_days}}  {% translate "days" %}.

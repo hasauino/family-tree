@@ -9,6 +9,15 @@ BASE_DIR = PROJECT_DIR.parent
 SECRET_KEY = "-yp#*#01vf1+d$8^0b=7hsrfv!y#21c1a1mjmspj18)n93a)o5"
 
 DEBUG = True
+# During production set this to true; the port number will be omitted from site URL (when sent over email during account activation or password reset)
+# check context_processors.py
+# why this is needed?
+# When Django is running behind a proxy server,
+# the port is a bit hard to be found in a nice way that works for both
+# during development and in production.
+# Even forwarding the proxy headers won't fix, because the proxy server
+# might be running behind another proxy server
+IS_PRODUCTION = False
 
 ALLOWED_HOSTS = []
 
