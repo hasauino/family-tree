@@ -1,20 +1,20 @@
+{% load i18n %}
 {% load read_settings %}
 
 ,السلام عليكم
-
-مرحبا بك
-{{user}} 
-.و شكراً على الانضمام لبرنامج {% read_settings "SITE_NAME" %} 
+{% translate "Dear" %} {{user}},
 
 
+{% translate "Thank you for joining" %} {% read_settings "SITE_NAME" %}. 
 
-لتفعيل اشتراكك, قم بالضغط الرابط الأدنى:
+{% translate "In order to activate your account, please click on the following activation link:" %}
 
 
-{{scheme}}://{{site}}/accounts/activate/{{activation_key}}
+{{scheme}}://{{domain}}/accounts/activate/{{activation_key}}
 
-تنتهي صلاحية الرابط بعد{{expiration_days}} أيام.
+{% translate "This activation link will expire in" %} {{expiration_days}}  {% translate "days" %}.
 
-,مع تحيات
-أسرة برنامج {% read_settings "SITE_NAME" %}
+
+{% translate "Best Regards" %},
+{% translate "Admins of" %} {% read_settings "SITE_NAME" %}
 

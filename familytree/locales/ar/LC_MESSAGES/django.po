@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 00:23+0000\n"
-"PO-Revision-Date: 2023-10-01 02:25+0200\n"
+"POT-Creation-Date: 2023-10-01 01:08+0000\n"
+"PO-Revision-Date: 2023-10-01 03:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -107,6 +107,95 @@ msgstr "اسم العائلة"
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
+#: familytree/main/templates/django_registration/activation_complete.html:11
+msgid "Activation Successful!"
+msgstr "تم التفعيل بنجاح!"
+
+#: familytree/main/templates/django_registration/activation_complete.html:15
+msgid "You can now login with your new account"
+msgstr "يمكنك الآن الدخول بحسابك الجديد"
+
+#: familytree/main/templates/django_registration/activation_complete.html:19
+msgid "As a user, you can add new persons to the tree."
+msgstr "تستطيع كمستخدم إضافة أسماء ومشجرات جديدة."
+
+#: familytree/main/templates/django_registration/activation_complete.html:20
+msgid "Your changes will be local and only visible to you."
+msgstr "هذه التعديلات تكون محددة و مرئية لك فقط."
+
+#: familytree/main/templates/django_registration/activation_complete.html:21
+msgid ""
+"Once a staff member verifies and approves your changes, they will be global "
+"and appear to all users."
+msgstr ""
+"عندما يقوم أحد مدراء الموقع بنشر وتوثيق إضافاتك، سيتمكن الجميع من رؤيتها "
+"وتصبح عامة لكل المستخدمين."
+
+#: familytree/main/templates/django_registration/activation_complete.html:23
+msgid ""
+"Staff members are periodically reviewing and approving changes, but it may "
+"take some time."
+msgstr ""
+"يقوم مدراء الموقع من مراجعة وتوثيق الإضافات بشكل دوري، لكن قد يتطلب هذا بعضًا "
+"من الوقت."
+
+#: familytree/main/templates/django_registration/activation_complete.html:24
+msgid "You may also be contacted by the staff reviewing your changes"
+msgstr "قد يقوم كذلك أحد مدراء الموقع بالتواصل معك للتحقق من صحة إضافاتك"
+
+#: familytree/main/templates/django_registration/activation_complete.html:26
+#: familytree/main/templates/django_registration/registration_form.html:131
+#: familytree/main/templates/main/navbar.html:26
+#: familytree/main/templates/registration/password_reset_complete.html:18
+msgid "Login"
+msgstr "بالدخول"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:5
+#: familytree/main/templates/registration/password_reset_email.html:4
+msgid "Dear"
+msgstr "السلام عليكم"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:8
+msgid "Thank you for joining"
+msgstr "شكرًا على انضمامك"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:10
+msgid ""
+"In order to activate your account, please click on the following activation "
+"link:"
+msgstr "الرجاء الضغط على الرابط التالي من تفعيل الحساب:"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:15
+msgid "This activation link will expire in"
+msgstr "تنتهي صلاحية رابط التفعيل بعد"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:15
+msgid "days"
+msgstr "أيام"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:18
+#: familytree/main/templates/registration/password_reset_email.html:20
+msgid "Best Regards"
+msgstr "مع تحيات"
+
+#: familytree/main/templates/django_registration/activation_email_body.txt:19
+#: familytree/main/templates/registration/password_reset_email.html:21
+msgid "Admins of"
+msgstr "أسرة برنامج"
+
+#: familytree/main/templates/django_registration/activation_email_subject.txt:4
+msgid "Account Activation for"
+msgstr "تفعيل حسابك في موقع"
+
+#: familytree/main/templates/django_registration/activation_failed.html:13
+msgid "Account Activation Failed!"
+msgstr "فشلت عملية تفعيل الحساب!"
+
+#: familytree/main/templates/django_registration/activation_failed.html:22
+#: familytree/main/templates/registration/password_reset_done.html:24
+msgid "Home Page"
+msgstr "الرئيسية"
+
 #: familytree/main/templates/django_registration/registration_complete.html:11
 msgid "Thanks for Joining!"
 msgstr "شكرًا على انضمامك!"
@@ -194,12 +283,6 @@ msgstr "إنشاء الحساب"
 #: familytree/main/templates/django_registration/registration_form.html:130
 msgid "Already have an account? Go to "
 msgstr "إذا كنت تملك حساب بالفعل, قم عوضاً "
-
-#: familytree/main/templates/django_registration/registration_form.html:131
-#: familytree/main/templates/main/navbar.html:26
-#: familytree/main/templates/registration/password_reset_complete.html:18
-msgid "Login"
-msgstr "بالدخول"
 
 #: familytree/main/templates/django_registration/registration_form.html:162
 msgid "Previous Month"
@@ -564,14 +647,6 @@ msgid ""
 "password"
 msgstr "سيصلك قريبًا إيميل مع إرشادات إعادة ضبط كلمة المرور"
 
-#: familytree/main/templates/registration/password_reset_done.html:24
-msgid "Home Page"
-msgstr "الرئيسية"
-
-#: familytree/main/templates/registration/password_reset_email.html:4
-msgid "Dear"
-msgstr "السلام عليكم"
-
 #: familytree/main/templates/registration/password_reset_email.html:6
 msgid "We have received a password reset request for your account at"
 msgstr "وصلنا من حضرتكم طلب إعادة ضبط كلمة المرور لحسابك على موقع"
@@ -587,14 +662,6 @@ msgstr "انقر على الرابط التالي لإعادة ضبط كلمة �
 #: familytree/main/templates/registration/password_reset_email.html:17
 msgid "If you haven't made this request, please ignore this email."
 msgstr "نعتذر إذا لم تقم بهذا الطلب، الرجاء إهمال الرسالة."
-
-#: familytree/main/templates/registration/password_reset_email.html:20
-msgid "Best Regards"
-msgstr "مع تحيات"
-
-#: familytree/main/templates/registration/password_reset_email.html:21
-msgid "Admins of"
-msgstr "أسرة برنامج"
 
 #: familytree/main/templates/registration/password_reset_form.html:18
 msgid ""

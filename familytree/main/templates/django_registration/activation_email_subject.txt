@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load read_settings %}
 
-تفعيل الإشتراك ب{% read_settings "SITE_NAME" %}
+{% translate "Account Activation for" %} {% read_settings "SITE_NAME" %}
