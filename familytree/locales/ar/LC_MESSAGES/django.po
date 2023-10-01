@@ -148,7 +148,7 @@ msgstr "قد يقوم كذلك أحد مدراء الموقع بالتواصل �
 #: familytree/main/templates/main/navbar.html:26
 #: familytree/main/templates/registration/password_reset_complete.html:18
 msgid "Login"
-msgstr "بالدخول"
+msgstr "الدخول"
 
 #: familytree/main/templates/django_registration/activation_email_body.txt:4
 #: familytree/main/templates/registration/password_reset_email.html:4
@@ -157,7 +157,7 @@ msgstr "السلام عليكم"
 
 #: familytree/main/templates/django_registration/activation_email_body.txt:7
 msgid "Thank you for joining"
-msgstr "شكرًا على انضمامك"
+msgstr "شكرًا على انضمامك في"
 
 #: familytree/main/templates/django_registration/activation_email_body.txt:9
 msgid ""
