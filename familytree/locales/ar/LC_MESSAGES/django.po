@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 01:29+0000\n"
+"POT-Creation-Date: 2023-10-01 14:08+0000\n"
 "PO-Revision-Date: 2023-10-01 03:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -163,7 +163,7 @@ msgstr "شكرًا على انضمامك في"
 msgid ""
 "In order to activate your account, please click on the following activation "
 "link:"
-msgstr "الرجاء الضغط على الرابط التالي من تفعيل الحساب:"
+msgstr "الرجاء الضغط على الرابط التالي لتفعيل الحساب:"
 
 #: familytree/main/templates/django_registration/activation_email_body.txt:15
 msgid "This activation link will expire in"
@@ -534,10 +534,6 @@ msgstr ""
 "عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها "
 "و التي لم يتم دمجها بعد مع المشجرة الرئيسية"
 
-#: familytree/main/templates/main/test.html:5
-msgid "hello world"
-msgstr "مرحبا جميعا"
-
 #: familytree/main/templates/main/tos.html:14
 msgid "Terms of Use"
 msgstr "شروط الاستخدام"
@@ -689,7 +685,7 @@ msgstr "استرجاع كلمة السر"
 msgid "Password Reset for"
 msgstr "إعادة ضبط كلمة المرور لموقع"
 
-#: familytree/main/views.py:272
+#: familytree/main/views.py:274
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
@@ -700,3 +696,6 @@ msgstr "عربي"
 #: familytree/project/settings/base.py:126
 msgid "English"
 msgstr "إنجليزي"
+
+#~ msgid "hello world"
+#~ msgstr "مرحبا جميعا"
