@@ -38,9 +38,15 @@
     position: relative;
     vertical-align: bottom;
     font-size: x-small;
-    padding: 2px 4px;
-    left: -12px;
     border-radius: 30%;
     background: rgb(255, 204, 0);
     color: rgb(0, 0, 0);
+}
+
+.badge-rtl {
+    left: 12px;
+}
+
+.badge-ltr {
+    left: -12px;
 }
