@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-01 14:08+0000\n"
-"PO-Revision-Date: 2023-10-01 03:07+0200\n"
+"POT-Creation-Date: 2023-10-02 15:22+0000\n"
+"PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.4\n"
 
 #: familytree/home/models.py:9
 msgid "Person"
@@ -490,6 +490,10 @@ msgstr "إعادة ضبط"
 msgid "Remove Bookmark"
 msgstr "إزالة العلامة"
 
+#: familytree/main/templates/main/home.html:37
+msgid "Family Tree Index"
+msgstr "دليل المشجرات"
+
 #: familytree/main/templates/main/navbar.html:15
 msgid "Home"
 msgstr "الرئيسية"
@@ -531,8 +535,8 @@ msgid ""
 "Deleting your account will delete all your data including persons you added "
 "to the family tree which have not been published yet"
 msgstr ""
-"عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها "
-"و التي لم يتم دمجها بعد مع المشجرة الرئيسية"
+"عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها و "
+"التي لم يتم دمجها بعد مع المشجرة الرئيسية"
 
 #: familytree/main/templates/main/tos.html:14
 msgid "Terms of Use"
@@ -550,8 +554,7 @@ msgstr "لا يحق لي طلب حذف بياناتي الشخصية."
 
 #: familytree/main/templates/main/tos.html:25
 msgid ""
-"I'm fully responsible and accountable for the correctness of the data I "
-"enter."
+"I'm fully responsible and accountable for the correctness of the data I enter."
 msgstr "أتحمل مسؤولية أي خطأ في البيانات التي أقوم بإدخالها."
 
 #: familytree/main/templates/main/tos.html:28
@@ -560,9 +563,8 @@ msgstr "أدرك بأن المشجرة قد تحوي أخطاء."
 
 #: familytree/main/templates/main/tos.html:31
 msgid ""
-"I understand that the family tree on this website is not a reliable source "
-"of information, it's just a way to ease exploring data other users have "
-"entered."
+"I understand that the family tree on this website is not a reliable source of "
+"information, it's just a way to ease exploring data other users have entered."
 msgstr ""
 "أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم "
 "إدخاله من المستخدمين."
@@ -685,15 +687,15 @@ msgstr "استرجاع كلمة السر"
 msgid "Password Reset for"
 msgstr "إعادة ضبط كلمة المرور لموقع"
 
-#: familytree/main/views.py:274
+#: familytree/main/views.py:183
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
-#: familytree/project/settings/base.py:125
+#: familytree/project/settings/base.py:134
 msgid "Arabic"
 msgstr "عربي"
 
-#: familytree/project/settings/base.py:126
+#: familytree/project/settings/base.py:135
 msgid "English"
 msgstr "إنجليزي"
 

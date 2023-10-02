@@ -28,6 +28,7 @@ class Bookmark(models.Model):
 
     def as_node(self, **args):
         value = self.person.as_node(**args)
+        value["label"] = f"*{value['label']}*\n({self.person.designation})"
 
         if self.label is not None and len(self.label) > 0:
             value["label"] = self.label
@@ -35,6 +36,7 @@ class Bookmark(models.Model):
             value["color"] = self.color
 
         value["font"] = dict()
+        value["font"]["multi"] = "markdown"
         if self.font_size is not None:
             value["font"]["size"] = self.font_size
         if self.font_color is not None and len(self.font_color) > 0:

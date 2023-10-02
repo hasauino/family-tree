@@ -59,9 +59,14 @@ def generate_home_tree():
             continue
         bookmark_depths[person.pk] = depth
     tree_depth = max(bookmark_depths.values())
+    width_max = len(links)*0.7
+    if width_max > 40:
+        width_max = 40
+    if width_max < 10:
+        width_max = 10
     for link in links.values():
         link["width"] = calculate_link_width(
-            width_max=min(max(len(links)*0.5, 30), 10),
+            width_max=width_max,
             width_min=5,
             tree_depth=tree_depth,
             link_depth=bookmark_depths[link["to"]],

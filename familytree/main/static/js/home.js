@@ -22,7 +22,7 @@ function draw() {
             smooth: {
                 type: "cubicBezier",
                 forceDirection: "vertical",
-                roundness: 1.0,
+                roundness: 0.7,
             },
         },
         groups: colorPalettes.greenish,
@@ -31,11 +31,11 @@ function draw() {
                 direction: "DU",
                 sortMethod: "directed",
                 shakeTowards: 'roots',
-                levelSeparation: 100,
-                nodeSpacing: 10,
+                levelSeparation: 170,
+                nodeSpacing: 300,
             },
         },
-        physics: true,
+        physics: false,
     };
     var container = document.getElementById('tree');
     var network = new vis.Network(container, data, options);

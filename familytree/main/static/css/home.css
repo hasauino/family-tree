@@ -11,3 +11,30 @@
     display: none;
     position: absolute;
 }
+
+.info-box-rtl {
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: saturate(180%) blur(10px);
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 2vh;
+    left: 2vw;
+    border: none;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.229);
+    z-index: 10000;
+
+    font-weight: 700;
+    width: 300px;
+    height: 50px;
+
+    @media (max-width: 991px) {
+        padding: 2px;
+        font-size: small;
+        font-weight: 700;
+        width: 120px;
+        height: 25px;
+        left: calc(50vw - 60px);
+    }
+}
