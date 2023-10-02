@@ -143,8 +143,7 @@ class Person(models.Model):
             return
         self.editors.remove(user)
         self.save()
-
-
+    
 class User(AbstractUser):
     email = models.EmailField(
         null=True,
@@ -180,7 +179,7 @@ class User(AbstractUser):
     @property
     def user_type(self):
         if self.is_superuser:
-            return "Super User"
+            return "Staff"
         if self.is_staff:
             return "Staff"
         if self.is_authenticated:

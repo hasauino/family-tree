@@ -78,6 +78,11 @@
         btn_reset: true,
         rows_counter: true,
         loader: true,
+        col_2: 'select',
+        on_filters_loaded: function(tf){
+        tf.setFilterValue(2, 'Staff');
+        tf.filter();
+      },
         no_results_message: true,
     });
     tf.init();
