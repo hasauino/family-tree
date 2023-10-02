@@ -117,12 +117,23 @@ class Person(models.Model):
             group_code = f"g{(self.parent.pk if self.parent else 0) % N_COLORS}"
         else:
             group_code = f"g{forced_group}"
-        return {
+        title = f"{self.designation}\n{self.history}"
+        data = {
             "id": self.pk,
             "label": self.name,
+            "title": title,
             "group": group_code,
             "opacity": opacity,
+            "font": {
+                "strokeWidth": 0
+            },
         }
+        if len(title) > 1:
+            data["title"] = title
+            data["font"] = {
+                "strokeWidth": 5,
+            }
+        return data
 
     def find_closest_parent(self, persons):
         """
@@ -143,7 +154,8 @@ class Person(models.Model):
             return
         self.editors.remove(user)
         self.save()
-    
+
+
 class User(AbstractUser):
     email = models.EmailField(
         null=True,

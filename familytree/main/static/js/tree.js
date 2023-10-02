@@ -23,7 +23,7 @@ function draw() {
             dragNodes: true,
             hover: true,
         },
-        nodes: { shape: "box", font: { size: 20 }, },
+        nodes: { shape: "box", font: { size: 25 }, margin: 10, },
         edges: {
             arrows: {
                 to: {
@@ -44,8 +44,8 @@ function draw() {
                 direction: "UD",
                 sortMethod: "directed",
                 shakeTowards: 'roots',
-                levelSeparation: 70,
-                nodeSpacing: 150,
+                levelSeparation: 100,
+                nodeSpacing: 170,
             },
         },
         physics: false,
@@ -73,10 +73,10 @@ function draw() {
             const children = result.data.connectedNodes.children;
             const parent = result.data.connectedNodes.parent;
             children.forEach(node => {
-                addNode(nodes, node.id, node.label, node.group, node.opacity);
+                addNode(nodes, node.id, node.label, node.title, node.group, node.opacity, node.font);
                 addEdge(edges, params.nodes[0], node.id);
             });
-            addNode(nodes, parent.id, parent.label, parent.group, parent.opacity);
+            addNode(nodes, parent.id, parent.label, parent.title, parent.group, parent.opacity, parent.font);
             addEdge(edges, parent.id, params.nodes[0]);
             network.focus(params.nodes[0], {
                 scale: 1.0,
@@ -115,7 +115,7 @@ function draw() {
                         return;
                     }
                     const newNode = result.data.addPerson;
-                    addNode(nodes, newNode.id, newNode.label, newNode.group, newNode.opacity);
+                    addNode(nodes, newNode.id, newNode.label, newNode.title, newNode.group, newNode.opacity, newNode.font);
                     addEdge(edges, node_id, newNode.id);
                 }).catch((error) => { console.error(error); })
             }

@@ -19,12 +19,20 @@ function connectedNodes(personID) {
                   label
                   group
                   opacity
+                  title
+                  font {
+                    strokeWidth
+                  }
                 }
                 children {
                   id
                   label
                   group
                   opacity
+                  title
+                  font {
+                    strokeWidth
+                  }
                 }
               }
           }
@@ -40,8 +48,12 @@ function addPerson(personID, childName) {
             addPerson(id: ${personID}, childName: \"${childName}\") {
                 id
                 label
+                title
                 group
                 opacity
+                font{
+                  strokeWidth
+                }
                 ok
                 message
             }

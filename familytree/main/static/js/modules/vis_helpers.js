@@ -1,10 +1,12 @@
-function addNode(nodes, id, label, group, opacity) {
+function addNode(nodes, id, label, title, group, opacity, font) {
     try {
         nodes.add({
             id: id,
             label: label,
             group: group,
             opacity: opacity,
+            title: title,
+            font: font,
         });
     } catch (err) {
     }

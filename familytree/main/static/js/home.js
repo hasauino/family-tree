@@ -14,11 +14,11 @@ function draw() {
             dragNodes: false,
             hover: true,
         },
-        nodes: { shape: "box", font: { size: 20 }, },
+        nodes: { shape: "box", font: { size: 25 }, margin: 15, },
         edges: {
             arrows: {
             },
-            color: "#3d2414",
+            color: "#000000",
             smooth: {
                 type: "cubicBezier",
                 forceDirection: "vertical",
@@ -31,8 +31,8 @@ function draw() {
                 direction: "DU",
                 sortMethod: "directed",
                 shakeTowards: 'roots',
-                levelSeparation: 170,
-                nodeSpacing: 300,
+                levelSeparation: 200,
+                nodeSpacing: 350,
             },
         },
         physics: false,

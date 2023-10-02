@@ -51,6 +51,13 @@ class UserType(DjangoObjectType):
         ]
 
 
+class FontType(graphene.ObjectType):
+    """
+    Holds node's font data
+    """
+    strokeWidth = graphene.Int(description="Font stroke width in px")
+
+
 class NodeType(graphene.ObjectType):
     """
     Holds data used in visualizing person node in the tree   
@@ -58,6 +65,9 @@ class NodeType(graphene.ObjectType):
     id = graphene.Int()
     label = graphene.String(description="name of person")
     group = graphene.String(description="can be g0, g1, .., or g4")
+    title = graphene.String(
+        description="node title, which is the string appearing as a tooltip")
+    font = graphene.Field(FontType, description="Font settings")
     opacity = graphene.Float(description="0.0 (fully transparent) to 1.0")
 
 
