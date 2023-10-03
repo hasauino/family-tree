@@ -35,11 +35,13 @@
         </span>
     </div>
     {% if error %}
+    <br><br>
     <div class="row justify-content-center">
         <div class="alert alert-danger" role="alert"> {{error}}</div>
     </div>
+    <br><br>
     {% endif %}
-    <br><br><br>
+    <br><br>
     <div class="row justify-content-center">
         <div class="form-group col-md-7 fromInputBox">
             <label> {% translate "From Ancestor:" %} </label>

@@ -49,31 +49,41 @@ def person_tree(req, person_id):
 
 
 def navigation(req):
-    return render(req, 'main/tree_navigation.html', {})
+    return render(req, 'main/tree_navigation.html')
 
 
 def tree_from_to(req, from_id, to_id):
-    from_person = get_object_or_404(Person, pk=from_id)
+    matches = []
+
+    for pk in [from_id, to_id]:
+        matches.append(Person.objects.filter(pk=pk))
+        if not matches[-1].exists():
+            return render(req, 'main/tree_navigation.html',
+                          {"error": _("Requested person does not exist")})
+    from_person = matches[0].first()
+    to_person = matches[1].first()
+    matches = Person.objects.filter(pk=to_id)
+    if not matches.exists():
+        return render(req, 'main/tree_navigation.html',
+                      {"error": _("Requested person does not exist")})
     to_person = get_object_or_404(Person, pk=to_id)
     levels = []
     if not from_person.is_visible_to(req.user):
-        return render(
-            req, 'main/navigation.html', {
-                "data": json.dumps([]),
-                "links": json.dumps([]),
-                "error": _("Requested person does not exist")
-            })
+        return render(req, 'main/tree_navigation.html',
+                      {"error": _("Requested person does not exist")})
     person = to_person
     while person != from_person:
         if not person.is_visible_to(req.user):
-            return render(
-                req, 'main/navigation.html', {
-                    "data": json.dumps([]),
-                    "links": json.dumps([]),
-                    "error": _("Requested person does not exist")
-                })
+            return render(req, 'main/tree_navigation.html',
+                          {"error": _("Requested person does not exist")})
         levels.extend([[person for person in person.parent.children.all()]])
         person = person.parent
+        if person.parent is None:
+            return render(
+                req, 'main/tree_navigation.html', {
+                    "error":
+                    _("Could not find a route from ancestor to child")
+                })
 
     levels.append([from_person])
     all_persons = [

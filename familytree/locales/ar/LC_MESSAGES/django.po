@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-03 13:49+0000\n"
+"POT-Creation-Date: 2023-10-03 19:09+0000\n"
 "PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -449,7 +449,7 @@ msgstr "الأوامر"
 #: familytree/main/templates/main/changes.html:66
 #: familytree/main/templates/main/edit.html:23
 #: familytree/main/templates/main/settings.html:21
-#: familytree/main/templates/main/tree_navigation.html:73
+#: familytree/main/templates/main/tree_navigation.html:75
 #: familytree/main/templates/main/undo_choose.html:35
 msgid "Cancel"
 msgstr "إلغاء"
@@ -612,15 +612,15 @@ msgstr "إضافة مولود"
 msgid "Child's name"
 msgstr "اسم المولود"
 
-#: familytree/main/templates/main/tree_navigation.html:45
+#: familytree/main/templates/main/tree_navigation.html:47
 msgid "From Ancestor:"
 msgstr "من الجد"
 
-#: familytree/main/templates/main/tree_navigation.html:58
+#: familytree/main/templates/main/tree_navigation.html:60
 msgid "To Person:"
 msgstr "إلى الشخص"
 
-#: familytree/main/templates/main/tree_navigation.html:70
+#: familytree/main/templates/main/tree_navigation.html:72
 msgid "Go"
 msgstr "نفذّ"
 
@@ -710,11 +710,16 @@ msgstr "استرجاع كلمة السر"
 msgid "Password Reset for"
 msgstr "إعادة ضبط كلمة المرور لموقع"
 
-#: familytree/main/views.py:64 familytree/main/views.py:73
+#: familytree/main/views.py:62 familytree/main/views.py:68
+#: familytree/main/views.py:73 familytree/main/views.py:78
 msgid "Requested person does not exist"
 msgstr "الشخص المطلوب لا يمكن العثور عليه"
 
-#: familytree/main/views.py:230
+#: familytree/main/views.py:85
+msgid "Could not find a route from ancestor to child"
+msgstr "لم يتمكن العثور على مسار يربط هذا الجد مع هذا الشخص"
+
+#: familytree/main/views.py:240
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
