@@ -22,5 +22,6 @@ urlpatterns = [
     path('edit/<int:person_id>/<int:orig_id>', views.edit, name='edit'),
     path('<int:person_id>', views.person_tree, name='person_tree'),
     path('<int:from_id>/<int:to_id>', views.tree_from_to, name='tree_from_to'),
+    path('navigation', views.navigation, name='navigation'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(
     settings.STATIC_URL, document_root=settings.STATIC_ROOT)

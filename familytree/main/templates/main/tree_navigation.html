@@ -1,0 +1,120 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+    .tree-nav-search {
+        min-height: 100px;
+    }
+    .tree-nav-buttons{
+        margin: 40px;
+        padding: 10 40px;
+    }
+
+    .logo {
+        font-size: 3em;
+        color: #0eb15a;
+
+        @media (max-width: 991px) {
+            font-size: 1.5em;
+        }
+    }
+</style>
+
+<script>
+    let fromId = null;
+    let toId = null;
+</script>
+
+<div class="container custom-section">
+    <div class="row justify-content-center">
+        <span class="logo">
+            <i class="fas fa-route fa-4x"></i>
+        </span>
+    </div>
+    {% if error %}
+    <div class="row justify-content-center">
+        <div class="alert alert-danger" role="alert"> {{error}}</div>
+    </div>
+    {% endif %}
+    <br><br><br>
+    <div class="row justify-content-center">
+        <div class="form-group col-md-7 fromInputBox">
+            <label> {% translate "From Ancestor:" %} </label>
+            <br>
+            <div class="btn-group search-container search-box" style="width: 100%;">
+                <input oninput="navSearch('from')" id="fromNavTxt" class="form-control tree-nav-search">
+                <div id="fromNavResults" class="dropdown-menu" style="width: 100%;">
+                    <div class="list-group" id="fromNavSearchItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br><br>
+    <div class="row justify-content-center">
+        <div class="form-group col-md-7 fromInputBox">
+            <label> {% translate "To Person:" %} </label>
+            <br>
+            <div class="btn-group search-container search-box" style="width: 100%;">
+                <input oninput="navSearch('to')" id="toNavTxt" class="form-control tree-nav-search">
+                <div id="toNavResults" class="dropdown-menu" style="width: 100%;">
+                    <div class="list-group" id="toNavSearchItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <button class="btn btn-success btn-lg tree-nav-buttons" type="button"
+            onclick="window.location = `${context.urls.main.treeFromTo}/${fromId}/${toId}`"> {% translate "Go" %}
+        </button>
+        <button class="btn btn-danger btn-lg tree-nav-buttons" type="button" onclick="window.location = context.urls.home.index">
+            {% translate "Cancel" %}
+        </button>
+    </div>
+</div>
+
+<script>
+    function navSearch(namespace) {
+        navTxtElement = document.getElementById(`${namespace}NavTxt`);
+        navResultsElement = document.getElementById(`${namespace}NavResults`);
+        navSearchItems = document.getElementById(`${namespace}NavSearchItems`);
+        if (navTxtElement.value == '') {
+            navResultsElement.style.display = "none";
+        }
+        var str_search = navTxtElement.value
+        if (str_search.length < 2) return;
+        navResultsElement.style.display = "block";
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var json = JSON.parse(this.responseText);
+                navSearchItems.innerText = '';
+                for (var i = 0; i < json.parents.length; i++) {
+                    navSearchItems.appendChild(create_search_item(json.parents[i], json.ids[i], namespace));
+                }
+            }
+        };
+        const name = navTxtElement.value
+        xhttp.open("GET", `${context.urls.main.searchByName}/${name}`, true);
+        xhttp.send();
+    }
+    function create_search_item(txt, personId, namespace) {
+        const a = document.createElement('a');
+        const textNode = document.createTextNode(txt);
+        a.appendChild(textNode);
+        a.setAttribute('class', 'list-group-item list-group-item-action');
+        a.onclick = () => {
+            document.getElementById(`${namespace}NavTxt`).value = txt;
+            if (namespace === "to") {
+                toId = personId;
+            } else {
+                fromId = personId;
+            }
+            document.getElementById(`${namespace}NavResults`).style.display = "none";
+        }
+        return a;
+    }
+</script>
+{% endblock %}

@@ -24,7 +24,6 @@ function draw() {
                 roundness: 0.7,
             },
         },
-        groups: colorPalettes.greenish,
         layout: {
             hierarchical: {
                 direction: "DU",

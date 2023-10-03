@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-03 06:48+0000\n"
+"POT-Creation-Date: 2023-10-03 13:41+0000\n"
 "PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -79,31 +79,31 @@ msgstr "تاريخ الميلاد"
 msgid "Date of last modification"
 msgstr "تاريخ آخر تحديث"
 
-#: familytree/main/models.py:164
+#: familytree/main/models.py:160
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: familytree/main/models.py:167
+#: familytree/main/models.py:163
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:172
+#: familytree/main/models.py:168
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: familytree/main/models.py:176
+#: familytree/main/models.py:172
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: familytree/main/models.py:180
+#: familytree/main/models.py:176
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: familytree/main/models.py:184
+#: familytree/main/models.py:180
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: familytree/main/models.py:189
+#: familytree/main/models.py:185
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
@@ -145,7 +145,7 @@ msgstr "قد يقوم كذلك أحد مدراء الموقع بالتواصل �
 
 #: familytree/main/templates/django_registration/activation_complete.html:26
 #: familytree/main/templates/django_registration/registration_form.html:131
-#: familytree/main/templates/main/navbar.html:26
+#: familytree/main/templates/main/navbar.html:29
 #: familytree/main/templates/registration/password_reset_complete.html:18
 msgid "Login"
 msgstr "الدخول"
@@ -449,6 +449,7 @@ msgstr "الأوامر"
 #: familytree/main/templates/main/changes.html:66
 #: familytree/main/templates/main/edit.html:23
 #: familytree/main/templates/main/settings.html:21
+#: familytree/main/templates/main/tree_navigation.html:68
 #: familytree/main/templates/main/undo_choose.html:35
 msgid "Cancel"
 msgstr "إلغاء"
@@ -503,22 +504,26 @@ msgid "Home"
 msgstr "الرئيسية"
 
 #: familytree/main/templates/main/navbar.html:18
+msgid "From-To"
+msgstr "من-إلى"
+
+#: familytree/main/templates/main/navbar.html:21
 msgid "Help"
 msgstr "المساعدة"
 
-#: familytree/main/templates/main/navbar.html:21
+#: familytree/main/templates/main/navbar.html:24
 msgid "About"
 msgstr "عن الموقع"
 
-#: familytree/main/templates/main/navbar.html:36
+#: familytree/main/templates/main/navbar.html:39
 msgid "Account"
 msgstr "حسابي"
 
-#: familytree/main/templates/main/navbar.html:38
+#: familytree/main/templates/main/navbar.html:41
 msgid "Logout"
 msgstr "خروج"
 
-#: familytree/main/templates/main/navbar.html:58
+#: familytree/main/templates/main/navbar.html:61
 msgid "Search by name"
 msgstr "ابحث عن اسم"
 
@@ -607,6 +612,18 @@ msgstr "إضافة مولود"
 msgid "Child's name"
 msgstr "اسم المولود"
 
+#: familytree/main/templates/main/tree_navigation.html:40
+msgid "From Ancestor:"
+msgstr "من الجد"
+
+#: familytree/main/templates/main/tree_navigation.html:53
+msgid "To Person:"
+msgstr "إلى الشخص"
+
+#: familytree/main/templates/main/tree_navigation.html:65
+msgid "Go"
+msgstr "نفذّ"
+
 #: familytree/main/templates/main/undo_choose.html:23
 msgid "Pick a restore point of the database:"
 msgstr "اختر نقطة الرجوع الزمنية لقاعدة البيانات:"
@@ -693,7 +710,11 @@ msgstr "استرجاع كلمة السر"
 msgid "Password Reset for"
 msgstr "إعادة ضبط كلمة المرور لموقع"
 
-#: familytree/main/views.py:183
+#: familytree/main/views.py:64 familytree/main/views.py:73
+msgid "Requested person does not exist"
+msgstr "الشخص المطلوب لا يمكن العثور عليه"
+
+#: familytree/main/views.py:230
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 

@@ -18,6 +18,10 @@
                     searchByName: "{% url 'main:searchByName' 1 %}".slice(0, -2),
                     personTree: "{% url 'main:person_tree' 1 %}".slice(0, -2),
                     edit: "{% url 'main:edit' 1 2 %}".slice(0, -4),
+                    treeFromTo: "{% url 'main:tree_from_to' 1 2 %}".slice(0, -4),
+                },
+                home: {
+                    index: "{% url 'home:index' %}",
                 }
             }
         }
@@ -44,7 +48,7 @@
 <body class="{{ text_direction }}" dir="{{ text_direction }}">
 
     <div class="flex-container">
-            {% include "main/navbar.html" %}
+        {% include "main/navbar.html" %}
         <div class="content">
             {% block content %}{% endblock %}
         </div>

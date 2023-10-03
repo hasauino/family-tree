@@ -48,6 +48,10 @@ def person_tree(req, person_id):
         })
 
 
+def navigation(req):
+    return render(req, 'main/tree_navigation.html', {})
+
+
 def tree_from_to(req, from_id, to_id):
     from_person = get_object_or_404(Person, pk=from_id)
     to_person = get_object_or_404(Person, pk=to_id)
