@@ -1,13 +1,16 @@
 function addNode(nodes, id, label, title, group, opacity, font) {
     try {
-        nodes.add({
+        let data = {
             id: id,
             label: label,
             group: group,
             opacity: opacity,
-            title: title,
             font: font,
-        });
+        };
+        if (title != null && title != "") {
+            data["title"] = title;
+        }
+        nodes.add(data);
     } catch (err) {
     }
 }
