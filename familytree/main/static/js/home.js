@@ -1,7 +1,6 @@
 import { setRightClickMenuEventListeners } from "./modules/right_click.js";
 import { colorPalettes } from "./modules/tree_color_palettes.js";
 import { unbookmarkPerson, resetBookmark, editBookmark } from "./modules/api.js";
-import { deleteNode } from "./modules/vis_helpers.js";
 
 function draw() {
 
@@ -47,7 +46,7 @@ function draw() {
         minZoomLevel: 0.5,
         maxZoomLevel: 1.0,
         animation: {
-            duration: 5000,
+            duration: 1000,
             easingFunction: "easeInOutCubic"
         },
     });
@@ -97,8 +96,17 @@ function draw() {
         }
         // Remove Bookmark
         buttons["unBookmarkBtn"].onclick = () => {
-            unbookmarkPerson(node_id);
-            deleteNode(network, node_id);
+            unbookmarkPerson(node_id).then((result) => {
+                if (result.data.unbookmarkPerson.ok) {
+                    window.location.reload();
+                }
+                else {
+                    console.error(result.data.unbookmarkPerson.message);
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+
         }
         // Reset Button
         buttons["resetBtn"].onclick = () => {
