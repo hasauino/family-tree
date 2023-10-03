@@ -40,7 +40,7 @@ class PersonForm(forms.ModelForm):
         self.fields["history"].widget.attrs.update({"rows": "3"})
         self.fields["reference"].widget.attrs.update({"rows": "3"})
 
-    children = forms.CharField(label=_("Children"), max_length=1000)
+    children = forms.CharField(label=_("Children"), max_length=1000, required=False)
 
     class Meta:
         model = Person
