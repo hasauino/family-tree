@@ -43,8 +43,10 @@
         const choices1 = new Choices(childrenInput, {
             delimiter: ',',
             editItems: true,
-            maxItems: 100,
             removeItems: false,
+            addItemText: (value) => {
+                return "{% translate 'Press Enter to add a child' %}";
+            },
         });
 
         {% if person.access == "public" and not user.is_staff %}

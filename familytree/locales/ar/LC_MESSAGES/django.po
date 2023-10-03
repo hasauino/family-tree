@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-02 15:22+0000\n"
+"POT-Creation-Date: 2023-10-03 06:48+0000\n"
 "PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -79,31 +79,31 @@ msgstr "تاريخ الميلاد"
 msgid "Date of last modification"
 msgstr "تاريخ آخر تحديث"
 
-#: familytree/main/models.py:153
+#: familytree/main/models.py:164
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: familytree/main/models.py:156
+#: familytree/main/models.py:167
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:161
+#: familytree/main/models.py:172
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: familytree/main/models.py:165
+#: familytree/main/models.py:176
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: familytree/main/models.py:169
+#: familytree/main/models.py:180
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: familytree/main/models.py:173
+#: familytree/main/models.py:184
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: familytree/main/models.py:178
+#: familytree/main/models.py:189
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
@@ -465,6 +465,10 @@ msgstr "تأكيد"
 msgid "Save"
 msgstr "حفظ"
 
+#: familytree/main/templates/main/edit.html:48
+msgid "Press Enter to add a child"
+msgstr "اضغط على Enter للإضافة"
+
 #: familytree/main/templates/main/edit_bookmark_modal.html:38
 msgid "Edit Bookmark"
 msgstr "تعديل العلامة"
@@ -535,8 +539,8 @@ msgid ""
 "Deleting your account will delete all your data including persons you added "
 "to the family tree which have not been published yet"
 msgstr ""
-"عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها و "
-"التي لم يتم دمجها بعد مع المشجرة الرئيسية"
+"عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها "
+"و التي لم يتم دمجها بعد مع المشجرة الرئيسية"
 
 #: familytree/main/templates/main/tos.html:14
 msgid "Terms of Use"
@@ -554,7 +558,8 @@ msgstr "لا يحق لي طلب حذف بياناتي الشخصية."
 
 #: familytree/main/templates/main/tos.html:25
 msgid ""
-"I'm fully responsible and accountable for the correctness of the data I enter."
+"I'm fully responsible and accountable for the correctness of the data I "
+"enter."
 msgstr "أتحمل مسؤولية أي خطأ في البيانات التي أقوم بإدخالها."
 
 #: familytree/main/templates/main/tos.html:28
@@ -563,8 +568,9 @@ msgstr "أدرك بأن المشجرة قد تحوي أخطاء."
 
 #: familytree/main/templates/main/tos.html:31
 msgid ""
-"I understand that the family tree on this website is not a reliable source of "
-"information, it's just a way to ease exploring data other users have entered."
+"I understand that the family tree on this website is not a reliable source "
+"of information, it's just a way to ease exploring data other users have "
+"entered."
 msgstr ""
 "أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم "
 "إدخاله من المستخدمين."
@@ -599,7 +605,7 @@ msgstr "إضافة مولود"
 
 #: familytree/main/templates/main/tree.html:51
 msgid "Child's name"
-msgstr "اسم الأب"
+msgstr "اسم المولود"
 
 #: familytree/main/templates/main/undo_choose.html:23
 msgid "Pick a restore point of the database:"
