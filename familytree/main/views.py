@@ -18,8 +18,6 @@ from main.session_configs import configs
 
 PROJECT_DIR = str(settings.PROJECT_DIR.absolute())
 
-N_COLORS = 5
-
 
 def person_tree(req, person_id):
     person = get_object_or_404(Person, pk=person_id)

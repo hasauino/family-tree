@@ -10,16 +10,17 @@ function getPalette(...colors) {
 }
 
 const african = getPalette(
-    { back: "#57CC99", font: "black" },
-    { back: "#ffce00", font: "black" },
-    { back: "#d43545", font: "black" },
-    { back: "#ee6c4d", font: "black" },
-    { back: "#1eac53", font: "black" },
-    { back: "#ffda54", font: "black" },
-    { back: "#3f64f8", font: "black" },
-    { back: "#80ED99", font: "black" },
-    { back: "#C7F9CC", font: "black" },
-    { back: "#f44b6d", font: "black" },
+    { back: "#57CC99", font: "black" }, // green light
+    { back: "#ffce00", font: "black" }, // yellow
+    { back: "#d43545", font: "black" }, // red
+    { back: "#ee6c4d", font: "black" }, // orange
+    { back: "#1eac53", font: "black" }, // green medium
+    { back: "#ffda54", font: "black" }, // yellow light
+    { back: "#3f64f8", font: "black" }, // blue
+    { back: "#80ED99", font: "black" }, // lime green
+    { back: "#f44b6d", font: "black" }, // red light    
+    { back: "#C7F9CC", font: "black" }, // light green
+    { back: "#ab85d0", font: "black" }, // violet
 );
 
 const colorPalettes = {

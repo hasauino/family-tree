@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 User = settings.AUTH_USER_MODEL
 
-N_COLORS = 10  # number of colors in the tree color palette/theme (check main/static/tree_color_palettes.js)
+N_COLORS = 11  # number of colors in the tree color palette/theme (check main/static/tree_color_palettes.js)
 
 
 class Person(models.Model):
