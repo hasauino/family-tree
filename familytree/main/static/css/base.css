@@ -26,3 +26,13 @@ body {
 .custom-section {
     margin-top: 50px;
 }
+
+
+.video-frame {
+    width: 100%;
+    height: 600px;
+
+    @media (max-width: 991px) {
+        height: 200px;
+    }
+}

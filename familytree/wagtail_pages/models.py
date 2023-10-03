@@ -5,15 +5,6 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page
 from wagtail.images.blocks import ImageChooserBlock
 
-
-class HomePage(Page):
-    body = RichTextField(blank=True)
-
-    content_panels = Page.content_panels + [
-        FieldPanel("body", classname="full"),
-    ]
-
-
 class AboutPage(Page):
 
     body = RichTextField(blank=True)
