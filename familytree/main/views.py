@@ -122,12 +122,12 @@ def undo_choose(req):
     file_names = []
     files = list_backups()
     for file in files:
-        year = file.name[6:10]
-        month = file.name[10:12]
-        day = file.name[12:14]
-        hour = file.name[14:16]
-        minutes = file.name[16:18]
-        seconds = file.name[18:20]
+        year = file.name[-22:-18]
+        month = file.name[-18:-16]
+        day = file.name[-16:-14]
+        hour = file.name[-14:-12]
+        minutes = file.name[-12:-10]
+        seconds = file.name[-10:-8]
         file_names.append(file.name)
         files_str.append(f"{year}/{month}/{day} - {hour}:{minutes}:{seconds}")
     return render(req, 'main/undo_choose.html', {
