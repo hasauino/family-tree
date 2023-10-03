@@ -39,11 +39,56 @@ def person_tree(req, person_id):
         "from": p.parent.pk,
         "to": p.pk,
     } for p in all_persons[1:]]
-    return render(req, 'main/tree.html', {
-        "data": json.dumps(data),
-        "links": json.dumps(links),
-        "main_id": person_id
-    })
+    return render(
+        req, 'main/tree.html', {
+            "data": json.dumps(data),
+            "links": json.dumps(links),
+            "main_id": person_id,
+            "animation_duration": 500,
+        })
+
+
+def tree_from_to(req, from_id, to_id):
+    from_person = get_object_or_404(Person, pk=from_id)
+    to_person = get_object_or_404(Person, pk=to_id)
+    levels = []
+    if not from_person.is_visible_to(req.user):
+        return render(
+            req, 'main/navigation.html', {
+                "data": json.dumps([]),
+                "links": json.dumps([]),
+                "error": _("Requested person does not exist")
+            })
+    person = to_person
+    while person != from_person:
+        if not person.is_visible_to(req.user):
+            return render(
+                req, 'main/navigation.html', {
+                    "data": json.dumps([]),
+                    "links": json.dumps([]),
+                    "error": _("Requested person does not exist")
+                })
+        levels.extend([[person for person in person.parent.children.all()]])
+        person = person.parent
+
+    levels.append([from_person])
+    all_persons = [
+        person for level in levels[::-1] for person in level
+        if person.is_visible_to(req.user)
+    ]
+    data = [p.as_node(req.user) for p in all_persons]
+    links = [{
+        "id": p.pk,
+        "from": p.parent.pk,
+        "to": p.pk,
+    } for p in all_persons[1:]]
+    return render(
+        req, 'main/tree.html', {
+            "data": json.dumps(data),
+            "links": json.dumps(links),
+            "main_id": to_person.pk,
+            "animation_duration": 5000,
+        })
 
 
 def edit(req, person_id, orig_id):

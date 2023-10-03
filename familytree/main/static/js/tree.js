@@ -10,7 +10,7 @@ import {
     unpublishPerson,
     bookmarkPerson,
 } from "./modules/api.js";
-import { colorPalettes } from "./modules/tree_color_palettes.js";
+//import { colorPalettes } from "./modules/tree_color_palettes.js";  // disabled now (for future)
 import { addNode, deleteNode, addEdge } from "./modules/vis_helpers.js";
 
 function draw() {
@@ -55,7 +55,7 @@ function draw() {
     network.focus(currentPersonID, {
         scale: 1.0,
         animation: {
-            duration: 500,
+            duration: animationDuration,
             easingFunction: "easeInOutCubic"
         },
     });
