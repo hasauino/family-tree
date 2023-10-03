@@ -43,6 +43,15 @@ function draw() {
     network.on("click", clickListener);
     setRightClickMenuEventListeners(network, handleRightClick)
 
+    network.fit({
+        minZoomLevel: 0.5,
+        maxZoomLevel: 1.0,
+        animation: {
+            duration: 5000,
+            easingFunction: "easeInOutCubic"
+        },
+    });
+
     function clickListener(params) {
         if (params.nodes.length < 1) { return; }
         window.location.href = `${context.urls.main.personTree}/${params.nodes[0]}`;
