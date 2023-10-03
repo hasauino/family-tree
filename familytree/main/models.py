@@ -121,12 +121,8 @@ class Person(models.Model):
         data = {
             "id": self.pk,
             "label": self.name,
-            "title": title,
             "group": group_code,
             "opacity": opacity,
-            "font": {
-                "strokeWidth": 0
-            },
         }
         if len(title) > 1:
             data["title"] = title

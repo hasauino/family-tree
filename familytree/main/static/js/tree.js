@@ -68,6 +68,10 @@ function draw() {
         if (params.nodes.length < 1) {
             return;
         }
+        const tooltips = document.getElementsByClassName("vis-tooltip");
+        Array.from(tooltips).forEach((tooltip) => {
+            tooltip.style.visibility = "hidden";
+        });
 
         connectedNodes(params.nodes[0]).then((result) => {
             const children = result.data.connectedNodes.children;

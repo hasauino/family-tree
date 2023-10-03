@@ -27,3 +27,20 @@
 #unPublishBtn {
     display: none;
 }
+
+div.vis-tooltip {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: saturate(180%) blur(20px);
+    color: #000;
+    max-width: 400px;
+    position: absolute;
+    visibility: hidden;
+    text-wrap: wrap;
+    word-wrap: break-word;
+    padding: 10px;
+    font-size: medium;
+    border-radius: 10px;
+    border: none;
+    pointer-events: none;
+    z-index: 5;
+}

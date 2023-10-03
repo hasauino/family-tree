@@ -28,6 +28,8 @@ class Bookmark(models.Model):
 
     def as_node(self, **args):
         value = self.person.as_node(**args)
+        if "title" in value:
+            del value["title"]  # remove tooltip (no need)
         value["label"] = f"*{value['label']}*\n({self.person.designation})"
 
         if self.label is not None and len(self.label) > 0:
