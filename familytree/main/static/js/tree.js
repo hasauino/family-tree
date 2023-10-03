@@ -38,7 +38,7 @@ function draw() {
                 roundness: 0.4,
             },
         },
-        groups: colorPalettes.african,
+        // groups: colorPalettes.african, // disabled
         layout: {
             hierarchical: {
                 direction: "UD",
