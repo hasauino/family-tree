@@ -29,6 +29,9 @@ def generate_home_tree():
     global _home_tree
     bookmarks = Bookmark.objects.all()
     bookmarked_persons = [bookmark.person for bookmark in bookmarks]
+    if len(bookmarked_persons) < 1:
+        _home_tree = {"data": json.dumps([]), "links": json.dumps([])}
+        return
     data = [bookmark.as_node(forced_group=2) for bookmark in bookmarks]
     links = dict()
     orphans = []
@@ -58,8 +61,11 @@ def generate_home_tree():
         if not person.pk in links:
             continue
         bookmark_depths[person.pk] = depth
-    tree_depth = max(bookmark_depths.values())
-    width_max = len(links)*0.7
+    if len(bookmark_depths) > 2:
+        tree_depth = max(bookmark_depths.values())
+    else:
+        tree_depth = 2
+    width_max = len(links) * 0.7
     if width_max > 40:
         width_max = 40
     if width_max < 10:
