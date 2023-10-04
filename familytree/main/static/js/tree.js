@@ -152,7 +152,7 @@ function draw() {
         // Edit button
         if (buttons["editBtn"]) {
             buttons["editBtn"].onclick = () => {
-                window.location = `${context.urls.main.edit}/${node_id}/${currentPersonID}`;
+                window.location = `${context.urls.main.edit}/${node_id}/${node_id}`;
             };
         }
         // Publish and bookmark buttons
