@@ -76,14 +76,12 @@ def tree_from_to(req, from_id, to_id):
         if not person.is_visible_to(req.user):
             return render(req, 'main/tree_navigation.html',
                           {"error": _("Requested person does not exist")})
+        if person.parent is None and person != from_person:
+            return render(
+                req, 'main/tree_navigation.html',
+                {"error": _("Could not find a route from ancestor to child")})
         levels.extend([[person for person in person.parent.children.all()]])
         person = person.parent
-        if person.parent is None:
-            return render(
-                req, 'main/tree_navigation.html', {
-                    "error":
-                    _("Could not find a route from ancestor to child")
-                })
 
     levels.append([from_person])
     all_persons = [
