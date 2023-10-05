@@ -17,7 +17,7 @@ It has the following features:
 - [x] Staff users see notification on new additions (newly added persons).
 - [x] Normal users can add new persons to the tree, but these additions are **local** and only visible to the user. Once they are published by a staff member, these additions will become **global**.
 - [x] Help and about page are editable using [Wagtail](https://wagtail.org/) CMS.
-- [x] Staff users can add shortcuts (bookmarks), when can be further customized (color, font color, size, and overwrite label).
+- [x] Staff users can add shortcuts (bookmarks), which can be further customized (color, font color, size, and overwrite label).
 
 
 
