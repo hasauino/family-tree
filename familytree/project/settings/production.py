@@ -1,4 +1,4 @@
-from .base import *  # noqa: F403
+from .pwa import *  # noqa: F403
 
 SECRET_KEY = "-yp#*#01vf1+d$8^0b=7hsrfv!y#21c1a1mjmspj18)n93a)o5"
 

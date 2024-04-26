@@ -1,4 +1,4 @@
-from .base import *  # noqa: F403
+from .pwa import *  # noqa: F403
 
 ALLOWED_HOSTS = ["*"]
 DEBUG = True

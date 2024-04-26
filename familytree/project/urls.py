@@ -33,6 +33,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('main.urls')),
     path('', include('home.urls')),
+    path('', include('pwa.urls')),
     path('edarah/', admin.site.urls),
     re_path(r'^tahreer/', include(wagtailadmin_urls)),
     re_path(r'^documents/', include(wagtaildocs_urls)),

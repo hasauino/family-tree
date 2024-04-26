@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "taggit",
     # EndWagtail ------
     "graphene_django",
+    "pwa",
 ]
 
 MIDDLEWARE = [
