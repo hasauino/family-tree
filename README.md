@@ -2,7 +2,7 @@
 
 
 
-This is a server for storing, browsing, and updating a family tree, made using [Django](https://www.djangoproject.com/).
+This is a platfrom for storing, browsing, and updating a family tree, made using [Django](https://www.djangoproject.com/).
 
 [Demo](http://new.omaritree.com/)
 
