@@ -19,111 +19,111 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Generator: Poedit 3.4\n"
 
-#: familytree/home/models.py:9
+#: family_tree/home/models.py:9
 msgid "Person"
 msgstr "الشخص"
 
-#: familytree/home/models.py:14
-#: familytree/main/templates/main/edit_bookmark_modal.html:50
+#: family_tree/home/models.py:14
+#: family_tree/main/templates/main/edit_bookmark_modal.html:50
 msgid "Color"
 msgstr "اللون"
 
-#: familytree/home/models.py:19
-#: familytree/main/templates/main/edit_bookmark_modal.html:55
+#: family_tree/home/models.py:19
+#: family_tree/main/templates/main/edit_bookmark_modal.html:55
 msgid "Font Color"
 msgstr "لون الخط"
 
-#: familytree/home/models.py:23
-#: familytree/main/templates/main/edit_bookmark_modal.html:60
+#: family_tree/home/models.py:23
+#: family_tree/main/templates/main/edit_bookmark_modal.html:60
 msgid "Font Size"
 msgstr "حجم الخط"
 
-#: familytree/home/models.py:27
-#: familytree/main/templates/main/edit_bookmark_modal.html:45
+#: family_tree/home/models.py:27
+#: family_tree/main/templates/main/edit_bookmark_modal.html:45
 msgid "Label"
 msgstr "التسمية"
 
-#: familytree/main/forms.py:43
+#: family_tree/main/forms.py:43
 msgid "Children"
 msgstr "الأولاد"
 
-#: familytree/main/models.py:15
+#: family_tree/main/models.py:15
 msgid "Name"
 msgstr "الاسم"
 
-#: familytree/main/models.py:21
+#: family_tree/main/models.py:21
 msgid "Parent"
 msgstr "الأب"
 
-#: familytree/main/models.py:25
+#: family_tree/main/models.py:25
 msgid "Reference of authentication (optional)"
 msgstr "مرجع التوثيق (اختياري)"
 
-#: familytree/main/models.py:28
+#: family_tree/main/models.py:28
 msgid "Designation (optional)"
 msgstr "وصف (اختياري)"
 
-#: familytree/main/models.py:32
+#: family_tree/main/models.py:32
 msgid "Historical Background (optional)"
 msgstr "نبذة تاريخية (اختياري)"
 
-#: familytree/main/models.py:33
+#: family_tree/main/models.py:33
 msgid "Editor"
 msgstr "المحرر"
 
-#: familytree/main/models.py:39
+#: family_tree/main/models.py:39
 msgid "Date of creation"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:41
+#: family_tree/main/models.py:41
 msgid "Date of last modification"
 msgstr "تاريخ آخر تحديث"
 
-#: familytree/main/models.py:160
+#: family_tree/main/models.py:160
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: familytree/main/models.py:163
+#: family_tree/main/models.py:163
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:168
+#: family_tree/main/models.py:168
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: familytree/main/models.py:172
+#: family_tree/main/models.py:172
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: familytree/main/models.py:176
+#: family_tree/main/models.py:176
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: familytree/main/models.py:180
+#: family_tree/main/models.py:180
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: familytree/main/models.py:185
+#: family_tree/main/models.py:185
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
-#: familytree/main/templates/django_registration/activation_complete.html:11
+#: family_tree/main/templates/django_registration/activation_complete.html:11
 msgid "Activation Successful!"
 msgstr "تم التفعيل بنجاح!"
 
-#: familytree/main/templates/django_registration/activation_complete.html:15
+#: family_tree/main/templates/django_registration/activation_complete.html:15
 msgid "You can now login with your new account"
 msgstr "يمكنك الآن الدخول بحسابك الجديد"
 
-#: familytree/main/templates/django_registration/activation_complete.html:19
+#: family_tree/main/templates/django_registration/activation_complete.html:19
 msgid "As a user, you can add new persons to the tree."
 msgstr "تستطيع كمستخدم إضافة أسماء ومشجرات جديدة."
 
-#: familytree/main/templates/django_registration/activation_complete.html:20
+#: family_tree/main/templates/django_registration/activation_complete.html:20
 msgid "Your changes will be local and only visible to you."
 msgstr "هذه التعديلات تكون محددة و مرئية لك فقط."
 
-#: familytree/main/templates/django_registration/activation_complete.html:21
+#: family_tree/main/templates/django_registration/activation_complete.html:21
 msgid ""
 "Once a staff member verifies and approves your changes, they will be global "
 "and appear to all users."
@@ -131,7 +131,7 @@ msgstr ""
 "عندما يقوم أحد مدراء الموقع بنشر وتوثيق إضافاتك، سيتمكن الجميع من رؤيتها "
 "وتصبح عامة لكل المستخدمين."
 
-#: familytree/main/templates/django_registration/activation_complete.html:23
+#: family_tree/main/templates/django_registration/activation_complete.html:23
 msgid ""
 "Staff members are periodically reviewing and approving changes, but it may "
 "take some time."
@@ -139,407 +139,407 @@ msgstr ""
 "يقوم مدراء الموقع من مراجعة وتوثيق الإضافات بشكل دوري، لكن قد يتطلب هذا بعضًا "
 "من الوقت."
 
-#: familytree/main/templates/django_registration/activation_complete.html:24
+#: family_tree/main/templates/django_registration/activation_complete.html:24
 msgid "You may also be contacted by the staff reviewing your changes"
 msgstr "قد يقوم كذلك أحد مدراء الموقع بالتواصل معك للتحقق من صحة إضافاتك"
 
-#: familytree/main/templates/django_registration/activation_complete.html:26
-#: familytree/main/templates/django_registration/registration_form.html:131
-#: familytree/main/templates/main/navbar.html:29
-#: familytree/main/templates/registration/password_reset_complete.html:18
+#: family_tree/main/templates/django_registration/activation_complete.html:26
+#: family_tree/main/templates/django_registration/registration_form.html:131
+#: family_tree/main/templates/main/navbar.html:29
+#: family_tree/main/templates/registration/password_reset_complete.html:18
 msgid "Login"
 msgstr "الدخول"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:4
-#: familytree/main/templates/registration/password_reset_email.html:4
+#: family_tree/main/templates/django_registration/activation_email_body.txt:4
+#: family_tree/main/templates/registration/password_reset_email.html:4
 msgid "Dear"
 msgstr "السلام عليكم"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:7
+#: family_tree/main/templates/django_registration/activation_email_body.txt:7
 msgid "Thank you for joining"
 msgstr "شكرًا على انضمامك في"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:9
+#: family_tree/main/templates/django_registration/activation_email_body.txt:9
 msgid ""
 "In order to activate your account, please click on the following activation "
 "link:"
 msgstr "الرجاء الضغط على الرابط التالي لتفعيل الحساب:"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:15
+#: family_tree/main/templates/django_registration/activation_email_body.txt:15
 msgid "This activation link will expire in"
 msgstr "تنتهي صلاحية رابط التفعيل بعد"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:15
+#: family_tree/main/templates/django_registration/activation_email_body.txt:15
 msgid "days"
 msgstr "أيام"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:18
-#: familytree/main/templates/registration/password_reset_email.html:20
+#: family_tree/main/templates/django_registration/activation_email_body.txt:18
+#: family_tree/main/templates/registration/password_reset_email.html:20
 msgid "Best Regards"
 msgstr "مع تحيات"
 
-#: familytree/main/templates/django_registration/activation_email_body.txt:19
-#: familytree/main/templates/registration/password_reset_email.html:21
+#: family_tree/main/templates/django_registration/activation_email_body.txt:19
+#: family_tree/main/templates/registration/password_reset_email.html:21
 msgid "Admins of"
 msgstr "أسرة برنامج"
 
-#: familytree/main/templates/django_registration/activation_email_subject.txt:4
+#: family_tree/main/templates/django_registration/activation_email_subject.txt:4
 msgid "Account Activation for"
 msgstr "تفعيل حسابك في موقع"
 
-#: familytree/main/templates/django_registration/activation_failed.html:13
+#: family_tree/main/templates/django_registration/activation_failed.html:13
 msgid "Account Activation Failed!"
 msgstr "فشلت عملية تفعيل الحساب!"
 
-#: familytree/main/templates/django_registration/activation_failed.html:22
-#: familytree/main/templates/django_registration/registration_closed.html:19
-#: familytree/main/templates/django_registration/registration_complete.html:23
-#: familytree/main/templates/registration/password_reset_done.html:24
+#: family_tree/main/templates/django_registration/activation_failed.html:22
+#: family_tree/main/templates/django_registration/registration_closed.html:19
+#: family_tree/main/templates/django_registration/registration_complete.html:23
+#: family_tree/main/templates/registration/password_reset_done.html:24
 msgid "Home Page"
 msgstr "الرئيسية"
 
-#: familytree/main/templates/django_registration/registration_closed.html:11
+#: family_tree/main/templates/django_registration/registration_closed.html:11
 msgid "Registration Closed!"
 msgstr "التسجيل مغلق!"
 
-#: familytree/main/templates/django_registration/registration_closed.html:15
+#: family_tree/main/templates/django_registration/registration_closed.html:15
 msgid "We have temporally closed account registration"
 msgstr "عذرًا، التسجيل مغلق لفترة محدودة"
 
-#: familytree/main/templates/django_registration/registration_complete.html:11
+#: family_tree/main/templates/django_registration/registration_complete.html:11
 msgid "Thanks for Joining!"
 msgstr "شكرًا على انضمامك!"
 
-#: familytree/main/templates/django_registration/registration_complete.html:15
+#: family_tree/main/templates/django_registration/registration_complete.html:15
 msgid "We have sent an email to you"
 msgstr "أرسلنا إليك إيميل"
 
-#: familytree/main/templates/django_registration/registration_complete.html:17
+#: family_tree/main/templates/django_registration/registration_complete.html:17
 msgid ""
 "Please activate your account by clicking on the activation link included in "
 "the email"
 msgstr "الرجاء الضغط على رابط تفعيل الحساب المرفق في الإيميل"
 
-#: familytree/main/templates/django_registration/registration_complete.html:19
-#: familytree/main/templates/registration/password_reset_done.html:21
+#: family_tree/main/templates/django_registration/registration_complete.html:19
+#: family_tree/main/templates/registration/password_reset_done.html:21
 msgid "Note"
 msgstr "ملاحظة"
 
-#: familytree/main/templates/django_registration/registration_complete.html:20
-#: familytree/main/templates/registration/password_reset_done.html:22
+#: family_tree/main/templates/django_registration/registration_complete.html:20
+#: family_tree/main/templates/registration/password_reset_done.html:22
 msgid "please also check your spam/junk folder"
 msgstr "الرجاء التحقق أيضا من صندوق البريد العشوائي (spam/junk)"
 
-#: familytree/main/templates/django_registration/registration_form.html:12
+#: family_tree/main/templates/django_registration/registration_form.html:12
 msgid "Please fill-in below your data (all fields)"
 msgstr "الرجاء تعبئة بياناتك (كافة الحقول)"
 
-#: familytree/main/templates/django_registration/registration_form.html:20
+#: family_tree/main/templates/django_registration/registration_form.html:20
 msgid "Username"
 msgstr "اسم المستخدم"
 
-#: familytree/main/templates/django_registration/registration_form.html:29
+#: family_tree/main/templates/django_registration/registration_form.html:29
 msgid "Email"
 msgstr "الإيميل"
 
-#: familytree/main/templates/django_registration/registration_form.html:38
+#: family_tree/main/templates/django_registration/registration_form.html:38
 msgid "First Name"
 msgstr "الاسم الأول"
 
-#: familytree/main/templates/django_registration/registration_form.html:44
+#: family_tree/main/templates/django_registration/registration_form.html:44
 msgid "Father's Name"
 msgstr "اسم الأب"
 
-#: familytree/main/templates/django_registration/registration_form.html:53
+#: family_tree/main/templates/django_registration/registration_form.html:53
 msgid "Grandfather's Name"
 msgstr "اسم الجد"
 
-#: familytree/main/templates/django_registration/registration_form.html:60
+#: family_tree/main/templates/django_registration/registration_form.html:60
 msgid "Family Name"
 msgstr "اسم العائلة"
 
-#: familytree/main/templates/django_registration/registration_form.html:69
+#: family_tree/main/templates/django_registration/registration_form.html:69
 msgid "Password"
 msgstr "كلمة السر"
 
-#: familytree/main/templates/django_registration/registration_form.html:72
+#: family_tree/main/templates/django_registration/registration_form.html:72
 msgid "?"
 msgstr "؟"
 
-#: familytree/main/templates/django_registration/registration_form.html:82
+#: family_tree/main/templates/django_registration/registration_form.html:82
 msgid "Confirm Password"
 msgstr "تأكيد كلمة المرور"
 
-#: familytree/main/templates/django_registration/registration_form.html:94
+#: family_tree/main/templates/django_registration/registration_form.html:94
 msgid "Date of Birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/templates/django_registration/registration_form.html:102
+#: family_tree/main/templates/django_registration/registration_form.html:102
 msgid "Place of Birth"
 msgstr "مكان الميلاد"
 
-#: familytree/main/templates/django_registration/registration_form.html:116
+#: family_tree/main/templates/django_registration/registration_form.html:116
 msgid "I agree on the"
 msgstr "أوافق على"
 
-#: familytree/main/templates/django_registration/registration_form.html:118
+#: family_tree/main/templates/django_registration/registration_form.html:118
 msgid "terms of use"
 msgstr "شروط الاستخدام"
 
-#: familytree/main/templates/django_registration/registration_form.html:126
+#: family_tree/main/templates/django_registration/registration_form.html:126
 msgid "Create Account"
 msgstr "إنشاء الحساب"
 
-#: familytree/main/templates/django_registration/registration_form.html:130
+#: family_tree/main/templates/django_registration/registration_form.html:130
 msgid "Already have an account? Go to "
 msgstr "إذا كنت تملك حساب بالفعل, قم عوضاً "
 
-#: familytree/main/templates/django_registration/registration_form.html:162
+#: family_tree/main/templates/django_registration/registration_form.html:162
 msgid "Previous Month"
 msgstr "الشهر السابق"
 
-#: familytree/main/templates/django_registration/registration_form.html:163
+#: family_tree/main/templates/django_registration/registration_form.html:163
 msgid "Next Month"
 msgstr "الشهر التالي"
 
-#: familytree/main/templates/django_registration/registration_form.html:164
+#: family_tree/main/templates/django_registration/registration_form.html:164
 msgid "January"
 msgstr "يناير"
 
-#: familytree/main/templates/django_registration/registration_form.html:165
+#: family_tree/main/templates/django_registration/registration_form.html:165
 msgid "February"
 msgstr "فبراير"
 
-#: familytree/main/templates/django_registration/registration_form.html:166
+#: family_tree/main/templates/django_registration/registration_form.html:166
 msgid "March"
 msgstr "مارس"
 
-#: familytree/main/templates/django_registration/registration_form.html:167
+#: family_tree/main/templates/django_registration/registration_form.html:167
 msgid "April"
 msgstr "أبريل"
 
-#: familytree/main/templates/django_registration/registration_form.html:168
+#: family_tree/main/templates/django_registration/registration_form.html:168
 msgid "May"
 msgstr "مايو"
 
-#: familytree/main/templates/django_registration/registration_form.html:169
+#: family_tree/main/templates/django_registration/registration_form.html:169
 msgid "June"
 msgstr "يونيو"
 
-#: familytree/main/templates/django_registration/registration_form.html:170
+#: family_tree/main/templates/django_registration/registration_form.html:170
 msgid "July"
 msgstr "يوليو"
 
-#: familytree/main/templates/django_registration/registration_form.html:171
+#: family_tree/main/templates/django_registration/registration_form.html:171
 msgid "August"
 msgstr "أغسطس"
 
-#: familytree/main/templates/django_registration/registration_form.html:172
+#: family_tree/main/templates/django_registration/registration_form.html:172
 msgid "September"
 msgstr "سبتمبر"
 
-#: familytree/main/templates/django_registration/registration_form.html:173
+#: family_tree/main/templates/django_registration/registration_form.html:173
 msgid "October"
 msgstr "أكتوبر"
 
-#: familytree/main/templates/django_registration/registration_form.html:174
+#: family_tree/main/templates/django_registration/registration_form.html:174
 msgid "November"
 msgstr "نوفمر"
 
-#: familytree/main/templates/django_registration/registration_form.html:175
+#: family_tree/main/templates/django_registration/registration_form.html:175
 msgid "December"
 msgstr "ديسمبر"
 
-#: familytree/main/templates/django_registration/registration_form.html:176
+#: family_tree/main/templates/django_registration/registration_form.html:176
 msgid "Sunday"
 msgstr "الأحد"
 
-#: familytree/main/templates/django_registration/registration_form.html:177
+#: family_tree/main/templates/django_registration/registration_form.html:177
 msgid "Monday"
 msgstr "الإثنين"
 
-#: familytree/main/templates/django_registration/registration_form.html:178
+#: family_tree/main/templates/django_registration/registration_form.html:178
 msgid "Tuesday"
 msgstr "الثلاثاء"
 
-#: familytree/main/templates/django_registration/registration_form.html:179
+#: family_tree/main/templates/django_registration/registration_form.html:179
 msgid "Wednesday"
 msgstr "الأربعاء"
 
-#: familytree/main/templates/django_registration/registration_form.html:180
+#: family_tree/main/templates/django_registration/registration_form.html:180
 msgid "Thursday"
 msgstr "الخميس"
 
-#: familytree/main/templates/django_registration/registration_form.html:181
+#: family_tree/main/templates/django_registration/registration_form.html:181
 msgid "Friday"
 msgstr "الجمعة"
 
-#: familytree/main/templates/django_registration/registration_form.html:182
+#: family_tree/main/templates/django_registration/registration_form.html:182
 msgid "Saturday"
 msgstr "السبت"
 
-#: familytree/main/templates/django_registration/registration_form.html:183
+#: family_tree/main/templates/django_registration/registration_form.html:183
 msgid "Sun"
 msgstr "الأحد"
 
-#: familytree/main/templates/django_registration/registration_form.html:184
+#: family_tree/main/templates/django_registration/registration_form.html:184
 msgid "Mon"
 msgstr "ثن"
 
-#: familytree/main/templates/django_registration/registration_form.html:185
+#: family_tree/main/templates/django_registration/registration_form.html:185
 msgid "Tue"
 msgstr "ثل"
 
-#: familytree/main/templates/django_registration/registration_form.html:186
+#: family_tree/main/templates/django_registration/registration_form.html:186
 msgid "Wed"
 msgstr "ربع"
 
-#: familytree/main/templates/django_registration/registration_form.html:187
+#: family_tree/main/templates/django_registration/registration_form.html:187
 msgid "Thu"
 msgstr "خمس"
 
-#: familytree/main/templates/django_registration/registration_form.html:188
+#: family_tree/main/templates/django_registration/registration_form.html:188
 msgid "Fri"
 msgstr "جمع"
 
-#: familytree/main/templates/django_registration/registration_form.html:189
+#: family_tree/main/templates/django_registration/registration_form.html:189
 msgid "Sat"
 msgstr "سبت"
 
-#: familytree/main/templates/main/base.html:14
+#: family_tree/main/templates/main/base.html:14
 msgid "Show Tools"
 msgstr "إظهار الأدوات"
 
-#: familytree/main/templates/main/base.html:15
+#: family_tree/main/templates/main/base.html:15
 msgid "Hide Tools"
 msgstr "إخفاء الأدوات"
 
-#: familytree/main/templates/main/changes.html:19
+#: family_tree/main/templates/main/changes.html:19
 msgid "Unpublished Additions"
 msgstr "الإضافات الغير موثقة"
 
-#: familytree/main/templates/main/changes.html:26
+#: family_tree/main/templates/main/changes.html:26
 msgid "User"
 msgstr "المستخدم"
 
-#: familytree/main/templates/main/changes.html:27
+#: family_tree/main/templates/main/changes.html:27
 msgid "User Email"
 msgstr "أيميل المستخدم"
 
-#: familytree/main/templates/main/changes.html:28
+#: family_tree/main/templates/main/changes.html:28
 msgid "User Type"
 msgstr "نوع المستخدم"
 
-#: familytree/main/templates/main/changes.html:29
+#: family_tree/main/templates/main/changes.html:29
 msgid "Added Person"
 msgstr "الشخص المضاف"
 
-#: familytree/main/templates/main/changes.html:30
+#: family_tree/main/templates/main/changes.html:30
 msgid "Creation Time"
 msgstr "وقت الإضافة"
 
-#: familytree/main/templates/main/changes.html:31
+#: family_tree/main/templates/main/changes.html:31
 msgid "Last Modification"
 msgstr "آخر تحديث"
 
-#: familytree/main/templates/main/changes.html:32
+#: family_tree/main/templates/main/changes.html:32
 msgid "Actions"
 msgstr "الأوامر"
 
-#: familytree/main/templates/main/changes.html:66
-#: familytree/main/templates/main/edit.html:23
-#: familytree/main/templates/main/settings.html:21
-#: familytree/main/templates/main/tree_navigation.html:75
-#: familytree/main/templates/main/undo_choose.html:35
+#: family_tree/main/templates/main/changes.html:66
+#: family_tree/main/templates/main/edit.html:23
+#: family_tree/main/templates/main/settings.html:21
+#: family_tree/main/templates/main/tree_navigation.html:75
+#: family_tree/main/templates/main/undo_choose.html:35
 msgid "Cancel"
 msgstr "إلغاء"
 
-#: familytree/main/templates/main/confirmation_modal.html:41
-#: familytree/main/templates/main/tree.html:50
+#: family_tree/main/templates/main/confirmation_modal.html:41
+#: family_tree/main/templates/main/tree.html:50
 msgid "Confirm"
 msgstr "تأكيد"
 
-#: familytree/main/templates/main/edit.html:21
-#: familytree/main/templates/main/edit_bookmark_modal.html:66
-#: familytree/main/templates/main/input_text_modal.html:41
-#: familytree/main/templates/main/settings.html:18
+#: family_tree/main/templates/main/edit.html:21
+#: family_tree/main/templates/main/edit_bookmark_modal.html:66
+#: family_tree/main/templates/main/input_text_modal.html:41
+#: family_tree/main/templates/main/settings.html:18
 msgid "Save"
 msgstr "حفظ"
 
-#: familytree/main/templates/main/edit.html:48
+#: family_tree/main/templates/main/edit.html:48
 msgid "Press Enter to add a child"
 msgstr "اضغط على Enter للإضافة"
 
-#: familytree/main/templates/main/edit_bookmark_modal.html:38
+#: family_tree/main/templates/main/edit_bookmark_modal.html:38
 msgid "Edit Bookmark"
 msgstr "تعديل العلامة"
 
-#: familytree/main/templates/main/edit_bookmark_modal.html:46
-#: familytree/main/templates/main/edit_bookmark_modal.html:52
-#: familytree/main/templates/main/edit_bookmark_modal.html:57
-#: familytree/main/templates/main/edit_bookmark_modal.html:62
+#: family_tree/main/templates/main/edit_bookmark_modal.html:46
+#: family_tree/main/templates/main/edit_bookmark_modal.html:52
+#: family_tree/main/templates/main/edit_bookmark_modal.html:57
+#: family_tree/main/templates/main/edit_bookmark_modal.html:62
 msgid "leave empty for no change"
 msgstr "اتركه فارغ للإبقاء"
 
-#: familytree/main/templates/main/home.html:22
-#: familytree/main/templates/main/tree.html:23
+#: family_tree/main/templates/main/home.html:22
+#: family_tree/main/templates/main/tree.html:23
 msgid "Edit"
 msgstr "تعديل"
 
-#: familytree/main/templates/main/home.html:25
+#: family_tree/main/templates/main/home.html:25
 msgid "Reset"
 msgstr "إعادة ضبط"
 
-#: familytree/main/templates/main/home.html:28
-#: familytree/main/templates/main/tree.html:33
+#: family_tree/main/templates/main/home.html:28
+#: family_tree/main/templates/main/tree.html:33
 msgid "Remove Bookmark"
 msgstr "إزالة العلامة"
 
-#: familytree/main/templates/main/home.html:37
+#: family_tree/main/templates/main/home.html:37
 msgid "Family Tree Index"
 msgstr "دليل المشجرات"
 
-#: familytree/main/templates/main/navbar.html:15
+#: family_tree/main/templates/main/navbar.html:15
 msgid "Home"
 msgstr "الرئيسية"
 
-#: familytree/main/templates/main/navbar.html:18
+#: family_tree/main/templates/main/navbar.html:18
 msgid "From - To"
 msgstr "من - إلى"
 
-#: familytree/main/templates/main/navbar.html:21
+#: family_tree/main/templates/main/navbar.html:21
 msgid "Help"
 msgstr "المساعدة"
 
-#: familytree/main/templates/main/navbar.html:24
+#: family_tree/main/templates/main/navbar.html:24
 msgid "About"
 msgstr "عن الموقع"
 
-#: familytree/main/templates/main/navbar.html:39
+#: family_tree/main/templates/main/navbar.html:39
 msgid "Account"
 msgstr "حسابي"
 
-#: familytree/main/templates/main/navbar.html:41
+#: family_tree/main/templates/main/navbar.html:41
 msgid "Logout"
 msgstr "خروج"
 
-#: familytree/main/templates/main/navbar.html:61
+#: family_tree/main/templates/main/navbar.html:61
 msgid "Search by name"
 msgstr "ابحث عن اسم"
 
-#: familytree/main/templates/main/settings.html:25
+#: family_tree/main/templates/main/settings.html:25
 msgid "Do you want to close your account and delete permanently?"
 msgstr "هل ترغب بإغلاق حسابك وحذفه كلياً؟"
 
-#: familytree/main/templates/main/settings.html:26
+#: family_tree/main/templates/main/settings.html:26
 msgid "Delete Account"
 msgstr "حذف حسابي"
 
-#: familytree/main/templates/main/settings.html:33
+#: family_tree/main/templates/main/settings.html:33
 msgid "Confirm Deletion"
 msgstr "تأكيد الحذف"
 
-#: familytree/main/templates/main/settings.html:33
+#: family_tree/main/templates/main/settings.html:33
 msgid ""
 "Deleting your account will delete all your data including persons you added "
 "to the family tree which have not been published yet"
@@ -547,31 +547,31 @@ msgstr ""
 "عند حذف حسابك سيتم حذف جميع بياناتك بالإضافة إلى المشجرات التي قمت بإضافتها "
 "و التي لم يتم دمجها بعد مع المشجرة الرئيسية"
 
-#: familytree/main/templates/main/tos.html:14
+#: family_tree/main/templates/main/tos.html:14
 msgid "Terms of Use"
 msgstr "شروط الاستخدام"
 
-#: familytree/main/templates/main/tos.html:19
+#: family_tree/main/templates/main/tos.html:19
 msgid ""
 "I don't own the data I add to the family tree. I don't have the right to "
 "remove the data"
 msgstr "لا يحق لي المطالبة بحذف البيانات التي أقوم بإدخالها"
 
-#: familytree/main/templates/main/tos.html:22
+#: family_tree/main/templates/main/tos.html:22
 msgid "I don't have the right to remove my own account data."
 msgstr "لا يحق لي طلب حذف بياناتي الشخصية."
 
-#: familytree/main/templates/main/tos.html:25
+#: family_tree/main/templates/main/tos.html:25
 msgid ""
 "I'm fully responsible and accountable for the correctness of the data I "
 "enter."
 msgstr "أتحمل مسؤولية أي خطأ في البيانات التي أقوم بإدخالها."
 
-#: familytree/main/templates/main/tos.html:28
+#: family_tree/main/templates/main/tos.html:28
 msgid "I understand that the family tree data may contain wrong information."
 msgstr "أدرك بأن المشجرة قد تحوي أخطاء."
 
-#: familytree/main/templates/main/tos.html:31
+#: family_tree/main/templates/main/tos.html:31
 msgid ""
 "I understand that the family tree on this website is not a reliable source "
 "of information, it's just a way to ease exploring data other users have "
@@ -580,87 +580,87 @@ msgstr ""
 "أدرك بأن المشجرة لا تعتبر مصدر توثيق للنسب و بأن الموقع فقط يسهل تصفح ما يتم "
 "إدخاله من المستخدمين."
 
-#: familytree/main/templates/main/tree.html:26
+#: family_tree/main/templates/main/tree.html:26
 msgid "Add Child"
 msgstr "إضافة مولود"
 
-#: familytree/main/templates/main/tree.html:30
+#: family_tree/main/templates/main/tree.html:30
 msgid "Bookmark"
 msgstr "تعليم"
 
-#: familytree/main/templates/main/tree.html:36
+#: family_tree/main/templates/main/tree.html:36
 msgid "Publish"
 msgstr "نشر"
 
-#: familytree/main/templates/main/tree.html:39
+#: family_tree/main/templates/main/tree.html:39
 msgid "Unpublish"
 msgstr "إخفاء"
 
-#: familytree/main/templates/main/tree.html:43
+#: family_tree/main/templates/main/tree.html:43
 msgid "Delete"
 msgstr "حذف"
 
-#: familytree/main/templates/main/tree.html:50
+#: family_tree/main/templates/main/tree.html:50
 msgid "Do you really wanna delete"
 msgstr "هل تريد حقًا الحذف"
 
-#: familytree/main/templates/main/tree.html:51
+#: family_tree/main/templates/main/tree.html:51
 msgid "Adding a child"
 msgstr "إضافة مولود"
 
-#: familytree/main/templates/main/tree.html:51
+#: family_tree/main/templates/main/tree.html:51
 msgid "Child's name"
 msgstr "اسم المولود"
 
-#: familytree/main/templates/main/tree_navigation.html:47
+#: family_tree/main/templates/main/tree_navigation.html:47
 msgid "From Ancestor:"
 msgstr "من الجد"
 
-#: familytree/main/templates/main/tree_navigation.html:60
+#: family_tree/main/templates/main/tree_navigation.html:60
 msgid "To Person:"
 msgstr "إلى الشخص"
 
-#: familytree/main/templates/main/tree_navigation.html:72
+#: family_tree/main/templates/main/tree_navigation.html:72
 msgid "Go"
 msgstr "نفذّ"
 
-#: familytree/main/templates/main/undo_choose.html:23
+#: family_tree/main/templates/main/undo_choose.html:23
 msgid "Pick a restore point of the database:"
 msgstr "اختر نقطة الرجوع الزمنية لقاعدة البيانات:"
 
-#: familytree/main/templates/registration/login.html:17
+#: family_tree/main/templates/registration/login.html:17
 msgid "Sign In"
 msgstr "الدخول"
 
-#: familytree/main/templates/registration/login.html:21
+#: family_tree/main/templates/registration/login.html:21
 msgid "Forgot Password?"
 msgstr "نسيت حسابي؟"
 
-#: familytree/main/templates/registration/login.html:25
+#: family_tree/main/templates/registration/login.html:25
 msgid "Don't have an account?"
 msgstr "ليس لديك حساب؟"
 
-#: familytree/main/templates/registration/login.html:27
+#: family_tree/main/templates/registration/login.html:27
 msgid "Sign Up"
 msgstr "إنشاء حساب جديد"
 
-#: familytree/main/templates/registration/password_reset_complete.html:11
+#: family_tree/main/templates/registration/password_reset_complete.html:11
 msgid "Password Changed Successfully"
 msgstr "لقد تم تغيير كلمة المرور بنجاح"
 
-#: familytree/main/templates/registration/password_reset_complete.html:15
+#: family_tree/main/templates/registration/password_reset_complete.html:15
 msgid "You can now login with your new password"
 msgstr "يمكنك الآن الدخول بكلمة المرور الجديدة"
 
-#: familytree/main/templates/registration/password_reset_confirm.html:12
+#: family_tree/main/templates/registration/password_reset_confirm.html:12
 msgid "Reset Password"
 msgstr "إعادة ضبط كلمة المرور"
 
-#: familytree/main/templates/registration/password_reset_confirm.html:18
+#: family_tree/main/templates/registration/password_reset_confirm.html:18
 msgid "Change Password"
 msgstr "تغيير كلمة المرور"
 
-#: familytree/main/templates/registration/password_reset_confirm.html:24
+#: family_tree/main/templates/registration/password_reset_confirm.html:24
 msgid ""
 "The password reset link was invalid, possibly because it has already been "
 "used. Please request a new password reset."
@@ -668,33 +668,33 @@ msgstr ""
 "رابط إعادة ضبط كلمة المرور غير صحيح, من الممكن أنه تم استخدام هذا الرابط "
 "مسبقًا. لطفًا، قم بإعادة طلب كلمة مرور جديدة."
 
-#: familytree/main/templates/registration/password_reset_done.html:15
+#: family_tree/main/templates/registration/password_reset_done.html:15
 msgid "E-mail Sent"
 msgstr "تم إرسال الإيميل"
 
-#: familytree/main/templates/registration/password_reset_done.html:19
+#: family_tree/main/templates/registration/password_reset_done.html:19
 msgid ""
 "You will shortly receive an Email with instructions on how to reset your "
 "password"
 msgstr "سيصلك قريبًا إيميل مع إرشادات إعادة ضبط كلمة المرور"
 
-#: familytree/main/templates/registration/password_reset_email.html:6
+#: family_tree/main/templates/registration/password_reset_email.html:6
 msgid "We have received a password reset request for your account at"
 msgstr "وصلنا من حضرتكم طلب إعادة ضبط كلمة المرور لحسابك على موقع"
 
-#: familytree/main/templates/registration/password_reset_email.html:8
+#: family_tree/main/templates/registration/password_reset_email.html:8
 msgid "Username:"
 msgstr "اسم المستخدم:"
 
-#: familytree/main/templates/registration/password_reset_email.html:10
+#: family_tree/main/templates/registration/password_reset_email.html:10
 msgid "Please click the following link to reset your password:"
 msgstr "انقر على الرابط التالي لإعادة ضبط كلمة المرور:"
 
-#: familytree/main/templates/registration/password_reset_email.html:17
+#: family_tree/main/templates/registration/password_reset_email.html:17
 msgid "If you haven't made this request, please ignore this email."
 msgstr "نعتذر إذا لم تقم بهذا الطلب، الرجاء إهمال الرسالة."
 
-#: familytree/main/templates/registration/password_reset_form.html:18
+#: family_tree/main/templates/registration/password_reset_form.html:18
 msgid ""
 "Please enter your email. We will send you an email with a link to reset your "
 "password"
@@ -702,32 +702,32 @@ msgstr ""
 "أدخل بريدك الإلكتروني و سنقوم بإرسال اسم المستخدم الخاص بك و تزويدك برابط "
 "لإعادة ضبط كلمة المرور إذا كنت مسجل لدينا بالفعل"
 
-#: familytree/main/templates/registration/password_reset_form.html:32
+#: family_tree/main/templates/registration/password_reset_form.html:32
 msgid "Recover Password"
 msgstr "استرجاع كلمة السر"
 
-#: familytree/main/templates/registration/password_reset_subject.txt:4
+#: family_tree/main/templates/registration/password_reset_subject.txt:4
 msgid "Password Reset for"
 msgstr "إعادة ضبط كلمة المرور لموقع"
 
-#: familytree/main/views.py:62 familytree/main/views.py:68
-#: familytree/main/views.py:73 familytree/main/views.py:78
+#: family_tree/main/views.py:62 family_tree/main/views.py:68
+#: family_tree/main/views.py:73 family_tree/main/views.py:78
 msgid "Requested person does not exist"
 msgstr "الشخص المطلوب لا يمكن العثور عليه"
 
-#: familytree/main/views.py:85
+#: family_tree/main/views.py:85
 msgid "Could not find a route from ancestor to child"
 msgstr "لم يتمكن العثور على مسار يربط هذا الجد مع هذا الشخص"
 
-#: familytree/main/views.py:240
+#: family_tree/main/views.py:240
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
-#: familytree/project/settings/base.py:134
+#: family_tree/project/settings/base.py:134
 msgid "Arabic"
 msgstr "عربي"
 
-#: familytree/project/settings/base.py:135
+#: family_tree/project/settings/base.py:135
 msgid "English"
 msgstr "إنجليزي"
 

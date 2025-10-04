@@ -1,4 +1,6 @@
 *.log
 __pycache__/
-familytree/project/backups/
-familytree/project/static/
+src/family_tree/project/backups/
+src/family_tree/project/static/
+**/.DS_Store
+src/family_tree/project/db_ar.sqlite3

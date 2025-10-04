@@ -1,25 +1,78 @@
-[tool.poetry]
-name = "familytree"
-version = "0.1.0"
-description = "A website for storing, browsing, and updating a family tree."
-authors = ["Hassan Umari <oh91@windowslive.com>"]
-license = "MIT"
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-django = ">=4.2,<5.0"
-django-registration = ">=3.3,<4.0"
-wagtail = ">=5.1,<6.0"
-wand = "0.6"
-graphene-django = ">=3.1,<4.0"
-gunicorn = ">=21.2,<22.0"
-django-pwa = "^1.1"
-
-
-[tool.poetry.group.dev.dependencies]
-yapf = "0.40.1"
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [
+  {name = "Hassan Umari", email = "hassan@umari.dev"},
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "django>=4.2,<5.0",
+  "django-registration>=3.3,<4.0",
+  "wagtail>=5.1,<6.0",
+  "wand==0.6",
+  "graphene-django>=3.1,<4.0",
+  "gunicorn>=21.2,<22.0",
+  "django-pwa>=1.1, <2.0",
+  "python-dotenv",
+]
+description = 'A platfrom for storing, browsing, and updating a family tree, made using Django'
+dynamic = ["version"]
+keywords = [
+  "django",
+  "wagtail",
+  "genealogy",
+  "family-tree",
+  "kinship",
+  "family-history-applications",
+  "family-tree-website",
+]
+license = "MIT"
+name = "family-tree"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.urls]
+Documentation = "https://github.com/hasauino/family-tree#readme"
+Issues = "https://github.com/hasauino/family-tree/issues"
+Source = "https://github.com/hasauino/family-tree"
+
+[tool.hatch.version]
+path = "src/family_tree/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/family_tree tests}"
+
+[tool.coverage.run]
+branch = true
+omit = [
+  "src/family_tree/__about__.py",
+]
+parallel = true
+source_pkgs = ["family_tree", "tests"]
+
+[tool.coverage.paths]
+family_tree = ["src/family_tree", "*/family-tree/src/family_tree"]
+tests = ["tests", "*/family-tree/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
