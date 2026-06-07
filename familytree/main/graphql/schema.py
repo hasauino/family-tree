@@ -1,20 +1,18 @@
 import logging
 
 import graphene
+from home.models import Bookmark
+from home.types import BookmarkType
 
 from main.graphql import types
 from main.models import Person
-from home.models import Bookmark
-from home.types import BookmarkType
 
 
 def authenticated_only(function):
 
     def wrapper(root, info, **args):
         if not info.context.user.is_authenticated:
-            raise Exception(
-                "Access Denied! you must be a logged in user to access this API"
-            )
+            raise Exception("Access Denied! you must be a logged in user to access this API")
         return function(root, info, **args)
 
     return wrapper
@@ -24,16 +22,13 @@ def staff_only(function):
 
     def wrapper(root, info, **args):
         if not info.context.user.is_staff:
-            raise Exception(
-                "Access Denied! you must be a logged in user to access this API"
-            )
+            raise Exception("Access Denied! you must be a logged in user to access this API")
         return function(root, info, **args)
 
     return wrapper
 
 
 class MutationReply:
-
     ok = graphene.Boolean()
     message = graphene.String()
 
@@ -57,16 +52,12 @@ class Query(graphene.ObjectType):
         description="Check if given person can be deleted by the current user",
         id=graphene.Int(required=True, description="Node's ID to be checked"),
     )
-    list_bookmarks = graphene.List(BookmarkType,
-                                   description="Get list of all bookmarks")
+    list_bookmarks = graphene.List(BookmarkType, description="Get list of all bookmarks")
 
     def resolve_connected_nodes(parent, info, id):
         user = info.context.user
         person = Person.objects.get(pk=id)
-        children = [
-            person.as_node(user) for person in person.children.all()
-            if person.is_visible_to(user)
-        ]
+        children = [person.as_node(user) for person in person.children.all() if person.is_visible_to(user)]
         parent_node = None
         if person.parent is not None:
             if person.parent.is_visible_to(user):
@@ -86,17 +77,14 @@ class Query(graphene.ObjectType):
 
 
 class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
-
     class Arguments:
         id = graphene.Int(required=True, description="ID of the parent")
-        child_name = graphene.String(required=True,
-                                     description="Name of the new child")
+        child_name = graphene.String(required=True, description="Name of the new child")
 
     @authenticated_only
     def mutate(root, info, id, child_name):
         if len(child_name) < 1:
-            return MutationReply.fail(
-                "Invalid child name, cannot be empty string")
+            return MutationReply.fail("Invalid child name, cannot be empty string")
         logging.debug(f"Called add person mutation with id: {id}")
         user = info.context.user
         found = Person.objects.filter(pk=id)
@@ -118,7 +106,6 @@ class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
 
 
 class DeletePerson(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(required=True)
 
@@ -131,20 +118,18 @@ class DeletePerson(graphene.Mutation, MutationReply):
             return MutationReply.fail(f"Person with ID ${id} does not exist")
         person = found.first()
         if not person.is_editable_by(user):
-            return MutationReply.fail(
-                f"Person with ID ${id} cannot be deleted by current user")
+            return MutationReply.fail(f"Person with ID ${id} cannot be deleted by current user")
         if user.is_staff:
             person.delete()
         else:
             person.editors.remove(user)
             person.save()
-            if person.access == 'private' and len(person.editors.all()) == 0:
+            if person.access == "private" and len(person.editors.all()) == 0:
                 person.delete()
         return MutationReply.success()
 
 
 class BookmarkPerson(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(required=True)
 
@@ -159,8 +144,7 @@ class BookmarkPerson(graphene.Mutation, MutationReply):
         if not person.is_public():
             return MutationReply.fail("Cannot bookmark private person")
         if not user.is_staff:
-            return MutationReply.fail(
-                "Current user is not a staff, cannot bookmark person")
+            return MutationReply.fail("Current user is not a staff, cannot bookmark person")
         if not Bookmark.objects.filter(person=person).exists():
             bookmark = Bookmark(person=person)
             bookmark.save()
@@ -168,7 +152,6 @@ class BookmarkPerson(graphene.Mutation, MutationReply):
 
 
 class UnBookmarkPerson(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(required=True)
 
@@ -181,14 +164,12 @@ class UnBookmarkPerson(graphene.Mutation, MutationReply):
             return MutationReply.fail(f"Person with ID ${id} does not exist")
         person = found.first()
         if not user.is_staff:
-            return MutationReply.fail(
-                "Current user is not a staff, cannot un-bookmark person")
+            return MutationReply.fail("Current user is not a staff, cannot un-bookmark person")
         person.bookmark.delete()
         return MutationReply.success()
 
 
 class PublishPerson(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(required=True)
 
@@ -201,8 +182,7 @@ class PublishPerson(graphene.Mutation, MutationReply):
             return MutationReply.fail(f"Person with ID ${id} does not exist")
         person = found.first()
         if not user.is_staff:
-            return MutationReply.fail(
-                "Current user is not a staff, cannot publish person")
+            return MutationReply.fail("Current user is not a staff, cannot publish person")
         person.access = "public"
         person.editors.add(user)
         person.save()
@@ -214,7 +194,6 @@ class PublishPerson(graphene.Mutation, MutationReply):
 
 
 class UnPublishPerson(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(required=True)
 
@@ -227,8 +206,7 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
             return MutationReply.fail(f"Person with ID ${id} does not exist")
         person = found.first()
         if not user.is_staff:
-            return MutationReply.fail(
-                "Current user is not a staff, cannot unpublish person")
+            return MutationReply.fail("Current user is not a staff, cannot unpublish person")
         person.access = "private"
         person.remove_editor(user)
         person.save()
@@ -242,49 +220,32 @@ class UnPublishPerson(graphene.Mutation, MutationReply):
 
 
 class EditBookmark(graphene.Mutation, MutationReply):
-
     class Arguments:
         id = graphene.Int(
-            required=True,
-            description=
-            "ID of the person associated with the bookmark (not bookmark's ID)"
+            required=True, description="ID of the person associated with the bookmark (not bookmark's ID)"
         )
-        label = graphene.String(
-            required=False,
-            description="Overwrite default label (person's name)")
+        label = graphene.String(required=False, description="Overwrite default label (person's name)")
         color = graphene.String(
             required=False,
             description="Overwrite default color. "
             "It should be an HTML color hex value without the leading #. "
-            "Example: ff0011")
+            "Example: ff0011",
+        )
         font_color = graphene.String(
             required=False,
             description="Overwrite default font color. "
             "It should be an HTML color hex value without the leading #. "
             "Example: ff0011. Empty string to reset",
         )
-        font_size = graphene.Float(
-            required=False,
-            description="Overwrite default font size. Set to -1 to reset")
+        font_size = graphene.Float(required=False, description="Overwrite default font size. Set to -1 to reset")
 
     @staff_only
-    def mutate(root,
-               info,
-               id,
-               label=None,
-               color=None,
-               font_color=None,
-               font_size=None):
+    def mutate(root, info, id, label=None, color=None, font_color=None, font_size=None):
         bookmark = Bookmark.objects.get(person__pk=id)
         if font_size == -1:
             bookmark.font_size = None
             font_size = None
-        fields = {
-            "label": label,
-            "color": color,
-            "font_color": font_color,
-            "font_size": font_size
-        }
+        fields = {"label": label, "color": color, "font_color": font_color, "font_size": font_size}
         for key, value in fields.items():
             if value is not None:
                 setattr(bookmark, key, value)

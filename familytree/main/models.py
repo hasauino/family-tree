@@ -13,32 +13,17 @@ N_COLORS = 11  # number of colors in the tree color palette/theme (check main/st
 
 class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name=_("Name"))
-    parent = models.ForeignKey('self',
-                               on_delete=models.CASCADE,
-                               null=True,
-                               blank=True,
-                               related_name="children",
-                               verbose_name=_("Parent"))
-    reference = models.TextField(
-        max_length=1000,
-        blank=True,
-        verbose_name=_("Reference of authentication (optional)"))
-    designation = models.TextField(max_length=500,
-                                   blank=True,
-                                   verbose_name=_("Designation (optional)"))
-    history = models.TextField(
-        max_length=2000,
-        blank=True,
-        verbose_name=_("Historical Background (optional)"))
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children", verbose_name=_("Parent")
+    )
+    reference = models.TextField(max_length=1000, blank=True, verbose_name=_("Reference of authentication (optional)"))
+    designation = models.TextField(max_length=500, blank=True, verbose_name=_("Designation (optional)"))
+    history = models.TextField(max_length=2000, blank=True, verbose_name=_("Historical Background (optional)"))
     editors = models.ManyToManyField(User, verbose_name=_("Editor"))
-    access_choices = [('public', 'public'), ('private', 'private')]
-    access = models.CharField(max_length=200,
-                              choices=access_choices,
-                              default='public')
-    creation_time = models.DateTimeField(auto_now_add=True,
-                                         verbose_name=_("Date of creation"))
-    last_modified = models.DateTimeField(
-        auto_now=True, verbose_name=_("Date of last modification"))
+    access_choices = [("public", "public"), ("private", "private")]
+    access = models.CharField(max_length=200, choices=access_choices, default="public")
+    creation_time = models.DateTimeField(auto_now_add=True, verbose_name=_("Date of creation"))
+    last_modified = models.DateTimeField(auto_now=True, verbose_name=_("Date of last modification"))
 
     def is_visible_to(self, user: User):
         """
@@ -65,7 +50,7 @@ class Person(models.Model):
 
     def expand(self, depth=5):
         buffer = deque([self])
-        #all_persons = []
+        # all_persons = []
         levels = []
         while len(buffer) > 0 and depth >= 0:
             depth -= 1
@@ -73,7 +58,7 @@ class Person(models.Model):
             level = []
             while len(buffer) > 0:
                 person = buffer.pop()
-                #all_persons.append(person)
+                # all_persons.append(person)
                 level.append(person)
                 new_buffer.extend(list(person.children.all()))
             levels.append(level)
@@ -90,15 +75,14 @@ class Person(models.Model):
     def _get_father(self, parent, depth):
         try:
             if depth > 1:
-                return parent.name + ' ' + self._get_father(
-                    parent.parent, depth - 1)
+                return parent.name + " " + self._get_father(parent.parent, depth - 1)
             else:
-                return ''
-        except:
-            return ''
+                return ""
+        except AttributeError:
+            return ""
 
     def __str__(self):
-        return self.name + ' ' + self._get_father(self.parent, 6)
+        return self.name + " " + self._get_father(self.parent, 6)
 
     def is_public(self):
         return self.access == "public"
@@ -133,7 +117,7 @@ class Person(models.Model):
 
     def find_closest_parent(self, persons):
         """
-        Returns closest parent among given persons list, and how far is it 
+        Returns closest parent among given persons list, and how far is it
         """
         parent = self.parent
         length = 1
@@ -154,35 +138,16 @@ class Person(models.Model):
 
 class User(AbstractUser):
     email = models.EmailField(
-        null=True,
-        blank=True,
-        unique=True,
-        validators=[EmailValidator(message=_("Enter a valid email address"))])
-    birth_date = models.DateField(null=True,
-                                  blank=False,
-                                  verbose_name=_("Date of birth"))
+        null=True, blank=True, unique=True, validators=[EmailValidator(message=_("Enter a valid email address"))]
+    )
+    birth_date = models.DateField(null=True, blank=False, verbose_name=_("Date of birth"))
 
-    first_name = models.CharField(max_length=150,
-                                  null=True,
-                                  blank=False,
-                                  verbose_name=_("First name"))
-    father_name = models.CharField(max_length=150,
-                                   null=True,
-                                   blank=False,
-                                   verbose_name=_("Father's name"))
-    grandfather_name = models.CharField(max_length=150,
-                                        null=True,
-                                        blank=False,
-                                        verbose_name=_("Grandfather's name"))
-    last_name = models.CharField(max_length=150,
-                                 null=True,
-                                 blank=False,
-                                 verbose_name=_("Last name"))
+    first_name = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("First name"))
+    father_name = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("Father's name"))
+    grandfather_name = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("Grandfather's name"))
+    last_name = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("Last name"))
 
-    birth_place = models.CharField(max_length=150,
-                                   null=True,
-                                   blank=False,
-                                   verbose_name=_("Place of birth"))
+    birth_place = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("Place of birth"))
 
     @property
     def user_type(self):

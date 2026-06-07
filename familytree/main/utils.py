@@ -27,8 +27,7 @@ def get_domain(request):
         port = os.environ["PORT"]
         current_domain = f"{host}:{port}"
     except Exception as e:
-        logging.error(f"Could not get correct domain. Got this error {e}. "
-                      "Will resolve to default")
+        logging.error(f"Could not get correct domain. Got this error {e}. Will resolve to default")
         current_domain = request.get_host()
 
     return current_domain

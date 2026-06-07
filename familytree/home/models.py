@@ -4,27 +4,11 @@ from main.models import Person
 
 
 class Bookmark(models.Model):
-    person = models.OneToOneField(Person,
-                                  on_delete=models.CASCADE,
-                                  verbose_name=_("Person"))
-    color = models.CharField(max_length=6,
-                             null=True,
-                             blank=True,
-                             default=None,
-                             verbose_name=_("Color"))
-    font_color = models.CharField(max_length=6,
-                                  null=True,
-                                  blank=True,
-                                  default=None,
-                                  verbose_name=_("Font Color"))
-    font_size = models.PositiveIntegerField(null=True,
-                                            blank=True,
-                                            default=None,
-                                            verbose_name=_("Font Size"))
-    label = models.CharField(max_length=200,
-                             null=True,
-                             blank=True,
-                             verbose_name=_("Label"))
+    person = models.OneToOneField(Person, on_delete=models.CASCADE, verbose_name=_("Person"))
+    color = models.CharField(max_length=6, null=True, blank=True, default=None, verbose_name=_("Color"))
+    font_color = models.CharField(max_length=6, null=True, blank=True, default=None, verbose_name=_("Font Color"))
+    font_size = models.PositiveIntegerField(null=True, blank=True, default=None, verbose_name=_("Font Size"))
+    label = models.CharField(max_length=200, null=True, blank=True, verbose_name=_("Label"))
 
     def as_node(self, **args):
         value = self.person.as_node(**args)

@@ -1,8 +1,9 @@
 import json
 import logging
 
-from home.models import Bookmark
 from main.models import Person
+
+from home.models import Bookmark
 
 _home_tree = None
 
@@ -58,7 +59,7 @@ def generate_home_tree():
     bookmark_depths = {}
     for person in bookmarked_persons:
         depth = get_bookmark_depth(person, links)
-        if not person.pk in links:
+        if person.pk not in links:
             continue
         bookmark_depths[person.pk] = depth
     if len(bookmark_depths) > 2:
@@ -77,15 +78,12 @@ def generate_home_tree():
             tree_depth=tree_depth,
             link_depth=bookmark_depths[link["to"]],
         )
-    _home_tree = {
-        "data": json.dumps(data),
-        "links": json.dumps(list(links.values()))
-    }
+    _home_tree = {"data": json.dumps(data), "links": json.dumps(list(links.values()))}
 
 
 def find_common_root(nodes):
     """
-    Given a set of persons (nodes), it will return the 
+    Given a set of persons (nodes), it will return the
     closest common root to all of them
     """
     persons = list(set(nodes))

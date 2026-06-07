@@ -1,4 +1,3 @@
-import pathlib
 import subprocess
 from datetime import datetime
 
@@ -15,7 +14,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            db_path = settings.DATABASES['default']['NAME']
+            db_path = settings.DATABASES["default"]["NAME"]
             self.stdout.write(str(db_path))
             db_name = db_path.name[:-8]  # remove .sqlite3
             date = datetime.now()
@@ -27,16 +26,12 @@ class Command(BaseCommand):
             second = str("{:02d}".format(date.time().second))
             backed_db_name = f"{db_name}-{year}{month}{day}{hour}{minute}{second}.sqlite3"
             subprocess.call(f"mkdir -p {settings.DB_BACKUP_DIR}", shell=True)
-            subprocess.call(
-                f"cp {db_path} {settings.DB_BACKUP_DIR}/{backed_db_name}",
-                shell=True)
+            subprocess.call(f"cp {db_path} {settings.DB_BACKUP_DIR}/{backed_db_name}", shell=True)
 
             # Delete oldest backup if number of backups > limit
             backups = list_backups()
             if len(backups) > settings.NUMBER_OF_BACKUPS:
                 oldest_backup_name = backups[-1].name
-                subprocess.call(
-                    f"rm {settings.DB_BACKUP_DIR}/{oldest_backup_name}",
-                    shell=True)
+                subprocess.call(f"rm {settings.DB_BACKUP_DIR}/{oldest_backup_name}", shell=True)
         except Exception as error:
             self.stderr.write(f"Backup failed with the following error:\n{error}")

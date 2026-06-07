@@ -95,30 +95,24 @@ DATABASES = {
     }
 }
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME":
-        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-7qn#kui98^3tt59e#jcdy8f_ch@y=_&66a$w11+6_zx%)#qddz")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-7qn#kui98^3tt59e#jcdy8f_ch@y=_&66a$w11+6_zx%)#qddz")
 
 # Time zone
 TIME_ZONE = "UTC"
@@ -163,9 +157,7 @@ WAGTAILADMIN_BASE_URL = DOMAIN
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # GraphQL
-GRAPHENE = {
-    "SCHEMA": "main.graphql.schema"
-}
+GRAPHENE = {"SCHEMA": "main.graphql.schema"}
 
 # DB backup
 DB_BACKUP_DIR = PROJECT_DIR / "backups"

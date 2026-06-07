@@ -15,7 +15,7 @@ LOGGING = {
     "handlers": {
         "logfile": {
             "class": "logging.FileHandler",
-            'filename': 'django.log',
+            "filename": "django.log",
         },
     },
     "loggers": {

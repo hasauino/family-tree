@@ -1,5 +1,4 @@
 class SessionConfig:
-
     def __init__(self, key, default, choices) -> None:
         self.key = key
         self.default = default

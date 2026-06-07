@@ -1,7 +1,8 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from home.models import Bookmark, Person
+
 from home.home_tree_generator import generate_home_tree
+from home.models import Bookmark, Person
 
 
 @receiver(post_save, sender=Bookmark)
