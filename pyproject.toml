@@ -30,6 +30,7 @@ dependencies = [
     "pytest",
     "pytest-django",
     "pytest-cov",
+    "pre-commit",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -42,6 +43,7 @@ migrate = "familytree/manage.py migrate {args}"
 createsuperuser = "familytree/manage.py createsuperuser {args}"
 collectstatic = "familytree/manage.py collectstatic {args}"
 test = "pytest {args}"
+install-hooks = "pre-commit install"
 fix = [
     "ruff format {args:.}",
     "ruff check --fix {args:.}",
