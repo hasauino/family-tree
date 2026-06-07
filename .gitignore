@@ -4,3 +4,5 @@ familytree/project/backups/
 familytree/project/static/
 familytree/project/dummy_db.sqlite3
 familytree/.DS_Store
+
+.coverage

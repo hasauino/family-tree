@@ -27,6 +27,9 @@ python = "3.14"
 dependencies = [
     "ruff",
     "ipython",
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -38,7 +41,7 @@ makemigrations = "familytree/manage.py makemigrations {args}"
 migrate = "familytree/manage.py migrate {args}"
 createsuperuser = "familytree/manage.py createsuperuser {args}"
 collectstatic = "familytree/manage.py collectstatic {args}"
-test = "familytree/manage.py test {args}"
+test = "pytest {args}"
 fix = [
     "ruff format {args:.}",
     "ruff check --fix {args:.}",
@@ -57,6 +60,22 @@ extend-select = ["I"]
 
 [tool.ruff.lint.per-file-ignores]
 "familytree/project/settings/*.py" = ["F405"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "project.settings.test"
+pythonpath = ["familytree"]
+testpaths = ["familytree"]
+addopts = "--cov=familytree --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["familytree"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "familytree/manage.py",
+    "familytree/project/wsgi.py",
+    "familytree/project/settings/*",
+]
 
 [build-system]
 requires = ["hatchling"]

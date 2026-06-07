@@ -76,7 +76,21 @@ hatch run migrate
 hatch run makemigrations
 hatch run createsuperuser
 hatch run collectstatic
+```
+
+### Testing
+
+The test suite is written with [pytest](https://docs.pytest.org/) (via [pytest-django](https://pytest-django.readthedocs.io/)). Run it with:
+
+```bash
 hatch run test
+```
+
+This runs with coverage by default (via [pytest-cov](https://pytest-cov.readthedocs.io/)), printing a per-file report with the lines that are still missing coverage. You can pass any pytest arguments through, e.g. to run a specific file or skip coverage:
+
+```bash
+hatch run test familytree/main/tests/test_models.py
+hatch run test --no-cov
 ```
 
 ### Localization
