@@ -50,11 +50,15 @@ INSTALLED_APPS = [
     "taggit",
     # EndWagtail ------
     "graphene_django",
+    "corsheaders",
     "pwa",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Must be high in the stack, before CommonMiddleware, so CORS preflight
+    # (OPTIONS) requests are answered before they can be rejected as 405.
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "main.middleware.force_language_cookie",
     "django.middleware.locale.LocaleMiddleware",
