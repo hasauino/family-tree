@@ -1,25 +1,38 @@
-[tool.poetry]
+[project]
 name = "familytree"
 version = "0.1.0"
 description = "A website for storing, browsing, and updating a family tree."
-authors = ["Hassan Umari <oh91@windowslive.com>"]
+authors = [
+    { name = "Hassan Umari", email = "oh91@windowslive.com" },
+]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=4.2,<5.0",
+    "django-registration>=3.3,<4.0",
+    "wagtail>=5.1,<6.0",
+    "wand==0.6",
+    "graphene-django>=3.1,<4.0",
+    "gunicorn>=21.2,<22.0",
+    "django-pwa>=1.1,<2.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-django = ">=4.2,<5.0"
-django-registration = ">=3.3,<4.0"
-wagtail = ">=5.1,<6.0"
-wand = "0.6"
-graphene-django = ">=3.1,<4.0"
-gunicorn = ">=21.2,<22.0"
-django-pwa = "^1.1"
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
 
+[tool.hatch.envs.default]
+dependencies = [
+    "yapf==0.40.1",
+    "ipython",
+]
 
-[tool.poetry.group.dev.dependencies]
-yapf = "0.40.1"
+[tool.hatch.envs.default.scripts]
+server = "familytree/manage.py runserver {args}"
+makemessages = "familytree/manage.py makemessages -a {args}"
+compilemessages = "familytree/manage.py compilemessages {args}"
+shell = "familytree/manage.py shell {args}"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

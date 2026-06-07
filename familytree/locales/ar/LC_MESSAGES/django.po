@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-03 19:09+0000\n"
+"POT-Creation-Date: 2026-06-07 02:58+0000\n"
 "PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -715,19 +715,19 @@ msgstr "إعادة ضبط كلمة المرور لموقع"
 msgid "Requested person does not exist"
 msgstr "الشخص المطلوب لا يمكن العثور عليه"
 
-#: familytree/main/views.py:85
+#: familytree/main/views.py:82
 msgid "Could not find a route from ancestor to child"
 msgstr "لم يتمكن العثور على مسار يربط هذا الجد مع هذا الشخص"
 
-#: familytree/main/views.py:240
+#: familytree/main/views.py:238
 msgid "You are not logged in!"
 msgstr "أنت لم تسجل دخولك!"
 
-#: familytree/project/settings/base.py:134
+#: familytree/project/settings/base.py:135
 msgid "Arabic"
 msgstr "عربي"
 
-#: familytree/project/settings/base.py:135
+#: familytree/project/settings/base.py:136
 msgid "English"
 msgstr "إنجليزي"
 
