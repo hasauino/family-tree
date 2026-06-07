@@ -55,22 +55,28 @@ Go to [localhost:8000](http://localhost:8000/) (or the port you configured). For
 git update-index --assume-unchanged .env
 ```
 
-- To source this file automatically when you run Django commands through hatch, you can add [hatch-dotenv](https://pypi.org/project/hatch-dotenv/) to hatch.
+- The [`.env`](.env) file is loaded automatically (via [python-dotenv](https://pypi.org/project/python-dotenv/)) whenever Django starts, so the environment variables defined there are picked up no matter how you run the project. This way you can select a different database file, a different language, or different project settings, etc.
 
-
-
-- For example, you can run Django development server as follows:
+- For example, you can run the Django development server as follows:
 
 ```bash
 hatch run server
 ```
 
-this will use the environment variables define in `.env`. This way you can selected a different Database file, a different language ,or different project settings, etc..
-
 - You can also open a Django shell (using [IPython](https://ipython.org/)):
 
 ```bash
 hatch run shell
+```
+
+- Other common Django operations are also available as hatch scripts:
+
+```bash
+hatch run migrate
+hatch run makemigrations
+hatch run createsuperuser
+hatch run collectstatic
+hatch run test
 ```
 
 ### Localization

@@ -2,9 +2,12 @@ import os
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
+from dotenv import load_dotenv
 
 PROJECT_DIR = Path(__file__).parent.parent
 BASE_DIR = PROJECT_DIR.parent
+
+load_dotenv(BASE_DIR.parent / ".env")
 
 SECRET_KEY = "-yp#*#01vf1+d$8^0b=7hsrfv!y#21c1a1mjmspj18)n93a)o5"
 

@@ -9,19 +9,21 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "django>=4.2,<5.0",
-    "django-registration>=3.3,<4.0",
-    "wagtail>=5.1,<6.0",
+    "django>=6.0,<7.0",
+    "django-registration>=5.2,<6.0",
+    "wagtail>=7.0,<8.0",
     "wand==0.6",
     "graphene-django>=3.1,<4.0",
-    "gunicorn>=21.2,<22.0",
-    "django-pwa>=1.1,<2.0",
+    "gunicorn>=26.0,<27.0",
+    "django-pwa>=2.0,<3.0",
+    "python-dotenv>=1.0,<2.0",
 ]
 
 [tool.hatch.build.targets.wheel]
 bypass-selection = true
 
 [tool.hatch.envs.default]
+python = "3.14"
 dependencies = [
     "ruff",
     "ipython",
@@ -32,6 +34,11 @@ server = "familytree/manage.py runserver {args}"
 makemessages = "familytree/manage.py makemessages -a {args}"
 compilemessages = "familytree/manage.py compilemessages {args}"
 shell = "familytree/manage.py shell {args}"
+makemigrations = "familytree/manage.py makemigrations {args}"
+migrate = "familytree/manage.py migrate {args}"
+createsuperuser = "familytree/manage.py createsuperuser {args}"
+collectstatic = "familytree/manage.py collectstatic {args}"
+test = "familytree/manage.py test {args}"
 fix = [
     "ruff format {args:.}",
     "ruff check --fix {args:.}",
