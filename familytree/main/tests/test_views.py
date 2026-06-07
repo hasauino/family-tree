@@ -2,11 +2,9 @@ import json
 import logging
 import pathlib
 
-import pytest
 from django.urls import reverse
 
 from main.models import User
-
 
 # ---------------------------------------------------------------------------
 # person_tree
@@ -273,7 +271,9 @@ def test_undo_do_restores_backup_for_staff_user(client, staff_user, monkeypatch)
 
 def test_undo_do_does_nothing_for_non_staff_user(client, normal_user, monkeypatch):
     calls = []
-    monkeypatch.setattr("main.views.list_backups", lambda: (_ for _ in ()).throw(AssertionError("should not be called")))
+    monkeypatch.setattr(
+        "main.views.list_backups", lambda: (_ for _ in ()).throw(AssertionError("should not be called"))
+    )
     monkeypatch.setattr("main.views.subprocess.call", lambda cmd, shell=False: calls.append(cmd))
     client.force_login(normal_user)
 

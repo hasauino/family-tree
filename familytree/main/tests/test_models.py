@@ -3,7 +3,6 @@ from django.contrib.auth.models import AnonymousUser
 
 from main.models import N_COLORS, Person
 
-
 # ---------------------------------------------------------------------------
 # Person.is_visible_to
 # ---------------------------------------------------------------------------

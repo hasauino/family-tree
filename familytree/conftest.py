@@ -1,5 +1,4 @@
 import pytest
-
 from main.models import Person, User
 
 

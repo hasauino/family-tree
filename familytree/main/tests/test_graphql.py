@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-
 from home.models import Bookmark
+
 from main.graphql.schema import (
     AddPerson,
     BookmarkPerson,

@@ -4,7 +4,6 @@ import main.context_processors as context_processors_module
 from main.context_processors import get_language_code
 from main.context_processors import main as main_context_processor
 
-
 # ---------------------------------------------------------------------------
 # get_language_code
 # ---------------------------------------------------------------------------
