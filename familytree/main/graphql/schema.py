@@ -48,6 +48,11 @@ class Query(graphene.ObjectType):
         id=graphene.Int(required=True, description="Node's ID"),
     )
     person = graphene.Field(types.PersonType, id=graphene.ID(required=True))
+    search_persons = graphene.List(
+        types.PersonSearchResult,
+        description="Search persons by (the start of) their name, including ancestors' names",
+        query=graphene.String(required=True, description="Name to search for"),
+    )
     can_delete = graphene.Boolean(
         description="Check if given person can be deleted by the current user",
         id=graphene.Int(required=True, description="Node's ID to be checked"),
@@ -66,6 +71,18 @@ class Query(graphene.ObjectType):
 
     def resolve_person(parent, info, id):
         return Person.objects.get(pk=id)
+
+    def resolve_search_persons(parent, info, query):
+        user = info.context.user
+        start = query.split(" ")[0]
+        results = []
+        for person in Person.objects.filter(name__startswith=start):
+            if user in person.editors.all() or person.access == "public" or user.is_staff:
+                if query == str(person)[0 : len(query)]:
+                    results.append({"id": person.id, "name": str(person)})
+                    if len(results) > 5:
+                        break
+        return results
 
     @authenticated_only
     def resolve_can_delete(parent, info, id):

@@ -55,6 +55,15 @@ class FontType(graphene.ObjectType):
     strokeWidth = graphene.Int(description="Font stroke width in px")
 
 
+class PersonSearchResult(graphene.ObjectType):
+    """
+    A single match returned when searching persons by name
+    """
+
+    id = graphene.Int()
+    name = graphene.String(description="Person's name, including ancestors' names")
+
+
 class NodeType(graphene.ObjectType):
     """
     Holds data used in visualizing person node in the tree

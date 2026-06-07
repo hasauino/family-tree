@@ -4,7 +4,7 @@ import pathlib
 import subprocess
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -152,22 +152,6 @@ def save(req, orig_id, person_id):
     person.save()
 
     return HttpResponseRedirect(reverse("main:person_tree", args=(orig_id,)))
-
-
-def searchByName(req, names_str):
-    start = names_str.split(" ")[0]
-
-    parents = []
-    ids = []
-    for p in Person.objects.filter(name__startswith=start):
-        if req.user in p.editors.all() or p.access == "public" or req.user.is_staff:
-            if names_str == str(p)[0 : len(names_str)]:
-                parents.append(str(p))
-                ids.append(p.id)
-                if len(parents) > 5:
-                    break
-
-    return JsonResponse({"parents": parents, "ids": ids})
 
 
 def undo_choose(req):

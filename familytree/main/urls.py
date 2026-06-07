@@ -17,7 +17,6 @@ urlpatterns = (
         path("tos", views.tos, name="tos"),
         path("test", views.test, name="test"),
         path("changes", views.changes, name="changes"),
-        path("api/<str:names_str>", views.searchByName, name="searchByName"),
         path("delete_my_account", views.delete_user, name="delete_user"),
         path("<int:orig_id>/<int:person_id>/save/", views.save, name="save"),
         path("edit/<int:person_id>/<int:orig_id>", views.edit, name="edit"),

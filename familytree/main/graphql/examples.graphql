@@ -24,6 +24,13 @@ query canDelete {
   canDelete(id: 450100)
 }
 
+query searchPersons {
+  searchPersons(query: "John Doe") {
+    id
+    name
+  }
+}
+
 mutation addPerson {
   addPerson(id: 4501, childName: "c10") {
     id

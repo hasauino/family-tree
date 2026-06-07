@@ -5,19 +5,21 @@ function search() {
     var str_search = document.getElementById("searchTxt").value
     if (str_search.length < 2) return;
     document.getElementById("searchBox").style.display = "block";
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            var json = JSON.parse(this.responseText);
+    fetch('/graphql', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            query: `query { searchPersons(query: ${JSON.stringify(str_search)}) { id name } }`
+        })
+    })
+        .then(response => response.json())
+        .then(({ data }) => {
             document.getElementById("searchItems").innerText = '';
-            for (var i = 0; i < json.parents.length; i++) {
-                document.getElementById("searchItems").appendChild(create_search_item(json.parents[i], json.ids[i]));
+            for (const person of data.searchPersons) {
+                document.getElementById("searchItems").appendChild(create_search_item(person.name, person.id));
             }
-        }
-    };
-    const name = document.getElementById("searchTxt").value
-    xhttp.open("GET", `${context.urls.main.searchByName}/${name}`, true);
-    xhttp.send();
+        });
 }
 
 function create_search_item(txt, id) {
