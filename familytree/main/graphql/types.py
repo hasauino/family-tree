@@ -47,6 +47,17 @@ class UserType(DjangoObjectType):
         ]
 
 
+class CurrentUserType(graphene.ObjectType):
+    """
+    The currently signed-in user, used by clients to gate edit/staff actions.
+    """
+
+    id = graphene.Int()
+    username = graphene.String()
+    is_staff = graphene.Boolean(description="Whether the user can publish/bookmark persons")
+    is_authenticated = graphene.Boolean(description="Whether a user is signed in at all")
+
+
 class FontType(graphene.ObjectType):
     """
     Holds node's font data

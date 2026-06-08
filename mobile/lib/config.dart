@@ -17,9 +17,17 @@ class AppConfig {
   static const String _override = String.fromEnvironment('API_BASE_URL');
 
   /// Base URL of the backend (no trailing slash).
+  ///
+  /// Defaults to `127.0.0.1` (not `localhost`) on purpose: `localhost` resolves
+  /// to both IPv4 `127.0.0.1` and IPv6 `::1`, and clients (iOS, browsers) often
+  /// try `::1` first — but Django's `runserver` binds IPv4 only, so the request
+  /// is refused. Using `127.0.0.1` forces IPv4 and "just works" for the web
+  /// build, the iOS simulator, and desktop. For the Android emulator, override
+  /// with `--dart-define=API_BASE_URL=http://10.0.2.2:8000`; for a physical
+  /// device, use the host's LAN IP.
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
-    return 'http://localhost:8000';
+    return 'http://192.168.1.23:8000';
   }
 
   /// Full URL of the GraphQL endpoint (see `main/urls.py`).

@@ -9,6 +9,7 @@ from main.graphql.schema import (
     BookmarkPerson,
     DeletePerson,
     EditBookmark,
+    EditPerson,
     MutationReply,
     PublishPerson,
     Query,
@@ -180,6 +181,66 @@ def test_resolve_list_bookmarks_returns_all_bookmarks(make_person, normal_user):
 # ---------------------------------------------------------------------------
 # AddPerson
 # ---------------------------------------------------------------------------
+
+
+def test_edit_person_requires_authentication(make_person):
+    person = make_person(name="Parent")
+    with pytest.raises(Exception, match="Access Denied"):
+        EditPerson.mutate(None, info_for(AnonymousUser()), id=person.pk, name="New")
+
+
+def test_edit_person_fails_for_missing_person(staff_user, db):
+    result = EditPerson.mutate(None, info_for(staff_user), id=999999, name="New")
+    assert result["ok"] is False
+
+
+def test_edit_person_rejects_empty_name(staff_user, make_person):
+    person = make_person(name="Parent")
+    result = EditPerson.mutate(None, info_for(staff_user), id=person.pk, name="")
+    assert result["ok"] is False
+
+
+def test_edit_person_blocks_non_editor(normal_user, make_person):
+    person = make_person(name="Parent", access="public")
+    result = EditPerson.mutate(None, info_for(normal_user), id=person.pk, name="New")
+    assert result["ok"] is False
+
+
+def test_edit_person_updates_fields_for_staff(staff_user, make_person):
+    person = make_person(name="Old", designation="d", history="h")
+
+    result = EditPerson.mutate(
+        None,
+        info_for(staff_user),
+        id=person.pk,
+        name="New",
+        designation="dd",
+        history="hh",
+    )
+
+    person.refresh_from_db()
+    assert result["ok"] is True
+    assert result["label"] == "New"
+    assert (person.name, person.designation, person.history) == ("New", "dd", "hh")
+
+
+def test_edit_person_allows_editor_of_private_person(normal_user, make_person):
+    person = make_person(name="Old", access="private", editors=[normal_user])
+
+    result = EditPerson.mutate(None, info_for(normal_user), id=person.pk, name="New")
+
+    person.refresh_from_db()
+    assert result["ok"] is True
+    assert person.name == "New"
+
+
+def test_edit_person_keeps_unspecified_fields(staff_user, make_person):
+    person = make_person(name="Old", designation="keep", history="keep-too")
+
+    EditPerson.mutate(None, info_for(staff_user), id=person.pk, name="New")
+
+    person.refresh_from_db()
+    assert (person.designation, person.history) == ("keep", "keep-too")
 
 
 def test_add_person_requires_authentication(make_person):

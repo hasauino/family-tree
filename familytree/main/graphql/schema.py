@@ -48,6 +48,10 @@ class Query(graphene.ObjectType):
         id=graphene.Int(required=True, description="Node's ID"),
     )
     person = graphene.Field(types.PersonType, id=graphene.ID(required=True))
+    me = graphene.Field(
+        types.CurrentUserType,
+        description="The currently signed-in user (null fields when anonymous)",
+    )
     search_persons = graphene.List(
         types.PersonSearchResult,
         description="Search persons by (the start of) their name, including ancestors' names",
@@ -71,6 +75,15 @@ class Query(graphene.ObjectType):
 
     def resolve_person(parent, info, id):
         return Person.objects.get(pk=id)
+
+    def resolve_me(parent, info):
+        user = info.context.user
+        return {
+            "id": user.id if user.is_authenticated else None,
+            "username": user.get_username() if user.is_authenticated else None,
+            "is_staff": user.is_staff,
+            "is_authenticated": user.is_authenticated,
+        }
 
     def resolve_search_persons(parent, info, query):
         user = info.context.user
@@ -120,6 +133,36 @@ class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
         child.editors.add(user)
         child.save()
         return {**MutationReply.success(), **child.as_node(user)}
+
+
+class EditPerson(graphene.Mutation, MutationReply, types.NodeType):
+    class Arguments:
+        id = graphene.Int(required=True, description="ID of the person to edit")
+        name = graphene.String(required=False, description="New name (omit to keep)")
+        designation = graphene.String(required=False, description="New designation (omit to keep)")
+        history = graphene.String(required=False, description="New historical background (omit to keep)")
+
+    @authenticated_only
+    def mutate(root, info, id, name=None, designation=None, history=None):
+        logging.debug(f"Called edit person mutation with id: {id}")
+        user = info.context.user
+        found = Person.objects.filter(pk=id)
+        if not found.exists():
+            return MutationReply.fail(f"Person with ID ${id} does not exist")
+        person = found.first()
+        # Same rule as the web save view: staff or one of the person's editors.
+        if not (user.is_staff or user in person.editors.all()):
+            return MutationReply.fail(f"Person with ID ${id} cannot be edited by current user")
+        if name is not None:
+            if len(name) < 1:
+                return MutationReply.fail("Invalid name, cannot be empty string")
+            person.name = name
+        if designation is not None:
+            person.designation = designation
+        if history is not None:
+            person.history = history
+        person.save()
+        return {**MutationReply.success(), **person.as_node(user)}
 
 
 class DeletePerson(graphene.Mutation, MutationReply):
@@ -272,6 +315,7 @@ class EditBookmark(graphene.Mutation, MutationReply):
 
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
+    edit_person = EditPerson.Field()
     delete_person = DeletePerson.Field()
     bookmark_person = BookmarkPerson.Field()
     unbookmark_person = UnBookmarkPerson.Field()

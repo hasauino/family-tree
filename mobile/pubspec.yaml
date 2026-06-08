@@ -46,8 +46,15 @@ dependencies:
   # GraphQL transport (plain HTTP POST against the Django /graphql endpoint).
   http: ^1.2.2
 
+  # Persists the Django session cookies so login survives app restarts.
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+
+  # Drives the real app (on a simulator or Chromium) for GUI/integration tests.
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

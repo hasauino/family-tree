@@ -1,22 +1,31 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 
+import '../auth/auth_service.dart';
+import '../auth/login_page.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
 import 'node_widget.dart';
+import 'person_actions_sheet.dart';
+import 'search_overlay.dart';
 import 'tree_controller.dart';
 
 /// The interactive, pan/zoomable family-tree screen.
 class TreePage extends StatefulWidget {
-  const TreePage({super.key});
+  const TreePage({super.key, required this.auth});
+
+  final AuthService auth;
 
   @override
   State<TreePage> createState() => _TreePageState();
 }
 
 class _TreePageState extends State<TreePage> {
-  final TreeController _controller = TreeController();
+  late final TreeController _controller =
+      TreeController(api: widget.auth.api);
   final TransformationController _viewer = TransformationController();
   final GlobalKey _viewportKey = GlobalKey();
 
@@ -78,75 +87,119 @@ class _TreePageState extends State<TreePage> {
     return null;
   }
 
-  Future<void> _promptOpenPerson() async {
-    final t = AppStrings.of(context);
-    final textController = TextEditingController(
-      text: _controller.rootId?.toString() ?? '',
-    );
-    final id = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.openPersonTitle),
-        content: TextField(
-          controller: textController,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: t.personIdLabel,
-            hintText: t.personIdHint,
-          ),
-          onSubmitted: (v) => Navigator.pop(ctx, int.tryParse(v.trim())),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(t.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.pop(ctx, int.tryParse(textController.text.trim())),
-            child: Text(t.open),
-          ),
-        ],
-      ),
-    );
-    textController.dispose();
-    if (id != null) {
-      _resetZoom();
-      _controller.loadRoot(id);
-    }
+  /// Scales and pans the view so the entire tree fits inside the viewport,
+  /// with a small margin. Runs after the next frame so node positions/sizes
+  /// from the layout pass are available.
+  void _fitToWindow() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) return;
+
+      var minX = double.infinity, minY = double.infinity;
+      var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+      for (final node in _controller.graph.nodes) {
+        if (node.size == Size.zero) continue;
+        minX = math.min(minX, node.position.dx);
+        minY = math.min(minY, node.position.dy);
+        maxX = math.max(maxX, node.position.dx + node.size.width);
+        maxY = math.max(maxY, node.position.dy + node.size.height);
+      }
+      if (minX == double.infinity) return; // nothing laid out yet
+
+      const pad = 60.0; // matches the Padding around the graph
+      const margin = 32.0; // breathing room inside the viewport
+      final contentW = maxX - minX;
+      final contentH = maxY - minY;
+      final viewport = box.size;
+      final scale = math
+          .min(
+            (viewport.width - margin * 2) / contentW,
+            (viewport.height - margin * 2) / contentH,
+          )
+          .clamp(0.1, 3.0);
+      final contentCenter = Offset(
+        pad + minX + contentW / 2,
+        pad + minY + contentH / 2,
+      );
+      final t =
+          Offset(viewport.width / 2, viewport.height / 2) - contentCenter * scale;
+      _viewer.value = Matrix4.identity()
+        ..translateByDouble(t.dx, t.dy, 0, 1)
+        ..scaleByDouble(scale, scale, scale, 1);
+    });
   }
 
   void _showDetails(FamilyNode node) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(node.label, style: Theme.of(ctx).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Text(node.title ?? AppStrings.of(ctx).noDetails),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                FilledButton.tonalIcon(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _resetZoom();
-                    _controller.loadRoot(node.id);
-                  },
-                  icon: const Icon(Icons.center_focus_strong),
-                  label: Text(AppStrings.of(ctx).centerTreeHere),
-                ),
-              ],
-            ),
-          ],
-        ),
+      isScrollControlled: true,
+      builder: (ctx) => PersonActionsSheet(
+        node: node,
+        controller: _controller,
+        auth: widget.auth,
+        onCenter: () {
+          _resetZoom();
+          _controller.loadRoot(node.id);
+        },
       ),
+    );
+  }
+
+  /// Opens the blurred "search by name" overlay; on selection, re-roots the tree.
+  Future<void> _openSearch() async {
+    final id = await showSearchOverlay(context, widget.auth.api);
+    if (id != null) {
+      _resetZoom();
+      _controller.loadRoot(id);
+    }
+  }
+
+  Future<void> _handleLogin() async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => LoginPage(auth: widget.auth)),
+    );
+  }
+
+  Future<void> _handleLogout() async {
+    await widget.auth.logout();
+  }
+
+  /// The login button (signed out) or an account menu with logout (signed in).
+  Widget _buildAccountMenu(AppStrings t) {
+    if (!widget.auth.isAuthenticated) {
+      return IconButton(
+        tooltip: t.login,
+        icon: const Icon(Icons.login),
+        onPressed: _handleLogin,
+      );
+    }
+    return PopupMenuButton<String>(
+      tooltip: widget.auth.username ?? t.account,
+      icon: Icon(
+        widget.auth.isStaff ? Icons.shield_outlined : Icons.account_circle,
+      ),
+      onSelected: (value) {
+        if (value == 'logout') _handleLogout();
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          enabled: false,
+          child: Text(widget.auth.username ?? t.account),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'logout',
+          child: Row(
+            children: [
+              const Icon(Icons.logout, size: 20),
+              const SizedBox(width: 12),
+              Text(t.logout),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -158,17 +211,14 @@ class _TreePageState extends State<TreePage> {
         title: Text(t.appTitle),
         actions: [
           IconButton(
-            tooltip: t.openPersonTooltip,
-            icon: const Icon(Icons.person_search),
-            onPressed: _promptOpenPerson,
+            tooltip: t.searchTooltip,
+            icon: const Icon(Icons.search),
+            onPressed: _openSearch,
           ),
           IconButton(
-            tooltip: t.centerOnActiveTooltip,
-            icon: const Icon(Icons.center_focus_strong),
-            onPressed: () {
-              final id = _controller.rootId;
-              if (id != null) _centerNode(id);
-            },
+            tooltip: t.fitTreeTooltip,
+            icon: const Icon(Icons.fit_screen),
+            onPressed: _fitToWindow,
           ),
           IconButton(
             tooltip: t.reloadTooltip,
@@ -180,6 +230,10 @@ class _TreePageState extends State<TreePage> {
                 _controller.loadRoot(id);
               }
             },
+          ),
+          ListenableBuilder(
+            listenable: widget.auth,
+            builder: (context, _) => _buildAccountMenu(t),
           ),
         ],
       ),

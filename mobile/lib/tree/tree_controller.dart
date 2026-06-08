@@ -82,6 +82,102 @@ class TreeController extends ChangeNotifier {
     }
   }
 
+  // --- Authenticated edits (mirror the web right-click menu) --------------
+
+  /// Whether the current user may delete [personId].
+  Future<bool> canDelete(int personId) => _api.canDelete(personId);
+
+  /// The publish/bookmark status of [personId], for choosing staff actions.
+  Future<({bool published, bool bookmarked})> publishStatus(int personId) =>
+      _api.publishStatus(personId);
+
+  /// The raw editable fields of [personId], to prefill the edit form.
+  Future<PersonDetails> personDetails(int personId) =>
+      _api.personDetails(personId);
+
+  /// Saves edits to [personId] and refreshes its node (label/title) in place.
+  Future<void> editPerson(
+    int personId, {
+    required String name,
+    required String designation,
+    required String history,
+  }) async {
+    final updated = await _api.editPerson(
+      personId,
+      name: name,
+      designation: designation,
+      history: history,
+    );
+    nodeData[personId] = updated;
+    notifyListeners();
+  }
+
+  /// Adds a child named [childName] under [parentId] and grafts it into the
+  /// tree. Throws [GraphQLException] (with the backend message) on failure.
+  Future<void> addChild(int parentId, String childName) async {
+    final child = await _api.addPerson(parentId, childName);
+    nodeData[child.id] = child;
+    final childNode = Node.Id(child.id);
+    if (!graph.nodes.contains(childNode)) graph.addNode(childNode);
+    final key = '$parentId->${child.id}';
+    if (_edgeKeys.add(key)) graph.addEdge(Node.Id(parentId), childNode);
+    notifyListeners();
+  }
+
+  /// Removes [personId] from the tree after a successful delete.
+  Future<void> deletePerson(int personId) async {
+    final result = await _api.deletePerson(personId);
+    if (!result.ok) {
+      throw GraphQLException(result.message ?? 'Could not delete person.');
+    }
+    nodeData.remove(personId);
+    _expanded.remove(personId);
+    _expanding.remove(personId);
+    _edgeKeys.removeWhere(
+      (k) => k.startsWith('$personId->') || k.endsWith('->$personId'),
+    );
+    graph.removeNode(Node.Id(personId));
+    notifyListeners();
+  }
+
+  /// Publishes [personId] and un-dims its node (and its loaded children, which
+  /// the backend also publishes).
+  Future<void> publishPerson(int personId) async {
+    final result = await _api.publishPerson(personId);
+    if (!result.ok) {
+      throw GraphQLException(result.message ?? 'Could not publish person.');
+    }
+    _setOpacity(personId, 1.0);
+    for (final node in graph.successorsOf(Node.Id(personId))) {
+      _setOpacity(node.key!.value as int, 1.0);
+    }
+    notifyListeners();
+  }
+
+  /// Unpublishes [personId] and dims its node (and its loaded children).
+  Future<void> unpublishPerson(int personId) async {
+    final result = await _api.unpublishPerson(personId);
+    if (!result.ok) {
+      throw GraphQLException(result.message ?? 'Could not unpublish person.');
+    }
+    _setOpacity(personId, 0.3);
+    for (final node in graph.successorsOf(Node.Id(personId))) {
+      _setOpacity(node.key!.value as int, 0.3);
+    }
+    notifyListeners();
+  }
+
+  Future<MutationResult> bookmarkPerson(int personId) =>
+      _api.bookmarkPerson(personId);
+
+  Future<MutationResult> unbookmarkPerson(int personId) =>
+      _api.unbookmarkPerson(personId);
+
+  void _setOpacity(int id, double opacity) {
+    final node = nodeData[id];
+    if (node != null) nodeData[id] = node.copyWith(opacity: opacity);
+  }
+
   void _reset() {
     nodeData.clear();
     _edgeKeys.clear();

@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'auth/auth_service.dart';
 import 'config.dart';
 import 'l10n/app_strings.dart';
 import 'tree/tree_page.dart';
 
 void main() {
-  runApp(const FamilyTreeApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  final auth = AuthService();
+  // Restore any persisted login in the background; the UI updates via the
+  // AuthService listenable once it resolves.
+  auth.restore();
+  runApp(FamilyTreeApp(auth: auth));
 }
 
 class FamilyTreeApp extends StatelessWidget {
-  const FamilyTreeApp({super.key});
+  const FamilyTreeApp({super.key, required this.auth});
+
+  final AuthService auth;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +47,7 @@ class FamilyTreeApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const TreePage(),
+      home: TreePage(auth: auth),
     );
   }
 }

@@ -9,6 +9,46 @@ class TreeFragment {
   final List<(int from, int to)> edges;
 }
 
+/// A single "search by name" match (id + the full name with ancestors).
+class PersonSearchResult {
+  PersonSearchResult({required this.id, required this.name});
+  final int id;
+  final String name;
+}
+
+/// The editable fields of a person, used to prefill the edit form.
+class PersonDetails {
+  PersonDetails({
+    required this.id,
+    required this.name,
+    required this.designation,
+    required this.history,
+  });
+  final int id;
+  final String name;
+  final String designation;
+  final String history;
+}
+
+/// The currently signed-in user, as reported by the `me` query.
+class CurrentUser {
+  CurrentUser({
+    required this.username,
+    required this.isStaff,
+    required this.isAuthenticated,
+  });
+  final String? username;
+  final bool isStaff;
+  final bool isAuthenticated;
+}
+
+/// The result of a mutation that can fail with a user-facing message.
+class MutationResult {
+  MutationResult({required this.ok, this.message});
+  final bool ok;
+  final String? message;
+}
+
 /// Wraps the GraphQL queries used by the tree view.
 ///
 /// * [bootstrap] mirrors the Django `person_tree` view: grandfather → father →
@@ -148,5 +188,210 @@ class FamilyApi {
     }
 
     return TreeFragment(nodes: nodes, edges: edges);
+  }
+
+  // --- Account ------------------------------------------------------------
+
+  static const String _meDoc = r'''
+    query Me {
+      me { username isStaff isAuthenticated }
+    }
+  ''';
+
+  /// Returns the signed-in user, or null when the response has no user.
+  Future<CurrentUser?> me() async {
+    final data = await _client.query(_meDoc);
+    final me = data['me'] as Map<String, dynamic>?;
+    if (me == null) return null;
+    return CurrentUser(
+      username: me['username'] as String?,
+      isStaff: (me['isStaff'] as bool?) ?? false,
+      isAuthenticated: (me['isAuthenticated'] as bool?) ?? false,
+    );
+  }
+
+  // --- Search -------------------------------------------------------------
+
+  static const String _searchDoc = r'''
+    query Search($query: String!) {
+      searchPersons(query: $query) { id name }
+    }
+  ''';
+
+  /// Live search by (the start of) a name, mirroring the web search box.
+  Future<List<PersonSearchResult>> searchPersons(String query) async {
+    final data = await _client.query(_searchDoc, variables: {'query': query});
+    final results = data['searchPersons'] as List<dynamic>? ?? const [];
+    return [
+      for (final r in results)
+        PersonSearchResult(
+          id: (r as Map<String, dynamic>)['id'] as int,
+          name: (r['name'] as String?) ?? '',
+        ),
+    ];
+  }
+
+  // --- Mutations (require an authenticated session) -----------------------
+
+  static const String _canDeleteDoc = r'''
+    query CanDelete($id: Int!) { canDelete(id: $id) }
+  ''';
+
+  /// Whether the current user is allowed to delete [personId].
+  Future<bool> canDelete(int personId) async {
+    final data = await _client.query(_canDeleteDoc, variables: {'id': personId});
+    return (data['canDelete'] as bool?) ?? false;
+  }
+
+  static const String _publishStatusDoc = r'''
+    query PublishStatus($id: ID!) {
+      person(id: $id) { published bookmarked }
+    }
+  ''';
+
+  /// The publish/bookmark flags for [personId] (used to pick which staff
+  /// actions to offer).
+  Future<({bool published, bool bookmarked})> publishStatus(
+    int personId,
+  ) async {
+    final data =
+        await _client.query(_publishStatusDoc, variables: {'id': personId});
+    final person = data['person'] as Map<String, dynamic>?;
+    return (
+      published: (person?['published'] as bool?) ?? false,
+      bookmarked: (person?['bookmarked'] as bool?) ?? false,
+    );
+  }
+
+  static const String _personDetailsDoc = r'''
+    query PersonDetails($id: ID!) {
+      person(id: $id) { id name designation history }
+    }
+  ''';
+
+  /// Fetches the raw editable fields of [personId] to prefill the edit form.
+  Future<PersonDetails> personDetails(int personId) async {
+    final data =
+        await _client.query(_personDetailsDoc, variables: {'id': personId});
+    final person = data['person'] as Map<String, dynamic>?;
+    if (person == null) throw PersonNotFoundException(personId);
+    return PersonDetails(
+      id: int.parse(person['id'].toString()),
+      name: (person['name'] as String?) ?? '',
+      designation: (person['designation'] as String?) ?? '',
+      history: (person['history'] as String?) ?? '',
+    );
+  }
+
+  static const String _editPersonDoc = r'''
+    mutation EditPerson(
+      $id: Int!, $name: String, $designation: String, $history: String
+    ) {
+      editPerson(
+        id: $id, name: $name, designation: $designation, history: $history
+      ) {
+        id label group opacity title font { strokeWidth }
+        ok message
+      }
+    }
+  ''';
+
+  /// Updates [personId]'s name/designation/history and returns the refreshed
+  /// node. Throws [GraphQLException] with the backend message on failure.
+  Future<FamilyNode> editPerson(
+    int personId, {
+    required String name,
+    required String designation,
+    required String history,
+  }) async {
+    final data = await _client.query(_editPersonDoc, variables: {
+      'id': personId,
+      'name': name,
+      'designation': designation,
+      'history': history,
+    });
+    final result = data['editPerson'] as Map<String, dynamic>?;
+    if (result == null || result['ok'] != true) {
+      throw GraphQLException(
+        (result?['message'] as String?) ?? 'Could not save changes.',
+      );
+    }
+    return FamilyNode.fromConnectedJson(result);
+  }
+
+  static const String _addPersonDoc = r'''
+    mutation AddPerson($id: Int!, $childName: String!) {
+      addPerson(id: $id, childName: $childName) {
+        id label group opacity title font { strokeWidth }
+        ok message
+      }
+    }
+  ''';
+
+  /// Adds a child named [childName] under [parentId]. Returns the new node on
+  /// success, or throws [GraphQLException] with the backend message on failure.
+  Future<FamilyNode> addPerson(int parentId, String childName) async {
+    final data = await _client.query(
+      _addPersonDoc,
+      variables: {'id': parentId, 'childName': childName},
+    );
+    final result = data['addPerson'] as Map<String, dynamic>?;
+    if (result == null || result['ok'] != true) {
+      throw GraphQLException(
+        (result?['message'] as String?) ?? 'Could not add child.',
+      );
+    }
+    return FamilyNode.fromConnectedJson(result);
+  }
+
+  static const String _deletePersonDoc = r'''
+    mutation DeletePerson($id: Int!) {
+      deletePerson(id: $id) { ok message }
+    }
+  ''';
+
+  Future<MutationResult> deletePerson(int personId) =>
+      _simpleMutation(_deletePersonDoc, 'deletePerson', personId);
+
+  static const String _publishDoc = r'''
+    mutation Publish($id: Int!) { publishPerson(id: $id) { ok message } }
+  ''';
+
+  Future<MutationResult> publishPerson(int personId) =>
+      _simpleMutation(_publishDoc, 'publishPerson', personId);
+
+  static const String _unpublishDoc = r'''
+    mutation Unpublish($id: Int!) { unpublishPerson(id: $id) { ok message } }
+  ''';
+
+  Future<MutationResult> unpublishPerson(int personId) =>
+      _simpleMutation(_unpublishDoc, 'unpublishPerson', personId);
+
+  static const String _bookmarkDoc = r'''
+    mutation Bookmark($id: Int!) { bookmarkPerson(id: $id) { ok message } }
+  ''';
+
+  Future<MutationResult> bookmarkPerson(int personId) =>
+      _simpleMutation(_bookmarkDoc, 'bookmarkPerson', personId);
+
+  static const String _unbookmarkDoc = r'''
+    mutation Unbookmark($id: Int!) { unbookmarkPerson(id: $id) { ok message } }
+  ''';
+
+  Future<MutationResult> unbookmarkPerson(int personId) =>
+      _simpleMutation(_unbookmarkDoc, 'unbookmarkPerson', personId);
+
+  /// Runs a mutation shaped like `field(id: $id) { ok message }`.
+  Future<MutationResult> _simpleMutation(
+    String document,
+    String field,
+    int personId,
+  ) async {
+    final data = await _client.query(document, variables: {'id': personId});
+    final result = data[field] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (result?['ok'] as bool?) ?? false,
+      message: result?['message'] as String?,
+    );
   }
 }

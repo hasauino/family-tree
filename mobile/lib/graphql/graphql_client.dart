@@ -84,11 +84,13 @@ class GraphQLClient {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          if (_cookieHeader != null) 'Cookie': _cookieHeader!,
+          'Cookie': ?_cookieHeader,
         },
         body: jsonEncode({'query': document, 'variables': variables}),
       );
     } catch (e) {
+      // ignore: avoid_print
+      print('GRAPHQL_DEBUG url=${AppConfig.graphqlUrl} error=$e');
       throw GraphQLException(
         'Could not reach the server at ${AppConfig.graphqlUrl}. '
         'Is the Django dev server running?',

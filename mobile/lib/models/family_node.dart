@@ -69,6 +69,14 @@ class FamilyNode {
     return firstLine.isEmpty ? null : firstLine;
   }
 
+  FamilyNode copyWith({double? opacity}) => FamilyNode(
+        id: id,
+        label: label,
+        group: group,
+        title: title,
+        opacity: opacity ?? this.opacity,
+      );
+
   /// Build from a `connectedNodes` node payload (parent / child).
   factory FamilyNode.fromConnectedJson(Map<String, dynamic> json) {
     return FamilyNode(
