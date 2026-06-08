@@ -40,17 +40,21 @@ class FamilyTreeApp extends StatelessWidget {
       darkTheme: _buildTheme(
         ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
       ),
+      builder: (context, child) => _GradientBackground(child: child),
       home: TreePage(auth: auth),
     );
   }
 
   /// A flat, left-aligned, transparent-app-bar look shared by every page so
   /// the chrome blends with the content instead of sitting in its own bar.
+  /// The scaffold background is transparent so [_GradientBackground] shows
+  /// through underneath every page.
   ThemeData _buildTheme(ColorScheme scheme) {
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
       splashFactory: InkSparkle.splashFactory,
+      scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
@@ -59,6 +63,39 @@ class FamilyTreeApp extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         foregroundColor: scheme.onSurface,
       ),
+    );
+  }
+}
+
+/// Paints a soft, theme-aware pastel gradient behind every page — a modern,
+/// very-light backdrop that the (now-transparent) scaffolds sit on top of.
+class _GradientBackground extends StatelessWidget {
+  const _GradientBackground({required this.child});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.alphaBlend(
+              scheme.primaryContainer.withValues(alpha: 0.5),
+              scheme.surface,
+            ),
+            scheme.surface,
+            Color.alphaBlend(
+              scheme.tertiaryContainer.withValues(alpha: 0.5),
+              scheme.surface,
+            ),
+          ],
+        ),
+      ),
+      child: child,
     );
   }
 }

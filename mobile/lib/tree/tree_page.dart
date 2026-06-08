@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
@@ -211,17 +212,74 @@ class _TreePageState extends State<TreePage> {
     );
   }
 
-  /// Wraps an app bar action in a circular, semi-transparent backdrop so it
-  /// reads as a floating button on the now-transparent bar.
-  Widget _circularAction(Widget child) {
+  /// Groups the page actions into a single frosted-glass, pill-shaped
+  /// floating bar — blurs whatever sits behind it so it reads as "glass"
+  /// over the gradient backdrop, rather than a flat tinted shape.
+  Widget _actionBar(AppStrings t) {
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Material(
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        child: child,
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(Radius.circular(999)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(999)),
+            color: scheme.surface.withValues(alpha: 0.4),
+            border: Border.all(color: scheme.onSurface.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              // IntrinsicHeight bounds the row to its tallest button instead
+              // of the loose (near-full-screen) height the floating Align
+              // offers — without it, VerticalDivider has nothing to size
+              // itself against and stretches the whole pill vertically.
+              child: IntrinsicHeight(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: t.searchTooltip,
+                      icon: const Icon(Icons.search),
+                      onPressed: _openSearch,
+                    ),
+                    IconButton(
+                      tooltip: t.fitTreeTooltip,
+                      icon: const Icon(Icons.fit_screen),
+                      onPressed: _fitToWindow,
+                    ),
+                    IconButton(
+                      tooltip: t.reloadTooltip,
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        final id = _controller.rootId;
+                        if (id != null) _loadRootCentered(id);
+                      },
+                    ),
+                    VerticalDivider(
+                      width: 1,
+                      indent: 14,
+                      endIndent: 14,
+                      color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    ),
+                    ListenableBuilder(
+                      listenable: widget.auth,
+                      builder: (context, _) => _buildAccountMenu(t),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -230,60 +288,41 @@ class _TreePageState extends State<TreePage> {
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          _circularAction(
-            IconButton(
-              tooltip: t.searchTooltip,
-              icon: const Icon(Icons.search),
-              onPressed: _openSearch,
-            ),
-          ),
-          _circularAction(
-            IconButton(
-              tooltip: t.fitTreeTooltip,
-              icon: const Icon(Icons.fit_screen),
-              onPressed: _fitToWindow,
-            ),
-          ),
-          _circularAction(
-            IconButton(
-              tooltip: t.reloadTooltip,
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                final id = _controller.rootId;
-                if (id != null) _loadRootCentered(id);
-              },
-            ),
-          ),
-          _circularAction(
-            ListenableBuilder(
-              listenable: widget.auth,
-              builder: (context, _) => _buildAccountMenu(t),
-            ),
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, _) {
-          if (_controller.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (_controller.error != null && _controller.graph.nodeCount() == 0) {
-            return _ErrorView(
-              error: _controller.error!,
-              onRetry: () => _controller.loadRoot(
-                _controller.rootId ?? AppConfig.rootPersonId,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ListenableBuilder(
+                listenable: _controller,
+                builder: (context, _) {
+                  if (_controller.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (_controller.error != null &&
+                      _controller.graph.nodeCount() == 0) {
+                    return _ErrorView(
+                      error: _controller.error!,
+                      onRetry: () => _controller.loadRoot(
+                        _controller.rootId ?? AppConfig.rootPersonId,
+                      ),
+                    );
+                  }
+                  if (_controller.graph.nodeCount() == 0) {
+                    return Center(child: Text(t.noData));
+                  }
+                  return _buildGraph();
+                },
               ),
-            );
-          }
-          if (_controller.graph.nodeCount() == 0) {
-            return Center(child: Text(t.noData));
-          }
-          return _buildGraph();
-        },
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _actionBar(t),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
