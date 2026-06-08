@@ -67,35 +67,72 @@ class FamilyTreeApp extends StatelessWidget {
   }
 }
 
-/// Paints a soft, theme-aware pastel gradient behind every page — a modern,
-/// very-light backdrop that the (now-transparent) scaffolds sit on top of.
+/// Paints a soft "mesh gradient" backdrop behind every page: several large,
+/// softly-faded colour pools overlap on a near-neutral base so their edges
+/// blend into one another — a modern, multi-hue look (rather than a flat
+/// linear blend) kept light enough to stay out of the way of the content
+/// that sits on top of it.
 class _GradientBackground extends StatelessWidget {
   const _GradientBackground({required this.child});
 
   final Widget? child;
 
+  static const _lightBase = Color(0xFFEAEFFA);
+  static const _lightPools = [
+    _Pool(Alignment(-1.4, -1.2), Color(0xFFDFF5EF)), // seafoam
+    _Pool(Alignment(1.5, -1.0), Color(0xFFDCEBFB)), // ice blue
+    _Pool(Alignment(1.3, 1.3), Color(0xFFE6E1FB)), // soft violet
+    _Pool(Alignment(-1.3, 1.2), Color(0xFFF6E0F4)), // orchid pink
+    _Pool(Alignment(0.15, -0.05), Color(0xFFE9F2FC)), // pale sky
+  ];
+
+  static const _darkBase = Color(0xFF15171C);
+  static const _darkPools = [
+    _Pool(Alignment(-1.4, -1.2), Color(0xFF1C3A34)),
+    _Pool(Alignment(1.5, -1.0), Color(0xFF232A4A)),
+    _Pool(Alignment(1.3, 1.3), Color(0xFF362A4E)),
+    _Pool(Alignment(-1.3, 1.2), Color(0xFF452637)),
+    _Pool(Alignment(0.15, -0.05), Color(0xFF45301F)),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.alphaBlend(
-              scheme.primaryContainer.withValues(alpha: 0.5),
-              scheme.surface,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark ? _darkBase : _lightBase;
+    final pools = isDark ? _darkPools : _lightPools;
+
+    return RepaintBoundary(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ColoredBox(color: base),
+          for (final pool in pools)
+            Align(
+              alignment: pool.alignment,
+              child: FractionallySizedBox(
+                widthFactor: 1.7,
+                heightFactor: 1.3,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      colors: [pool.color, pool.color.withValues(alpha: 0)],
+                    ),
+                  ),
+                ),
+              ),
             ),
-            scheme.surface,
-            Color.alphaBlend(
-              scheme.tertiaryContainer.withValues(alpha: 0.5),
-              scheme.surface,
-            ),
-          ],
-        ),
+          ?child,
+        ],
       ),
-      child: child,
     );
   }
+}
+
+/// A single soft colour pool of the mesh backdrop: an off-canvas anchor point
+/// whose radial glow fades to transparent, so only its edge bleeds into view.
+class _Pool {
+  const _Pool(this.alignment, this.color);
+
+  final Alignment alignment;
+  final Color color;
 }
