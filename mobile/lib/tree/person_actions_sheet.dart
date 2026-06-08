@@ -4,6 +4,7 @@ import '../auth/auth_service.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
+import '../widgets/glass.dart';
 import 'edit_person_page.dart';
 import 'tree_controller.dart';
 
@@ -128,8 +129,8 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.deleteTitle),
+      builder: (ctx) => GlassDialog(
+        title: t.deleteTitle,
         content: Text(t.deleteConfirm(widget.node.label)),
         actions: [
           TextButton(
@@ -137,9 +138,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
             child: Text(t.cancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
+            style: glassButtonStyle(Theme.of(ctx).colorScheme.error),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(t.delete),
           ),
@@ -200,74 +199,98 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     final auth = widget.auth;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(widget.node.label, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(widget.node.title ?? t.noDetails),
-          const SizedBox(height: 16),
-          if (_loadingStatus || _busy) const LinearProgressIndicator(),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+    final scheme = Theme.of(context).colorScheme;
+    // The same frosted-glass surface as the search overlay / action bar —
+    // a blurred, translucent panel rather than the sheet's opaque default.
+    return GlassPanel(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FilledButton.tonalIcon(
-                onPressed: _busy
-                    ? null
-                    : () {
-                        Navigator.pop(context);
-                        widget.onCenter();
-                      },
-                icon: const Icon(Icons.center_focus_strong),
-                label: Text(t.centerTreeHere),
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: scheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-              if (auth.isAuthenticated) ...[
-                FilledButton.tonalIcon(
-                  onPressed: _busy ? null : _addChild,
-                  icon: const Icon(Icons.person_add),
-                  label: Text(t.addChild),
-                ),
-                FilledButton.tonalIcon(
-                  onPressed: _busy ? null : _edit,
-                  icon: const Icon(Icons.edit),
-                  label: Text(t.edit),
-                ),
-                if (auth.isStaff && _published != null)
+              Text(
+                widget.node.label,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(widget.node.title ?? t.noDetails),
+              const SizedBox(height: 16),
+              if (_loadingStatus || _busy) const LinearProgressIndicator(),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
                   FilledButton.tonalIcon(
-                    onPressed: _busy ? null : _togglePublish,
-                    icon: Icon(
-                      _published! ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    label: Text(_published! ? t.unpublish : t.publish),
+                    onPressed: _busy
+                        ? null
+                        : () {
+                            Navigator.pop(context);
+                            widget.onCenter();
+                          },
+                    icon: const Icon(Icons.center_focus_strong),
+                    label: Text(t.centerTreeHere),
                   ),
-                if (auth.isStaff && _published == true)
-                  FilledButton.tonalIcon(
-                    onPressed: _busy ? null : _toggleBookmark,
-                    icon: Icon(
-                      _bookmarked == true ? Icons.star : Icons.star_border,
+                  if (auth.isAuthenticated) ...[
+                    FilledButton.tonalIcon(
+                      onPressed: _busy ? null : _addChild,
+                      icon: const Icon(Icons.person_add),
+                      label: Text(t.addChild),
                     ),
-                    label: Text(
-                      _bookmarked == true ? t.removeBookmark : t.bookmark,
+                    FilledButton.tonalIcon(
+                      onPressed: _busy ? null : _edit,
+                      icon: const Icon(Icons.edit),
+                      label: Text(t.edit),
                     ),
-                  ),
-                if (_canDelete == true)
-                  FilledButton.tonalIcon(
-                    style: FilledButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
-                    ),
-                    onPressed: _busy ? null : _delete,
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(t.delete),
-                  ),
-              ],
+                    if (auth.isStaff && _published != null)
+                      FilledButton.tonalIcon(
+                        onPressed: _busy ? null : _togglePublish,
+                        icon: Icon(
+                          _published! ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        label: Text(_published! ? t.unpublish : t.publish),
+                      ),
+                    if (auth.isStaff && _published == true)
+                      FilledButton.tonalIcon(
+                        onPressed: _busy ? null : _toggleBookmark,
+                        icon: Icon(
+                          _bookmarked == true ? Icons.star : Icons.star_border,
+                        ),
+                        label: Text(
+                          _bookmarked == true ? t.removeBookmark : t.bookmark,
+                        ),
+                      ),
+                    if (_canDelete == true)
+                      FilledButton.tonalIcon(
+                        // The one action that needs to read as "dangerous" —
+                        // tinted with the error colour rather than the app's
+                        // default primary-tinted glass-button look.
+                        style: glassButtonStyle(scheme.error),
+                        onPressed: _busy ? null : _delete,
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(t.delete),
+                      ),
+                  ],
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -301,13 +324,13 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
   @override
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
-    return AlertDialog(
-      title: Text(widget.title),
+    return GlassDialog(
+      title: widget.title,
       content: TextField(
         controller: _controller,
         autofocus: true,
         textCapitalization: TextCapitalization.words,
-        decoration: InputDecoration(labelText: widget.label),
+        decoration: glassFieldDecoration(context, InputDecoration(labelText: widget.label)),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [

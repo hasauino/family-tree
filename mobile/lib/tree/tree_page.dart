@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
@@ -9,6 +8,7 @@ import '../auth/login_page.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
+import '../widgets/glass.dart';
 import 'node_widget.dart';
 import 'person_actions_sheet.dart';
 import 'search_overlay.dart';
@@ -148,7 +148,11 @@ class _TreePageState extends State<TreePage> {
   void _showDetails(FamilyNode node) {
     showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
+      // Transparent + a faint barrier so the sheet's own frosted-glass card
+      // (matching the search overlay's look) blurs the tree through it,
+      // instead of sitting on an opaque sheet over a dark scrim.
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       isScrollControlled: true,
       builder: (ctx) => PersonActionsSheet(
         node: node,
@@ -213,70 +217,53 @@ class _TreePageState extends State<TreePage> {
   }
 
   /// Groups the page actions into a single frosted-glass, pill-shaped
-  /// floating bar — blurs whatever sits behind it so it reads as "glass"
-  /// over the gradient backdrop, rather than a flat tinted shape.
+  /// floating bar — the same [GlassPanel] surface used for the search
+  /// overlay and person-actions sheet, so every floating panel matches.
   Widget _actionBar(AppStrings t) {
     final scheme = Theme.of(context).colorScheme;
-    return ClipRRect(
+    return GlassPanel(
       borderRadius: const BorderRadius.all(Radius.circular(999)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(999)),
-            color: scheme.surface.withValues(alpha: 0.4),
-            border: Border.all(color: scheme.onSurface.withValues(alpha: 0.08)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              // IntrinsicHeight bounds the row to its tallest button instead
-              // of the loose (near-full-screen) height the floating Align
-              // offers — without it, VerticalDivider has nothing to size
-              // itself against and stretches the whole pill vertically.
-              child: IntrinsicHeight(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      tooltip: t.searchTooltip,
-                      icon: const Icon(Icons.search),
-                      onPressed: _openSearch,
-                    ),
-                    IconButton(
-                      tooltip: t.fitTreeTooltip,
-                      icon: const Icon(Icons.fit_screen),
-                      onPressed: _fitToWindow,
-                    ),
-                    IconButton(
-                      tooltip: t.reloadTooltip,
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        final id = _controller.rootId;
-                        if (id != null) _loadRootCentered(id);
-                      },
-                    ),
-                    VerticalDivider(
-                      width: 1,
-                      indent: 14,
-                      endIndent: 14,
-                      color: scheme.outlineVariant.withValues(alpha: 0.4),
-                    ),
-                    ListenableBuilder(
-                      listenable: widget.auth,
-                      builder: (context, _) => _buildAccountMenu(t),
-                    ),
-                  ],
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          // IntrinsicHeight bounds the row to its tallest button instead
+          // of the loose (near-full-screen) height the floating Align
+          // offers — without it, VerticalDivider has nothing to size
+          // itself against and stretches the whole pill vertically.
+          child: IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: t.searchTooltip,
+                  icon: const Icon(Icons.search),
+                  onPressed: _openSearch,
                 ),
-              ),
+                IconButton(
+                  tooltip: t.fitTreeTooltip,
+                  icon: const Icon(Icons.fit_screen),
+                  onPressed: _fitToWindow,
+                ),
+                IconButton(
+                  tooltip: t.reloadTooltip,
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    final id = _controller.rootId;
+                    if (id != null) _loadRootCentered(id);
+                  },
+                ),
+                VerticalDivider(
+                  width: 1,
+                  indent: 14,
+                  endIndent: 14,
+                  color: scheme.outlineVariant.withValues(alpha: 0.4),
+                ),
+                ListenableBuilder(
+                  listenable: widget.auth,
+                  builder: (context, _) => _buildAccountMenu(t),
+                ),
+              ],
             ),
           ),
         ),

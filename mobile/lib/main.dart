@@ -5,6 +5,7 @@ import 'auth/auth_service.dart';
 import 'config.dart';
 import 'l10n/app_strings.dart';
 import 'tree/tree_page.dart';
+import 'widgets/glass.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,7 @@ class FamilyTreeApp extends StatelessWidget {
   /// The scaffold background is transparent so [_GradientBackground] shows
   /// through underneath every page.
   ThemeData _buildTheme(ColorScheme scheme) {
+    final fieldRadius = BorderRadius.circular(16);
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
@@ -62,6 +64,26 @@ class FamilyTreeApp extends StatelessWidget {
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         foregroundColor: scheme.onSurface,
+      ),
+      // Every filled button — across the tree sheet, login, and edit-person
+      // forms — gets the same translucent "glass pill" look, so the app
+      // reads as one design language instead of a mix of stock Material
+      // controls and ad-hoc overlay styling. One-off tints (e.g. the
+      // error-coloured "delete" action) opt out via their own `style`.
+      filledButtonTheme: FilledButtonThemeData(
+        style: glassButtonStyle(scheme.primary).copyWith(
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          ),
+        ),
+      ),
+      // Borderless text fields everywhere — the look the search field always
+      // had: text sitting directly on whatever glass surface it's on, with
+      // no outline stroke or extra fill layered on top of it.
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
       ),
     );
   }

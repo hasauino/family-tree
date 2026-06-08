@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
+import '../widgets/glass.dart';
 import 'tree_controller.dart';
 
 /// A native form for editing a person's name / designation / history — the
@@ -111,65 +112,79 @@ class _EditPersonPageState extends State<EditPersonPage> {
           }
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextFormField(
-                    controller: _name,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: t.nameLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? t.fieldRequired : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _designation,
-                    minLines: 1,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: t.designationLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _history,
-                    minLines: 3,
-                    maxLines: 8,
-                    decoration: InputDecoration(
-                      labelText: t.historyLabel,
-                      alignLabelWithHint: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+            // The same frosted-glass card every floating panel in the app
+            // uses, so this form reads as part of one design rather than a
+            // plain form dropped on the gradient backdrop. Field borders are
+            // left to the app-wide [InputDecorationTheme].
+            child: GlassPanel(
+              borderRadius: BorderRadius.circular(28),
+              opacity: 0.5,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextFormField(
+                        controller: _name,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: glassFieldDecoration(
+                          context,
+                          InputDecoration(labelText: t.nameLabel),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? t.fieldRequired
+                            : null,
                       ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    onPressed: _saving ? null : _save,
-                    icon: _saving
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.save),
-                    label: Text(t.save),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _designation,
+                        minLines: 1,
+                        maxLines: 3,
+                        decoration: glassFieldDecoration(
+                          context,
+                          InputDecoration(labelText: t.designationLabel),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _history,
+                        minLines: 3,
+                        maxLines: 8,
+                        decoration: glassFieldDecoration(
+                          context,
+                          InputDecoration(
+                            labelText: t.historyLabel,
+                            alignLabelWithHint: true,
+                          ),
+                        ),
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: _saving ? null : _save,
+                        icon: _saving
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: Text(t.save),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           );
