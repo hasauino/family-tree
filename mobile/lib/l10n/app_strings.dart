@@ -44,7 +44,6 @@ class AppStrings {
   // Search
   String get searchTooltip => _t('searchTooltip');
   String get searchHint => _t('searchHint');
-  String get searchMinChars => _t('searchMinChars');
   String get searchError => _t('searchError');
   String get searchNoResults => _t('searchNoResults');
 
@@ -105,7 +104,6 @@ class AppStrings {
       'errorPersonNotFound': 'Person #{id} was not found.',
       'searchTooltip': 'Search by name',
       'searchHint': 'Search by name',
-      'searchMinChars': 'Type at least 2 characters to search.',
       'searchError': 'Search failed. Check your connection and try again.',
       'searchNoResults': 'No matching people found.',
       'login': 'Login',
@@ -156,7 +154,6 @@ class AppStrings {
       'errorPersonNotFound': 'لم يتم العثور على الشخص رقم {id}.',
       'searchTooltip': 'البحث بالاسم',
       'searchHint': 'البحث بالاسم',
-      'searchMinChars': 'اكتب حرفين على الأقل للبحث.',
       'searchError': 'فشل البحث. تحقّق من اتصالك وحاول مرة أخرى.',
       'searchNoResults': 'لا يوجد أشخاص مطابقون.',
       'login': 'تسجيل الدخول',

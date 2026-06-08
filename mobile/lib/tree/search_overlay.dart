@@ -141,7 +141,7 @@ class _SearchOverlayState extends State<_SearchOverlay> {
 
   Widget _buildResults(AppStrings t, ColorScheme scheme) {
     if (!_isQueryable) {
-      return _Hint(text: t.searchMinChars);
+      return const SizedBox.shrink();
     }
     return FutureBuilder<List<PersonSearchResult>>(
       future: _pending,

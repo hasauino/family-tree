@@ -38,7 +38,7 @@ class _TreePageState extends State<TreePage> {
   @override
   void initState() {
     super.initState();
-    _controller.loadRoot(AppConfig.rootPersonId);
+    _loadRootCentered(AppConfig.rootPersonId);
   }
 
   @override
@@ -50,19 +50,23 @@ class _TreePageState extends State<TreePage> {
 
   void _resetZoom() => _viewer.value = Matrix4.identity();
 
-  /// Centers the view on [id]'s node. Only used for user actions (tapping a
-  /// node, the center button) when the viewport is already laid out — we never
-  /// center on first load, which is what caused the tree to vanish on a web
-  /// cold start.
-  void _centerNode(int id) {
+  /// Centers the view on [id]'s node, retrying for a few frames if its layout
+  /// (position/size) or the viewport isn't ready yet — e.g. right after a
+  /// fresh load, where the graph is rebuilt from scratch and the first
+  /// post-frame callback can fire before the layout pass has run. Bounded so
+  /// a node that never appears doesn't retry forever (this is what caused the
+  /// tree to vanish on a web cold start before the retry was bounded).
+  void _centerNode(int id, [int retriesLeft = 20]) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final node = _nodeFor(id);
       final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
-      if (node == null ||
-          node.size == Size.zero ||
-          box == null ||
-          !box.hasSize) {
+      final ready = node != null &&
+          node.size != Size.zero &&
+          box != null &&
+          box.hasSize;
+      if (!ready) {
+        if (retriesLeft > 0) _centerNode(id, retriesLeft - 1);
         return;
       }
       final viewport = box.size;
@@ -77,6 +81,16 @@ class _TreePageState extends State<TreePage> {
       _viewer.value = Matrix4.identity()
         ..translateByDouble(t.dx, t.dy, 0, 1)
         ..scaleByDouble(scale, scale, scale, 1);
+    });
+  }
+
+  /// Re-roots the tree on [id], resetting zoom and centering on the new root
+  /// once it's loaded and laid out. Used on first load, "center tree here",
+  /// search selection, and double-tapping a node.
+  void _loadRootCentered(int id) {
+    _resetZoom();
+    _controller.loadRoot(id).then((_) {
+      if (mounted) _centerNode(id);
     });
   }
 
@@ -139,10 +153,7 @@ class _TreePageState extends State<TreePage> {
         node: node,
         controller: _controller,
         auth: widget.auth,
-        onCenter: () {
-          _resetZoom();
-          _controller.loadRoot(node.id);
-        },
+        onCenter: () => _loadRootCentered(node.id),
       ),
     );
   }
@@ -150,10 +161,7 @@ class _TreePageState extends State<TreePage> {
   /// Opens the blurred "search by name" overlay; on selection, re-roots the tree.
   Future<void> _openSearch() async {
     final id = await showSearchOverlay(context, widget.auth.api);
-    if (id != null) {
-      _resetZoom();
-      _controller.loadRoot(id);
-    }
+    if (id != null) _loadRootCentered(id);
   }
 
   Future<void> _handleLogin() async {
@@ -203,38 +211,58 @@ class _TreePageState extends State<TreePage> {
     );
   }
 
+  /// Wraps an app bar action in a circular, semi-transparent backdrop so it
+  /// reads as a floating button on the now-transparent bar.
+  Widget _circularAction(Widget child) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Material(
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.appTitle),
         actions: [
-          IconButton(
-            tooltip: t.searchTooltip,
-            icon: const Icon(Icons.search),
-            onPressed: _openSearch,
+          _circularAction(
+            IconButton(
+              tooltip: t.searchTooltip,
+              icon: const Icon(Icons.search),
+              onPressed: _openSearch,
+            ),
           ),
-          IconButton(
-            tooltip: t.fitTreeTooltip,
-            icon: const Icon(Icons.fit_screen),
-            onPressed: _fitToWindow,
+          _circularAction(
+            IconButton(
+              tooltip: t.fitTreeTooltip,
+              icon: const Icon(Icons.fit_screen),
+              onPressed: _fitToWindow,
+            ),
           ),
-          IconButton(
-            tooltip: t.reloadTooltip,
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final id = _controller.rootId;
-              if (id != null) {
-                _resetZoom();
-                _controller.loadRoot(id);
-              }
-            },
+          _circularAction(
+            IconButton(
+              tooltip: t.reloadTooltip,
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                final id = _controller.rootId;
+                if (id != null) _loadRootCentered(id);
+              },
+            ),
           ),
-          ListenableBuilder(
-            listenable: widget.auth,
-            builder: (context, _) => _buildAccountMenu(t),
+          _circularAction(
+            ListenableBuilder(
+              listenable: widget.auth,
+              builder: (context, _) => _buildAccountMenu(t),
+            ),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: ListenableBuilder(
@@ -296,10 +324,7 @@ class _TreePageState extends State<TreePage> {
                   if (mounted) _centerNode(id);
                 });
               },
-              onDoubleTap: () {
-                _resetZoom();
-                _controller.loadRoot(id);
-              },
+              onDoubleTap: () => _loadRootCentered(id),
               onLongPress: () => _showDetails(data),
             );
           },

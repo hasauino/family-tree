@@ -36,18 +36,29 @@ class FamilyTreeApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       themeMode: ThemeMode.system,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: seed),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seed,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
+      theme: _buildTheme(ColorScheme.fromSeed(seedColor: seed)),
+      darkTheme: _buildTheme(
+        ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
       ),
       home: TreePage(auth: auth),
+    );
+  }
+
+  /// A flat, left-aligned, transparent-app-bar look shared by every page so
+  /// the chrome blends with the content instead of sitting in its own bar.
+  ThemeData _buildTheme(ColorScheme scheme) {
+    return ThemeData(
+      colorScheme: scheme,
+      useMaterial3: true,
+      splashFactory: InkSparkle.splashFactory,
+      appBarTheme: AppBarTheme(
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: scheme.onSurface,
+      ),
     );
   }
 }

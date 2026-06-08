@@ -44,13 +44,49 @@ class FakeFamilyBackend {
     // Seed a tiny tree rooted at the id the app opens on launch.
     _people[AppConfig.rootPersonId] =
         FakePerson(id: AppConfig.rootPersonId, name: 'Grandfather');
-    _people[_nextId] =
-        FakePerson(id: _nextId, name: 'Father', parentId: AppConfig.rootPersonId);
-    _nextId++;
+    _seed('Father', parentId: AppConfig.rootPersonId);
+  }
+
+  FakeFamilyBackend._empty();
+
+  /// Builds a backend whose tree is wide and deep enough that re-rooting
+  /// moves nodes to very different on-screen positions — for testing the
+  /// "center on load" / "Center tree here" behaviors, where a too-small tree
+  /// could pass by coincidence. [AppConfig.rootPersonId] ("Root") sits two
+  /// generations below the top ancestor and branches into [childrenPerNode]
+  /// children, each with [childrenPerNode] children of its own, so its
+  /// bootstrap view spans the full five generations the app loads
+  /// (great-grandparent through grandchildren).
+  factory FakeFamilyBackend.branching({int childrenPerNode = 5}) {
+    final backend = FakeFamilyBackend._empty();
+    final greatGrandparent = backend._seed('Great-Grandparent');
+    final grandparent =
+        backend._seed('Grandparent', parentId: greatGrandparent);
+    backend._people[AppConfig.rootPersonId] = FakePerson(
+      id: AppConfig.rootPersonId,
+      name: 'Root',
+      parentId: grandparent,
+    );
+    for (var i = 0; i < childrenPerNode; i++) {
+      final child =
+          backend._seed('Child $i', parentId: AppConfig.rootPersonId);
+      for (var j = 0; j < childrenPerNode; j++) {
+        backend._seed('Grandchild $i-$j', parentId: child);
+      }
+    }
+    return backend;
   }
 
   final Map<int, FakePerson> _people = {};
   int _nextId = 1;
+
+  /// Adds a person named [name] (optionally under [parentId]) and returns
+  /// their id.
+  int _seed(String name, {int? parentId}) {
+    final id = _nextId++;
+    _people[id] = FakePerson(id: id, name: name, parentId: parentId);
+    return id;
+  }
 
   /// An [AuthService] that talks only to this fake and is seen as a staff user
   /// (so every action — add/edit/publish/bookmark/delete — is available).

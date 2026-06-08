@@ -64,5 +64,5 @@ class AppConfig {
   ///                       first [supportedLocales] entry when unsupported.
   ///   * `Locale('ar')` -> force Arabic (RTL) regardless of the device.
   ///   * `Locale('en')` -> force English regardless of the device.
-  static const Locale? locale = null;
+  static const Locale? locale = Locale('ar');
 }
