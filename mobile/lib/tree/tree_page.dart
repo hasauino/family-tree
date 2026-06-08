@@ -329,46 +329,64 @@ class _TreePageState extends State<TreePage> {
 
   Widget _buildGraph() {
     final edgeColor = Theme.of(context).colorScheme.outline;
-    return InteractiveViewer(
-      key: _viewportKey,
-      transformationController: _viewer,
-      constrained: false,
-      boundaryMargin: const EdgeInsets.all(800),
-      minScale: 0.1,
-      maxScale: 3.0,
-      child: Padding(
-        padding: const EdgeInsets.all(60),
-        child: GraphView(
-          graph: _controller.graph,
-          algorithm:
-              BuchheimWalkerAlgorithm(_layout, TreeEdgeRenderer(_layout)),
-          toggleAnimationDuration: AppConfig.treeLayoutAnimationDuration,
-          paint: Paint()
-            ..color = edgeColor
-            ..strokeWidth = 1.4
-            ..style = PaintingStyle.stroke,
-          builder: (Node node) {
-            final id = node.key!.value as int;
-            final data = _controller.nodeData[id];
-            if (data == null) {
-              return const SizedBox.shrink();
-            }
-            return NodeWidget(
-              node: data,
-              isRoot: id == _controller.rootId,
-              isExpanding: _controller.isExpanding(id),
-              onTap: () {
-                _centerNode(id);
-                _controller.expand(id).then((_) {
-                  if (mounted) _centerNode(id);
-                });
-              },
-              onDoubleTap: () => _loadRootCentered(id),
-              onLongPress: () => _showDetails(data),
-            );
-          },
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewport = constraints.biggest;
+        return InteractiveViewer(
+          key: _viewportKey,
+          transformationController: _viewer,
+          constrained: false,
+          boundaryMargin: const EdgeInsets.all(800),
+          minScale: 0.1,
+          maxScale: 3.0,
+          child: Stack(
+            alignment: Alignment.topLeft,
+            children: [
+              // An invisible spacer that pads the pannable canvas out to at
+              // least the viewport size, so panning a small tree never
+              // reveals a hard edge where the canvas ends. Both this and the
+              // padded GraphView are top-left aligned, so GraphView keeps
+              // sitting at the fixed (pad, pad) offset that
+              // _centerNode/_fitToWindow assume — Stack sizes itself to the
+              // larger of the two, whichever that is.
+              SizedBox(width: viewport.width, height: viewport.height),
+              Padding(
+                padding: const EdgeInsets.all(60),
+                child: GraphView(
+                  graph: _controller.graph,
+                  algorithm:
+                      BuchheimWalkerAlgorithm(_layout, TreeEdgeRenderer(_layout)),
+                  toggleAnimationDuration: AppConfig.treeLayoutAnimationDuration,
+                  paint: Paint()
+                    ..color = edgeColor
+                    ..strokeWidth = 1.4
+                    ..style = PaintingStyle.stroke,
+                  builder: (Node node) {
+                    final id = node.key!.value as int;
+                    final data = _controller.nodeData[id];
+                    if (data == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return NodeWidget(
+                      node: data,
+                      isRoot: id == _controller.rootId,
+                      isExpanding: _controller.isExpanding(id),
+                      onTap: () {
+                        _centerNode(id);
+                        _controller.expand(id).then((_) {
+                          if (mounted) _centerNode(id);
+                        });
+                      },
+                      onDoubleTap: () => _loadRootCentered(id),
+                      onLongPress: () => _showDetails(data),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
