@@ -5,6 +5,16 @@ import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../models/family_node.dart';
 
+/// A load failure, kept locale-agnostic so the UI can render it in the active
+/// language. [personId] is set only for [TreeErrorKind.personNotFound].
+class TreeError {
+  TreeError(this.kind, {this.personId});
+  final TreeErrorKind kind;
+  final int? personId;
+}
+
+enum TreeErrorKind { personNotFound, connection }
+
 /// Holds the interactive tree state and talks to [FamilyApi].
 ///
 /// The [Graph] is the layout/render model consumed by `GraphView`; [nodeData]
@@ -26,7 +36,7 @@ class TreeController extends ChangeNotifier {
 
   int? rootId;
   bool loading = false;
-  String? error;
+  TreeError? error;
 
   bool isExpanding(int id) => _expanding.contains(id);
   bool isExpanded(int id) => _expanded.contains(id);
@@ -43,10 +53,10 @@ class TreeController extends ChangeNotifier {
       final fragment = await _api.bootstrap(personId);
       _apply(fragment);
       _expanded.add(personId);
-    } on GraphQLException catch (e) {
-      error = e.message;
-    } catch (e) {
-      error = e.toString();
+    } on PersonNotFoundException catch (e) {
+      error = TreeError(TreeErrorKind.personNotFound, personId: e.personId);
+    } catch (_) {
+      error = TreeError(TreeErrorKind.connection);
     } finally {
       loading = false;
       notifyListeners();
@@ -62,10 +72,10 @@ class TreeController extends ChangeNotifier {
       final fragment = await _api.connectedNodes(personId);
       _apply(fragment);
       _expanded.add(personId);
-    } on GraphQLException catch (e) {
-      error = e.message;
-    } catch (e) {
-      error = e.toString();
+    } on PersonNotFoundException catch (e) {
+      error = TreeError(TreeErrorKind.personNotFound, personId: e.personId);
+    } catch (_) {
+      error = TreeError(TreeErrorKind.connection);
     } finally {
       _expanding.remove(personId);
       notifyListeners();

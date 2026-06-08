@@ -9,6 +9,10 @@
 ///   * Android emulator              -> http://10.0.2.2:8000 (host loopback)
 ///
 /// The Django dev server is started with `python manage.py runserver`.
+library;
+
+import 'package:flutter/widgets.dart' show Locale;
+
 class AppConfig {
   static const String _override = String.fromEnvironment('API_BASE_URL');
 
@@ -34,4 +38,23 @@ class AppConfig {
   /// tree expands/repositions (graphview `toggleAnimationDuration`).
   static const Duration treeLayoutAnimationDuration =
       Duration(milliseconds: 100);
+
+  // --- Localization ------------------------------------------------------
+  // To add a language: add its [Locale] here AND a matching entry in
+  // `_values` inside `lib/l10n/app_strings.dart`. Arabic renders right-to-left
+  // automatically once it is the active locale.
+
+  /// Languages the app ships with. The first entry is the fallback used when
+  /// the device language is not supported.
+  static const List<Locale> supportedLocales = [
+    Locale('en'),
+    Locale('ar'),
+  ];
+
+  /// The language the app starts in.
+  ///   * `null`         -> follow the device language, falling back to the
+  ///                       first [supportedLocales] entry when unsupported.
+  ///   * `Locale('ar')` -> force Arabic (RTL) regardless of the device.
+  ///   * `Locale('en')` -> force English regardless of the device.
+  static const Locale? locale = null;
 }

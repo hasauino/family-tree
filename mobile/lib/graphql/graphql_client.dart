@@ -14,16 +14,64 @@ class GraphQLException implements Exception {
   String toString() => 'GraphQLException: $message';
 }
 
-/// Minimal GraphQL-over-HTTP client for the Django `graphene` endpoint.
+/// Thrown when a requested person id does not exist. Carries the id so the UI
+/// can show a localized "person not found" message.
+class PersonNotFoundException extends GraphQLException {
+  PersonNotFoundException(this.personId)
+      : super('Person #$personId was not found.');
+  final int personId;
+}
+
+/// Thrown when login credentials are rejected by the Django backend.
+class InvalidCredentialsException extends GraphQLException {
+  InvalidCredentialsException() : super('Invalid username or password.');
+}
+
+/// Minimal GraphQL-over-HTTP client for the Django `graphene` endpoint, with
+/// just enough Django session support to drive the authenticated mutations
+/// (add child / delete / publish / bookmark).
 ///
-/// Kept dependency-light on purpose: a single POST with `query` + `variables`,
-/// `credentials: same-origin`-style cookie reuse is not needed for the
-/// read-only tree (public persons are visible anonymously).
+/// Cookie handling is deliberately tiny: we only track the two cookies Django
+/// uses — `sessionid` (the login session) and `csrftoken`. The `/graphql`
+/// endpoint is `csrf_exempt` on the server, so once we hold a `sessionid`
+/// cookie the mutations authenticate purely from it.
 class GraphQLClient {
   GraphQLClient({http.Client? httpClient})
       : _http = httpClient ?? http.Client();
 
   final http.Client _http;
+
+  /// The cookies we echo back to the server (`sessionid`, `csrftoken`).
+  final Map<String, String> _cookies = {};
+
+  /// Restore a previously persisted session (see `AuthService`).
+  void restoreCookies(Map<String, String> cookies) {
+    _cookies
+      ..clear()
+      ..addAll(cookies);
+  }
+
+  /// A snapshot of the current cookies, for persistence.
+  Map<String, String> get cookies => Map.unmodifiable(_cookies);
+
+  bool get hasSession => _cookies.containsKey('sessionid');
+
+  String? get _cookieHeader => _cookies.isEmpty
+      ? null
+      : _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+
+  /// Captures `sessionid` / `csrftoken` from a response's `Set-Cookie` header.
+  /// Django emits each cookie in its own directive but Dart's http client folds
+  /// them into one comma-joined string; rather than parse that (cookie expiry
+  /// dates contain commas), we just pluck the two values we care about.
+  void _captureCookies(http.Response response) {
+    final raw = response.headers['set-cookie'];
+    if (raw == null) return;
+    for (final name in const ['sessionid', 'csrftoken']) {
+      final match = RegExp('$name=([^;]+)').firstMatch(raw);
+      if (match != null) _cookies[name] = match.group(1)!;
+    }
+  }
 
   Future<Map<String, dynamic>> query(
     String document, {
@@ -33,9 +81,10 @@ class GraphQLClient {
     try {
       response = await _http.post(
         Uri.parse(AppConfig.graphqlUrl),
-        headers: const {
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (_cookieHeader != null) 'Cookie': _cookieHeader!,
         },
         body: jsonEncode({'query': document, 'variables': variables}),
       );
@@ -45,6 +94,8 @@ class GraphQLClient {
         'Is the Django dev server running?',
       );
     }
+
+    _captureCookies(response);
 
     if (response.statusCode != 200) {
       throw GraphQLException('Server returned HTTP ${response.statusCode}.');
@@ -57,6 +108,65 @@ class GraphQLClient {
       throw GraphQLException((first['message'] as String?) ?? 'Unknown error');
     }
     return (body['data'] as Map<String, dynamic>?) ?? const {};
+  }
+
+  /// Logs in against Django's session auth at `/accounts/login/`.
+  ///
+  /// Django's CSRF protection accepts the raw `csrftoken` cookie value as the
+  /// form's `csrfmiddlewaretoken`, so we GET the login page to obtain that
+  /// cookie, then POST the credentials with it. On success Django replies with
+  /// a 302 redirect and a `sessionid` cookie.
+  Future<void> login(String username, String password) async {
+    final loginUrl = Uri.parse('${AppConfig.baseUrl}/accounts/login/');
+
+    final http.Response getResponse;
+    try {
+      getResponse = await _http.get(loginUrl);
+    } catch (e) {
+      throw GraphQLException(
+        'Could not reach the server at ${AppConfig.baseUrl}.',
+      );
+    }
+    _captureCookies(getResponse);
+    final csrf = _cookies['csrftoken'];
+    if (csrf == null) {
+      throw GraphQLException('Server did not issue a CSRF token.');
+    }
+
+    final request = http.Request('POST', loginUrl)
+      ..followRedirects = false
+      ..headers.addAll({
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': _cookieHeader!,
+        'Referer': loginUrl.toString(),
+      })
+      ..bodyFields = {
+        'username': username,
+        'password': password,
+        'csrfmiddlewaretoken': csrf,
+      };
+
+    final http.Response response;
+    try {
+      response = await http.Response.fromStream(await _http.send(request));
+    } catch (e) {
+      throw GraphQLException(
+        'Could not reach the server at ${AppConfig.baseUrl}.',
+      );
+    }
+    _captureCookies(response);
+
+    // A 302 redirect with a fresh sessionid means success; a 200 means Django
+    // re-rendered the login form, i.e. the credentials were rejected.
+    if (response.statusCode != 302 || !hasSession) {
+      throw InvalidCredentialsException();
+    }
+  }
+
+  /// Drops the local session. (The server session lingers until it expires,
+  /// which is fine — without the cookie we are anonymous again.)
+  void clearSession() {
+    _cookies.remove('sessionid');
   }
 
   void dispose() => _http.close();

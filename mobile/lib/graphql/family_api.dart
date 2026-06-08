@@ -69,7 +69,7 @@ class FamilyApi {
     final data = await _client.query(_bootstrapDoc, variables: {'id': personId});
     final person = data['person'] as Map<String, dynamic>?;
     if (person == null) {
-      throw GraphQLException('Person #$personId was not found.');
+      throw PersonNotFoundException(personId);
     }
 
     final nodes = <FamilyNode>[];

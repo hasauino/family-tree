@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 
 import '../config.dart';
+import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
 import 'node_widget.dart';
 import 'tree_controller.dart';
@@ -78,36 +79,38 @@ class _TreePageState extends State<TreePage> {
   }
 
   Future<void> _promptOpenPerson() async {
+    final t = AppStrings.of(context);
     final textController = TextEditingController(
       text: _controller.rootId?.toString() ?? '',
     );
     final id = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Open person tree'),
+        title: Text(t.openPersonTitle),
         content: TextField(
           controller: textController,
           autofocus: true,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Person id',
-            hintText: 'e.g. 1',
+          decoration: InputDecoration(
+            labelText: t.personIdLabel,
+            hintText: t.personIdHint,
           ),
           onSubmitted: (v) => Navigator.pop(ctx, int.tryParse(v.trim())),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(t.cancel),
           ),
           FilledButton(
             onPressed: () =>
                 Navigator.pop(ctx, int.tryParse(textController.text.trim())),
-            child: const Text('Open'),
+            child: Text(t.open),
           ),
         ],
       ),
     );
+    textController.dispose();
     if (id != null) {
       _resetZoom();
       _controller.loadRoot(id);
@@ -126,7 +129,7 @@ class _TreePageState extends State<TreePage> {
           children: [
             Text(node.label, style: Theme.of(ctx).textTheme.titleLarge),
             const SizedBox(height: 12),
-            Text(node.title ?? 'No further details.'),
+            Text(node.title ?? AppStrings.of(ctx).noDetails),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -137,7 +140,7 @@ class _TreePageState extends State<TreePage> {
                     _controller.loadRoot(node.id);
                   },
                   icon: const Icon(Icons.center_focus_strong),
-                  label: const Text('Center tree here'),
+                  label: Text(AppStrings.of(ctx).centerTreeHere),
                 ),
               ],
             ),
@@ -149,17 +152,18 @@ class _TreePageState extends State<TreePage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Family Tree'),
+        title: Text(t.appTitle),
         actions: [
           IconButton(
-            tooltip: 'Open person',
+            tooltip: t.openPersonTooltip,
             icon: const Icon(Icons.person_search),
             onPressed: _promptOpenPerson,
           ),
           IconButton(
-            tooltip: 'Center on active person',
+            tooltip: t.centerOnActiveTooltip,
             icon: const Icon(Icons.center_focus_strong),
             onPressed: () {
               final id = _controller.rootId;
@@ -167,7 +171,7 @@ class _TreePageState extends State<TreePage> {
             },
           ),
           IconButton(
-            tooltip: 'Reload',
+            tooltip: t.reloadTooltip,
             icon: const Icon(Icons.refresh),
             onPressed: () {
               final id = _controller.rootId;
@@ -187,14 +191,14 @@ class _TreePageState extends State<TreePage> {
           }
           if (_controller.error != null && _controller.graph.nodeCount() == 0) {
             return _ErrorView(
-              message: _controller.error!,
+              error: _controller.error!,
               onRetry: () => _controller.loadRoot(
                 _controller.rootId ?? AppConfig.rootPersonId,
               ),
             );
           }
           if (_controller.graph.nodeCount() == 0) {
-            return const Center(child: Text('No data.'));
+            return Center(child: Text(t.noData));
           }
           return _buildGraph();
         },
@@ -252,13 +256,19 @@ class _TreePageState extends State<TreePage> {
 }
 
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
+  const _ErrorView({required this.error, required this.onRetry});
 
-  final String message;
+  final TreeError error;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final t = AppStrings.of(context);
+    final message = switch (error.kind) {
+      TreeErrorKind.personNotFound =>
+        t.errorPersonNotFound(error.personId ?? 0),
+      TreeErrorKind.connection => t.errorConnection,
+    };
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -272,7 +282,7 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(t.retry),
             ),
           ],
         ),

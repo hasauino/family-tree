@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'config.dart';
+import 'l10n/app_strings.dart';
 import 'tree/tree_page.dart';
 
 void main() {
@@ -13,8 +16,17 @@ class FamilyTreeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const seed = Color(0xFF5B8FF9);
     return MaterialApp(
-      title: 'Family Tree',
+      onGenerateTitle: (context) => AppStrings.of(context).appTitle,
       debugShowCheckedModeBanner: false,
+      // Language: forced by AppConfig.locale, or follows the device when null.
+      locale: AppConfig.locale,
+      supportedLocales: AppConfig.supportedLocales,
+      localizationsDelegates: const [
+        AppStrings.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       themeMode: ThemeMode.system,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: seed),
