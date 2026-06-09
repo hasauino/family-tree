@@ -47,6 +47,15 @@ class AppConfig {
   static const Duration treeLayoutAnimationDuration =
       Duration(milliseconds: 100);
 
+  /// How long the animated pan takes when centering on a node after a tap.
+  /// Set to [Duration.zero] to snap instantly.
+  static const Duration nodePanDuration = Duration(milliseconds: 400);
+
+  /// How long the zoom-in animation takes after the from→to path is loaded
+  /// (the camera flies from the full-tree view into the target node).
+  /// Set to [Duration.zero] to snap instantly.
+  static const Duration treePathZoomDuration = Duration(milliseconds: 2000);
+
   // --- Localization ------------------------------------------------------
   // To add a language: add its [Locale] here AND a matching entry in
   // `_values` inside `lib/l10n/app_strings.dart`. Arabic renders right-to-left

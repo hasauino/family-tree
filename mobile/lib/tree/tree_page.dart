@@ -25,11 +25,18 @@ class TreePage extends StatefulWidget {
   State<TreePage> createState() => _TreePageState();
 }
 
-class _TreePageState extends State<TreePage> {
+class _TreePageState extends State<TreePage>
+    with SingleTickerProviderStateMixin {
   late final TreeController _controller =
       TreeController(api: widget.auth.api);
   final TransformationController _viewer = TransformationController();
   final GlobalKey _viewportKey = GlobalKey();
+
+  late final AnimationController _panController = AnimationController(
+    vsync: this,
+    duration: AppConfig.nodePanDuration,
+  );
+  Matrix4Tween? _panTween;
 
   late final BuchheimWalkerConfiguration _layout = BuchheimWalkerConfiguration()
     ..siblingSeparation = 25
@@ -40,17 +47,38 @@ class _TreePageState extends State<TreePage> {
   @override
   void initState() {
     super.initState();
+    _panController.addListener(() {
+      final tween = _panTween;
+      if (tween != null) {
+        _viewer.value =
+            tween.lerp(Curves.easeInOut.transform(_panController.value));
+      }
+    });
     _loadRootCentered(AppConfig.rootPersonId);
   }
 
   @override
   void dispose() {
+    _panController.dispose();
     _controller.dispose();
     _viewer.dispose();
     super.dispose();
   }
 
-  void _resetZoom() => _viewer.value = Matrix4.identity();
+  void _resetZoom() {
+    _panController.stop();
+    _viewer.value = Matrix4.identity();
+  }
+
+  /// Smoothly animates [_viewer] from its current transform to [target].
+  /// [duration] overrides the controller's duration for this one animation;
+  /// omit it to use [AppConfig.nodePanDuration]. Interrupts any in-progress
+  /// pan animation.
+  void _animateTo(Matrix4 target, {Duration? duration}) {
+    _panController.duration = duration ?? AppConfig.nodePanDuration;
+    _panTween = Matrix4Tween(begin: _viewer.value.clone(), end: target);
+    _panController.forward(from: 0);
+  }
 
   /// Centers the view on [id]'s node, retrying for a few frames if its layout
   /// (position/size) or the viewport isn't ready yet — e.g. right after a
@@ -58,7 +86,17 @@ class _TreePageState extends State<TreePage> {
   /// post-frame callback can fire before the layout pass has run. Bounded so
   /// a node that never appears doesn't retry forever (this is what caused the
   /// tree to vanish on a web cold start before the retry was bounded).
-  void _centerNode(int id, [int retriesLeft = 20]) {
+  ///
+  /// Pass [animated] to smoothly pan instead of snapping. Pass [targetScale]
+  /// to override the zoom level at the destination (defaults to the current
+  /// viewer scale, preserving whatever the user has set).
+  void _centerNode(
+    int id, {
+    bool animated = false,
+    double? targetScale,
+    Duration? animationDuration,
+    int retriesLeft = 20,
+  }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final node = _nodeFor(id);
@@ -68,11 +106,17 @@ class _TreePageState extends State<TreePage> {
           box != null &&
           box.hasSize;
       if (!ready) {
-        if (retriesLeft > 0) _centerNode(id, retriesLeft - 1);
+        if (retriesLeft > 0) {
+          _centerNode(id,
+              animated: animated,
+              targetScale: targetScale,
+              animationDuration: animationDuration,
+              retriesLeft: retriesLeft - 1);
+        }
         return;
       }
       final viewport = box.size;
-      final scale = _viewer.value.getMaxScaleOnAxis();
+      final scale = targetScale ?? _viewer.value.getMaxScaleOnAxis();
       const pad = 60.0; // matches the Padding around the graph
       final nodeCenter = Offset(
         pad + node.position.dx + node.size.width / 2,
@@ -80,9 +124,14 @@ class _TreePageState extends State<TreePage> {
       );
       final t =
           Offset(viewport.width / 2, viewport.height / 2) - nodeCenter * scale;
-      _viewer.value = Matrix4.identity()
+      final target = Matrix4.identity()
         ..translateByDouble(t.dx, t.dy, 0, 1)
         ..scaleByDouble(scale, scale, scale, 1);
+      if (animated) {
+        _animateTo(target, duration: animationDuration);
+      } else {
+        _viewer.value = target;
+      }
     });
   }
 
@@ -104,13 +153,19 @@ class _TreePageState extends State<TreePage> {
   }
 
   /// Scales and pans the view so the entire tree fits inside the viewport,
-  /// with a small margin. Runs after the next frame so node positions/sizes
-  /// from the layout pass are available.
-  void _fitToWindow() {
+  /// with a small margin. Retries for a few frames if layout isn't ready yet.
+  /// [onDone] is called after the viewport is updated, e.g. to chain a
+  /// subsequent animated pan to a specific node.
+  void _fitToWindow({VoidCallback? onDone, int retriesLeft = 20}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box == null || !box.hasSize) return;
+      if (box == null || !box.hasSize) {
+        if (retriesLeft > 0) {
+          _fitToWindow(onDone: onDone, retriesLeft: retriesLeft - 1);
+        }
+        return;
+      }
 
       var minX = double.infinity, minY = double.infinity;
       var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
@@ -121,7 +176,13 @@ class _TreePageState extends State<TreePage> {
         maxX = math.max(maxX, node.position.dx + node.size.width);
         maxY = math.max(maxY, node.position.dy + node.size.height);
       }
-      if (minX == double.infinity) return; // nothing laid out yet
+      if (minX == double.infinity) {
+        // Nothing laid out yet — retry.
+        if (retriesLeft > 0) {
+          _fitToWindow(onDone: onDone, retriesLeft: retriesLeft - 1);
+        }
+        return;
+      }
 
       const pad = 60.0; // matches the Padding around the graph
       const margin = 32.0; // breathing room inside the viewport
@@ -143,6 +204,7 @@ class _TreePageState extends State<TreePage> {
       _viewer.value = Matrix4.identity()
         ..translateByDouble(t.dx, t.dy, 0, 1)
         ..scaleByDouble(scale, scale, scale, 1);
+      onDone?.call();
     });
   }
 
@@ -180,7 +242,18 @@ class _TreePageState extends State<TreePage> {
   void _loadPathCentered(int fromId, int toId) {
     _resetZoom();
     _controller.loadPath(fromId, toId).then((_) {
-      if (mounted) _centerNode(toId);
+      if (!mounted) return;
+      // First snap the viewport to show the full path, then animate the
+      // camera into the target node so the user sees the context before
+      // landing on the destination.
+      _fitToWindow(
+        onDone: () => _centerNode(
+          toId,
+          animated: true,
+          targetScale: 1.0,
+          animationDuration: AppConfig.treePathZoomDuration,
+        ),
+      );
     });
   }
 
@@ -379,9 +452,9 @@ class _TreePageState extends State<TreePage> {
                       isRoot: id == _controller.rootId,
                       isExpanding: _controller.isExpanding(id),
                       onTap: () {
-                        _centerNode(id);
+                        _centerNode(id, animated: true);
                         _controller.expand(id).then((_) {
-                          if (mounted) _centerNode(id);
+                          if (mounted) _centerNode(id, animated: true);
                         });
                       },
                       onDoubleTap: () => _loadRootCentered(id),
