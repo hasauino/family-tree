@@ -43,14 +43,15 @@ class TreeController extends ChangeNotifier {
 
   /// Resets the tree and loads the initial view centered on [personId]
   /// (grandfather → father → person → sons → grandsons).
-  Future<void> loadRoot(int personId) async {
+  /// Pass [isStaff] so that admins see unpublished nodes dimmed from the start.
+  Future<void> loadRoot(int personId, {bool isStaff = false}) async {
     loading = true;
     error = null;
     rootId = personId;
     _reset();
     notifyListeners();
     try {
-      final fragment = await _api.bootstrap(personId);
+      final fragment = await _api.bootstrap(personId, isStaff: isStaff);
       _apply(fragment);
       _expanded.add(personId);
     } on PersonNotFoundException catch (e) {

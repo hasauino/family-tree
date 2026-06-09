@@ -75,16 +75,19 @@ class FamilyApi {
         name
         designation
         history
+        published
         parent {
           id
           name
           designation
           history
+          published
           parent {
             id
             name
             designation
             history
+            published
             parent { id }
           }
         }
@@ -93,11 +96,13 @@ class FamilyApi {
           name
           designation
           history
+          published
           children {
             id
             name
             designation
             history
+            published
           }
         }
       }
@@ -114,7 +119,9 @@ class FamilyApi {
   ''';
 
   /// Loads the initial tree centered on [personId].
-  Future<TreeFragment> bootstrap(int personId) async {
+  /// [isStaff] is forwarded to [FamilyNode.fromPersonJson] so that admins see
+  /// unpublished nodes dimmed (opacity 0.3) from the very first load.
+  Future<TreeFragment> bootstrap(int personId, {bool isStaff = false}) async {
     final data = await _client.query(_bootstrapDoc, variables: {'id': personId});
     final person = data['person'] as Map<String, dynamic>?;
     if (person == null) {
@@ -142,28 +149,28 @@ class FamilyApi {
         grandfatherId = int.parse(grandfather['id'].toString());
         final ggf = grandfather['parent'] as Map<String, dynamic>?;
         final ggfId = ggf == null ? null : int.parse(ggf['id'].toString());
-        addNode(FamilyNode.fromPersonJson(grandfather, parentId: ggfId));
-        addNode(FamilyNode.fromPersonJson(father, parentId: grandfatherId));
+        addNode(FamilyNode.fromPersonJson(grandfather, parentId: ggfId, isStaff: isStaff));
+        addNode(FamilyNode.fromPersonJson(father, parentId: grandfatherId, isStaff: isStaff));
         edges.add((grandfatherId, fatherId));
       } else {
-        addNode(FamilyNode.fromPersonJson(father, parentId: null));
+        addNode(FamilyNode.fromPersonJson(father, parentId: null, isStaff: isStaff));
       }
       edges.add((fatherId, personId0));
     }
 
     // --- the focused person ---
-    addNode(FamilyNode.fromPersonJson(person, parentId: fatherId));
+    addNode(FamilyNode.fromPersonJson(person, parentId: fatherId, isStaff: isStaff));
 
     // --- descendants: sons, then grandsons ---
     for (final c in (person['children'] as List<dynamic>? ?? const [])) {
       final child = c as Map<String, dynamic>;
       final childId = int.parse(child['id'].toString());
-      addNode(FamilyNode.fromPersonJson(child, parentId: personId0));
+      addNode(FamilyNode.fromPersonJson(child, parentId: personId0, isStaff: isStaff));
       edges.add((personId0, childId));
       for (final g in (child['children'] as List<dynamic>? ?? const [])) {
         final grand = g as Map<String, dynamic>;
         final grandId = int.parse(grand['id'].toString());
-        addNode(FamilyNode.fromPersonJson(grand, parentId: childId));
+        addNode(FamilyNode.fromPersonJson(grand, parentId: childId, isStaff: isStaff));
         edges.add((childId, grandId));
       }
     }

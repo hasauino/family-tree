@@ -140,7 +140,7 @@ class _TreePageState extends State<TreePage>
   /// search selection, and double-tapping a node.
   void _loadRootCentered(int id) {
     _resetZoom();
-    _controller.loadRoot(id).then((_) {
+    _controller.loadRoot(id, isStaff: widget.auth.isStaff).then((_) {
       if (mounted) _centerNode(id);
     });
   }
@@ -385,6 +385,7 @@ class _TreePageState extends State<TreePage>
                       error: _controller.error!,
                       onRetry: () => _controller.loadRoot(
                         _controller.rootId ?? AppConfig.rootPersonId,
+                        isStaff: widget.auth.isStaff,
                       ),
                     );
                   }

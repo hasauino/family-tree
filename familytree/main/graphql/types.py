@@ -25,6 +25,10 @@ class PersonType(DjangoObjectType):
             "last_modified",
         ]
 
+    def resolve_children(person, info):
+        user = info.context.user
+        return [c for c in person.children.all() if c.is_visible_to(user)]
+
     def resolve_published(person, info):
         return person.is_public()
 

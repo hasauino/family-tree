@@ -90,18 +90,23 @@ class FamilyNode {
 
   /// Build from a `PersonType` payload (used by the initial bootstrap query),
   /// computing the group color from the parent id the same way the backend does.
+  /// [isStaff] is used to dim unpublished nodes for admin users (opacity 0.3),
+  /// matching the web tree's behaviour — regular editors see them at full opacity.
   factory FamilyNode.fromPersonJson(
     Map<String, dynamic> json, {
     int? parentId,
+    bool isStaff = false,
   }) {
     final designation = (json['designation'] as String?) ?? '';
     final history = (json['history'] as String?) ?? '';
     final title = '$designation\n$history';
+    final published = (json['published'] as bool?) ?? true;
     return FamilyNode(
       id: int.parse(json['id'].toString()),
       label: (json['name'] as String?) ?? '',
       group: 'g${(parentId ?? 0) % kColorCount}',
       title: _cleanTitle(title),
+      opacity: (!published && isStaff) ? 0.3 : 1.0,
     );
   }
 
