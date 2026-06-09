@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'auth/auth_service.dart';
 import 'config.dart';
 import 'l10n/app_strings.dart';
-import 'tree/tree_page.dart';
+import 'splash_page.dart';
 import 'widgets/glass.dart';
 
 void main() {
@@ -42,7 +42,7 @@ class FamilyTreeApp extends StatelessWidget {
         ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
       ),
       builder: (context, child) => _GradientBackground(child: child),
-      home: TreePage(auth: auth),
+      home: SplashPage(auth: auth),
     );
   }
 
