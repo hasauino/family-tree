@@ -48,6 +48,12 @@ class Query(graphene.ObjectType):
         id=graphene.Int(required=True, description="Node's ID"),
     )
     person = graphene.Field(types.PersonType, id=graphene.ID(required=True))
+    tree_path = graphene.Field(
+        types.TreePath,
+        description="Get the chain of nodes from an ancestor down to one of their descendants",
+        from_id=graphene.Int(required=True, description="Ancestor's ID"),
+        to_id=graphene.Int(required=True, description="Descendant's ID"),
+    )
     me = graphene.Field(
         types.CurrentUserType,
         description="The currently signed-in user (null fields when anonymous)",
@@ -75,6 +81,42 @@ class Query(graphene.ObjectType):
 
     def resolve_person(parent, info, id):
         return Person.objects.get(pk=id)
+
+    def resolve_tree_path(parent, info, from_id, to_id):
+        """
+        Mirrors the web `tree_from_to` view: walks up from the descendant to
+        the ancestor, collecting each step's siblings as a level, then returns
+        those levels (root-first) as nodes plus the parent -> child edges
+        between them. Returns None if either person doesn't exist, isn't
+        visible to the current user, or the first isn't an ancestor of the
+        second.
+        """
+        user = info.context.user
+        found = Person.objects.filter(pk=from_id)
+        if not found.exists():
+            return None
+        from_person = found.first()
+        found = Person.objects.filter(pk=to_id)
+        if not found.exists():
+            return None
+        to_person = found.first()
+        if not from_person.is_visible_to(user):
+            return None
+
+        levels = []
+        person = to_person
+        while person != from_person:
+            if not person.is_visible_to(user) or person.parent is None:
+                return None
+            levels.append([sibling for sibling in person.parent.children.all()])
+            person = person.parent
+        levels.append([from_person])
+
+        all_persons = [p for level in levels[::-1] for p in level if p.is_visible_to(user)]
+        return {
+            "nodes": [p.as_node(user) for p in all_persons],
+            "edges": [{"from_id": p.parent.pk, "to_id": p.pk} for p in all_persons[1:]],
+        }
 
     def resolve_me(parent, info):
         user = info.context.user

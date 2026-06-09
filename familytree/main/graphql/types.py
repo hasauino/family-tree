@@ -95,3 +95,22 @@ class ConnectedNodes(graphene.ObjectType):
 
     parent = graphene.Field(NodeType)
     children = graphene.List(NodeType)
+
+
+class TreeEdge(graphene.ObjectType):
+    """
+    A parent -> child edge in a tree fragment, referencing nodes by ID
+    """
+
+    from_id = graphene.Int(description="Parent's ID")
+    to_id = graphene.Int(description="Child's ID")
+
+
+class TreePath(graphene.ObjectType):
+    """
+    The chain of nodes connecting an ancestor to one of their descendants
+    (inclusive on both ends), plus the parent -> child edges between them
+    """
+
+    nodes = graphene.List(NodeType)
+    edges = graphene.List(TreeEdge)

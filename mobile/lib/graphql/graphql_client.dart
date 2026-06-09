@@ -22,6 +22,12 @@ class PersonNotFoundException extends GraphQLException {
   final int personId;
 }
 
+/// Thrown when no ancestor→descendant chain exists between the two requested
+/// persons (or either is not visible to the current user).
+class NoTreePathException extends GraphQLException {
+  NoTreePathException() : super('No path exists between these two people.');
+}
+
 /// Thrown when login credentials are rejected by the Django backend.
 class InvalidCredentialsException extends GraphQLException {
   InvalidCredentialsException() : super('Invalid username or password.');

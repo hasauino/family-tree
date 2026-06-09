@@ -41,6 +41,17 @@ class AppStrings {
   String get retry => _t('retry');
   String get errorConnection => _t('errorConnection');
 
+  // Tree path ("from ancestor to descendant")
+  String get treePathTooltip => _t('treePathTooltip');
+  String get treePathTitle => _t('treePathTitle');
+  String get treePathFromLabel => _t('treePathFromLabel');
+  String get treePathToLabel => _t('treePathToLabel');
+  String get treePathFromHint => _t('treePathFromHint');
+  String get treePathToHint => _t('treePathToHint');
+  String get treePathPickHint => _t('treePathPickHint');
+  String get treePathGo => _t('treePathGo');
+  String get errorNoPath => _t('errorNoPath');
+
   // Search
   String get searchTooltip => _t('searchTooltip');
   String get searchHint => _t('searchHint');
@@ -102,6 +113,16 @@ class AppStrings {
       'errorConnection':
           'Could not load the family tree. Check your connection and try again.',
       'errorPersonNotFound': 'Person #{id} was not found.',
+      'treePathTooltip': 'Show path from ancestor to descendant',
+      'treePathTitle': 'Show path',
+      'treePathFromLabel': 'From (ancestor)',
+      'treePathToLabel': 'To (descendant)',
+      'treePathFromHint': 'Search for the ancestor',
+      'treePathToHint': 'Search for the descendant',
+      'treePathPickHint': 'Tap to choose a person',
+      'treePathGo': 'Go',
+      'errorNoPath':
+          'No path found. Make sure the first person is an ancestor of the second.',
       'searchTooltip': 'Search by name',
       'searchHint': 'Search by name',
       'searchError': 'Search failed. Check your connection and try again.',
@@ -152,6 +173,15 @@ class AppStrings {
       'errorConnection':
           'تعذّر تحميل شجرة العائلة. تحقّق من اتصالك وحاول مرة أخرى.',
       'errorPersonNotFound': 'لم يتم العثور على الشخص رقم {id}.',
+      'treePathTooltip': 'عرض المسار من الجد إلى الحفيد',
+      'treePathTitle': 'عرض المسار',
+      'treePathFromLabel': 'من (الجد)',
+      'treePathToLabel': 'إلى (الحفيد)',
+      'treePathFromHint': 'ابحث عن الجد',
+      'treePathToHint': 'ابحث عن الحفيد',
+      'treePathPickHint': 'اضغط لاختيار شخص',
+      'treePathGo': 'انتقال',
+      'errorNoPath': 'لم يُعثر على مسار. تأكد أن الشخص الأول هو جد الشخص الثاني.',
       'searchTooltip': 'البحث بالاسم',
       'searchHint': 'البحث بالاسم',
       'searchError': 'فشل البحث. تحقّق من اتصالك وحاول مرة أخرى.',

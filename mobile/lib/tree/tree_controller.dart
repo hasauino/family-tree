@@ -13,7 +13,7 @@ class TreeError {
   final int? personId;
 }
 
-enum TreeErrorKind { personNotFound, connection }
+enum TreeErrorKind { personNotFound, connection, noPath }
 
 /// Holds the interactive tree state and talks to [FamilyApi].
 ///
@@ -53,6 +53,32 @@ class TreeController extends ChangeNotifier {
       final fragment = await _api.bootstrap(personId);
       _apply(fragment);
       _expanded.add(personId);
+    } on PersonNotFoundException catch (e) {
+      error = TreeError(TreeErrorKind.personNotFound, personId: e.personId);
+    } catch (_) {
+      error = TreeError(TreeErrorKind.connection);
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Resets the tree and loads the chain of nodes from ancestor [fromId] down
+  /// to descendant [toId] — the mobile equivalent of the web "from ancestor
+  /// to person" navigation. Sets [rootId] to [toId] so centering and retry
+  /// both target the descendant.
+  Future<void> loadPath(int fromId, int toId) async {
+    loading = true;
+    error = null;
+    rootId = toId;
+    _reset();
+    notifyListeners();
+    try {
+      final fragment = await _api.treePath(fromId, toId);
+      _apply(fragment);
+      _expanded.add(toId);
+    } on NoTreePathException catch (_) {
+      error = TreeError(TreeErrorKind.noPath);
     } on PersonNotFoundException catch (e) {
       error = TreeError(TreeErrorKind.personNotFound, personId: e.personId);
     } catch (_) {

@@ -113,6 +113,71 @@ def test_resolve_person_returns_person_by_id(make_person):
 
 
 # ---------------------------------------------------------------------------
+# Query.resolve_tree_path
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_tree_path_returns_chain_with_siblings_and_edges(make_person):
+    grandparent = make_person(name="Grandparent")
+    parent = make_person(name="Parent", parent=grandparent)
+    child1 = make_person(name="Child1", parent=parent)
+    child2 = make_person(name="Child2", parent=parent)
+    grandchild = make_person(name="Grandchild", parent=child1)
+
+    result = Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=grandparent.pk, to_id=grandchild.pk)
+
+    assert [n["id"] for n in result["nodes"]] == [
+        grandparent.pk,
+        parent.pk,
+        child1.pk,
+        child2.pk,
+        grandchild.pk,
+    ]
+    assert {(e["from_id"], e["to_id"]) for e in result["edges"]} == {
+        (grandparent.pk, parent.pk),
+        (parent.pk, child1.pk),
+        (parent.pk, child2.pk),
+        (child1.pk, grandchild.pk),
+    }
+
+
+def test_resolve_tree_path_returns_single_node_when_endpoints_match(make_person):
+    person = make_person(name="Solo")
+
+    result = Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=person.pk, to_id=person.pk)
+
+    assert [n["id"] for n in result["nodes"]] == [person.pk]
+    assert result["edges"] == []
+
+
+def test_resolve_tree_path_returns_none_when_from_is_not_an_ancestor(make_person):
+    root = make_person(name="Root")
+    branch_a = make_person(name="BranchA", parent=root)
+    branch_b = make_person(name="BranchB", parent=root)
+
+    result = Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=branch_a.pk, to_id=branch_b.pk)
+
+    assert result is None
+
+
+def test_resolve_tree_path_returns_none_for_missing_person(make_person):
+    person = make_person(name="Person")
+
+    assert Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=999, to_id=person.pk) is None
+    assert Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=person.pk, to_id=999) is None
+
+
+def test_resolve_tree_path_returns_none_when_an_ancestor_is_invisible(make_person, normal_user, other_user):
+    grandparent = make_person(name="Grandparent")
+    hidden_parent = make_person(name="HiddenParent", parent=grandparent, access="private", editors=[other_user])
+    person = make_person(name="Person", parent=hidden_parent)
+
+    result = Query.resolve_tree_path(None, info_for(normal_user), from_id=grandparent.pk, to_id=person.pk)
+
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
 # Query.resolve_search_persons
 # ---------------------------------------------------------------------------
 

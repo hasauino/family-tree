@@ -190,6 +190,44 @@ class FamilyApi {
     return TreeFragment(nodes: nodes, edges: edges);
   }
 
+  // --- Tree path ----------------------------------------------------------
+
+  static const String _treePathDoc = r'''
+    query TreePath($fromId: Int!, $toId: Int!) {
+      treePath(fromId: $fromId, toId: $toId) {
+        nodes { id label group opacity title font { strokeWidth } }
+        edges { fromId toId }
+      }
+    }
+  ''';
+
+  /// Loads the chain of nodes connecting ancestor [fromId] to descendant
+  /// [toId] — the mobile equivalent of the web "from ancestor to person"
+  /// navigation page. Throws [NoTreePathException] when no such chain exists
+  /// (either person is missing, not visible, or [fromId] is not an ancestor
+  /// of [toId]).
+  Future<TreeFragment> treePath(int fromId, int toId) async {
+    final data = await _client.query(
+      _treePathDoc,
+      variables: {'fromId': fromId, 'toId': toId},
+    );
+    final path = data['treePath'] as Map<String, dynamic>?;
+    if (path == null) throw NoTreePathException();
+
+    final nodes = [
+      for (final n in (path['nodes'] as List<dynamic>? ?? const []))
+        FamilyNode.fromConnectedJson(n as Map<String, dynamic>),
+    ];
+    final edges = [
+      for (final e in (path['edges'] as List<dynamic>? ?? const []))
+        (
+          (e as Map<String, dynamic>)['fromId'] as int,
+          e['toId'] as int,
+        ),
+    ];
+    return TreeFragment(nodes: nodes, edges: edges);
+  }
+
   // --- Account ------------------------------------------------------------
 
   static const String _meDoc = r'''

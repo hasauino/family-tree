@@ -7,16 +7,22 @@ import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
 
 /// Opens the live "search by name" UI as a translucent, blurred overlay that
-/// floats on top of the tree. Returns the chosen person's id (or null if the
-/// overlay was dismissed), which the caller uses to re-root the tree.
-Future<int?> showSearchOverlay(BuildContext context, FamilyApi api) {
-  return showGeneralDialog<int>(
+/// floats on top of the tree. Returns the chosen [PersonSearchResult] (or null
+/// if the overlay was dismissed). Pass [hint] to override the search-bar
+/// placeholder — useful when this overlay is reused for picking a specific
+/// role (e.g. "ancestor" vs "descendant").
+Future<PersonSearchResult?> showSearchOverlay(
+  BuildContext context,
+  FamilyApi api, {
+  String? hint,
+}) {
+  return showGeneralDialog<PersonSearchResult>(
     context: context,
     barrierDismissible: true,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
     barrierColor: Colors.black.withValues(alpha: 0.15),
     transitionDuration: const Duration(milliseconds: 180),
-    pageBuilder: (ctx, _, _) => _SearchOverlay(api: api),
+    pageBuilder: (ctx, _, _) => _SearchOverlay(api: api, hint: hint),
     transitionBuilder: (ctx, anim, _, child) {
       final curved = CurvedAnimation(parent: anim, curve: Curves.easeOut);
       return FadeTransition(
@@ -34,9 +40,10 @@ Future<int?> showSearchOverlay(BuildContext context, FamilyApi api) {
 }
 
 class _SearchOverlay extends StatefulWidget {
-  const _SearchOverlay({required this.api});
+  const _SearchOverlay({required this.api, this.hint});
 
   final FamilyApi api;
+  final String? hint;
 
   @override
   State<_SearchOverlay> createState() => _SearchOverlayState();
@@ -122,7 +129,7 @@ class _SearchOverlayState extends State<_SearchOverlay> {
                     _SearchBar(
                       controller: _query,
                       focus: _focus,
-                      hint: t.searchHint,
+                      hint: widget.hint ?? t.searchHint,
                       onChanged: _onChanged,
                       onClear: _query.text.isEmpty ? null : _clear,
                       onBack: () => Navigator.pop(context),
@@ -167,7 +174,7 @@ class _SearchOverlayState extends State<_SearchOverlay> {
               return ListTile(
                 leading: const Icon(Icons.person_outline),
                 title: Text(person.name),
-                onTap: () => Navigator.pop(context, person.id),
+                onTap: () => Navigator.pop(context, person),
               );
             },
           ),

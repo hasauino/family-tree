@@ -13,6 +13,7 @@ import 'node_widget.dart';
 import 'person_actions_sheet.dart';
 import 'search_overlay.dart';
 import 'tree_controller.dart';
+import 'tree_path_dialog.dart';
 
 /// The interactive, pan/zoomable family-tree screen.
 class TreePage extends StatefulWidget {
@@ -165,8 +166,22 @@ class _TreePageState extends State<TreePage> {
 
   /// Opens the blurred "search by name" overlay; on selection, re-roots the tree.
   Future<void> _openSearch() async {
-    final id = await showSearchOverlay(context, widget.auth.api);
-    if (id != null) _loadRootCentered(id);
+    final result = await showSearchOverlay(context, widget.auth.api);
+    if (result != null) _loadRootCentered(result.id);
+  }
+
+  /// Opens the "from ancestor → to descendant" picker; on confirmation loads
+  /// the path and centers on the descendant.
+  Future<void> _openTreePath() async {
+    final picked = await showTreePathDialog(context, widget.auth.api);
+    if (picked != null) _loadPathCentered(picked.from, picked.to);
+  }
+
+  void _loadPathCentered(int fromId, int toId) {
+    _resetZoom();
+    _controller.loadPath(fromId, toId).then((_) {
+      if (mounted) _centerNode(toId);
+    });
   }
 
   Future<void> _handleLogin() async {
@@ -239,6 +254,11 @@ class _TreePageState extends State<TreePage> {
                   tooltip: t.searchTooltip,
                   icon: const Icon(Icons.search),
                   onPressed: _openSearch,
+                ),
+                IconButton(
+                  tooltip: t.treePathTooltip,
+                  icon: const Icon(Icons.alt_route),
+                  onPressed: _openTreePath,
                 ),
                 IconButton(
                   tooltip: t.fitTreeTooltip,
@@ -391,6 +411,7 @@ class _ErrorView extends StatelessWidget {
       TreeErrorKind.personNotFound =>
         t.errorPersonNotFound(error.personId ?? 0),
       TreeErrorKind.connection => t.errorConnection,
+      TreeErrorKind.noPath => t.errorNoPath,
     };
     return Center(
       child: Padding(
