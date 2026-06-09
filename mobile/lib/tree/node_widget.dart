@@ -13,17 +13,17 @@ class NodeWidget extends StatelessWidget {
     required this.node,
     required this.isRoot,
     required this.isExpanding,
-    required this.onTap,
-    required this.onDoubleTap,
-    required this.onLongPress,
+    this.onTap,
+    this.onDoubleTap,
+    this.onLongPress,
   });
 
   final FamilyNode node;
   final bool isRoot;
   final bool isExpanding;
-  final VoidCallback onTap;
-  final VoidCallback onDoubleTap;
-  final VoidCallback onLongPress;
+  final VoidCallback? onTap;
+  final VoidCallback? onDoubleTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {

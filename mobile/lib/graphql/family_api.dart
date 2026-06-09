@@ -23,11 +23,20 @@ class PersonDetails {
     required this.name,
     required this.designation,
     required this.history,
+    this.parentId,
   });
   final int id;
   final String name;
   final String designation;
   final String history;
+  final int? parentId;
+}
+
+/// The result of adding multiple children at once.
+class AddChildrenResult {
+  AddChildrenResult({required this.nodes, required this.warnings});
+  final List<FamilyNode> nodes;
+  final List<String> warnings;
 }
 
 /// The currently signed-in user, as reported by the `me` query.
@@ -303,7 +312,7 @@ class FamilyApi {
 
   static const String _personDetailsDoc = r'''
     query PersonDetails($id: ID!) {
-      person(id: $id) { id name designation history }
+      person(id: $id) { id name designation history parent { id } }
     }
   ''';
 
@@ -313,11 +322,15 @@ class FamilyApi {
         await _client.query(_personDetailsDoc, variables: {'id': personId});
     final person = data['person'] as Map<String, dynamic>?;
     if (person == null) throw PersonNotFoundException(personId);
+    final parentJson = person['parent'] as Map<String, dynamic>?;
     return PersonDetails(
       id: int.parse(person['id'].toString()),
       name: (person['name'] as String?) ?? '',
       designation: (person['designation'] as String?) ?? '',
       history: (person['history'] as String?) ?? '',
+      parentId: parentJson != null
+          ? int.parse(parentJson['id'].toString())
+          : null,
     );
   }
 
@@ -380,6 +393,68 @@ class FamilyApi {
       );
     }
     return FamilyNode.fromConnectedJson(result);
+  }
+
+  static const String _addChildrenDoc = r'''
+    mutation AddChildren($id: Int!, $childNames: [String!]!) {
+      addChildren(id: $id, childNames: $childNames) {
+        nodes { id label group opacity title font { strokeWidth } }
+        warnings
+        ok message
+      }
+    }
+  ''';
+
+  /// Adds multiple children under [parentId] in one call. Returns the new
+  /// (or re-used) nodes and a list of names that already existed.
+  Future<AddChildrenResult> addChildren(
+    int parentId,
+    List<String> childNames,
+  ) async {
+    final data = await _client.query(
+      _addChildrenDoc,
+      variables: {'id': parentId, 'childNames': childNames},
+    );
+    final result = data['addChildren'] as Map<String, dynamic>?;
+    if (result == null || result['ok'] != true) {
+      throw GraphQLException(
+        (result?['message'] as String?) ?? 'Could not add children.',
+      );
+    }
+    final nodes = [
+      for (final n in (result['nodes'] as List<dynamic>? ?? const []))
+        FamilyNode.fromConnectedJson(n as Map<String, dynamic>),
+    ];
+    final warnings = [
+      for (final w in (result['warnings'] as List<dynamic>? ?? const []))
+        w as String,
+    ];
+    return AddChildrenResult(nodes: nodes, warnings: warnings);
+  }
+
+  static const String _movePersonDoc = r'''
+    mutation MovePerson($id: Int!, $newParentId: Int!) {
+      movePerson(id: $id, newParentId: $newParentId) {
+        ok message
+      }
+    }
+  ''';
+
+  /// Moves [personId] to be a child of [newParentId]. Throws [GraphQLException]
+  /// on failure (permission denied, cycle detected, etc.).
+  Future<MutationResult> movePerson(
+    int personId, {
+    required int newParentId,
+  }) async {
+    final data = await _client.query(
+      _movePersonDoc,
+      variables: {'id': personId, 'newParentId': newParentId},
+    );
+    final result = data['movePerson'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (result?['ok'] as bool?) ?? false,
+      message: result?['message'] as String?,
+    );
   }
 
   static const String _deletePersonDoc = r'''

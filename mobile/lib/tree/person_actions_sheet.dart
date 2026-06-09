@@ -6,11 +6,12 @@ import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
 import '../widgets/glass.dart';
 import 'edit_person_page.dart';
+import 'search_overlay.dart';
 import 'tree_controller.dart';
 
 /// The long-press menu for a person node — the Flutter equivalent of the web
 /// right-click menu. Read-only users see details + "center here"; authenticated
-/// users also get Add child / Edit / Delete; staff additionally get
+/// users also get Add children / Edit / Move / Delete; staff additionally get
 /// Publish/Unpublish and Bookmark/Unbookmark.
 class PersonActionsSheet extends StatefulWidget {
   const PersonActionsSheet({
@@ -19,6 +20,7 @@ class PersonActionsSheet extends StatefulWidget {
     required this.controller,
     required this.auth,
     required this.onCenter,
+    this.onMoved,
   });
 
   final FamilyNode node;
@@ -27,6 +29,9 @@ class PersonActionsSheet extends StatefulWidget {
 
   /// Re-centers the tree on this node (used by the "center here" action).
   final VoidCallback onCenter;
+
+  /// Called after a successful move so the tree can be reloaded.
+  final VoidCallback? onMoved;
 
   @override
   State<PersonActionsSheet> createState() => _PersonActionsSheetState();
@@ -38,6 +43,8 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
   bool? _canDelete;
   bool? _published;
   bool? _bookmarked;
+  // null = not loaded; true = has parent; false = no parent (orphan root)
+  bool? _hasParent;
 
   int get _id => widget.node.id;
 
@@ -51,6 +58,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     setState(() => _loadingStatus = true);
     try {
       final canDelete = await widget.controller.canDelete(_id);
+      final details = await widget.controller.personDetails(_id);
       bool? published;
       bool? bookmarked;
       if (widget.auth.isStaff) {
@@ -61,6 +69,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
       if (!mounted) return;
       setState(() {
         _canDelete = canDelete;
+        _hasParent = details.parentId != null;
         _published = published;
         _bookmarked = bookmarked;
       });
@@ -98,15 +107,25 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     }
   }
 
-  Future<void> _addChild() async {
+  Future<void> _addChildren() async {
     final t = AppStrings.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final name = await _promptText(t.addChildTitle, t.childNameLabel);
-    if (name == null || name.trim().isEmpty) return;
+    final names = await showDialog<List<String>>(
+      context: context,
+      builder: (ctx) => const _AddChildrenDialog(),
+    );
+    if (names == null || names.isEmpty) return;
     await _run(() async {
-      await widget.controller.addChild(_id, name.trim());
+      final result = await widget.controller.addChildren(_id, names);
       if (mounted) Navigator.pop(context);
-      _toastVia(messenger, t.childAdded);
+      if (result.warnings.isEmpty) {
+        _toastVia(messenger, t.childrenAdded);
+      } else {
+        _toastVia(
+          messenger,
+          t.childrenAddedWarning(result.warnings.join(', ')),
+        );
+      }
     });
   }
 
@@ -122,6 +141,23 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     );
     // Close the sheet once the edit is saved so the refreshed node shows.
     if (saved == true && mounted) navigator.pop();
+  }
+
+  Future<void> _setParent() async {
+    final t = AppStrings.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final picked = await showSearchOverlay(
+      context,
+      widget.auth.api,
+      hint: t.selectParentHint,
+    );
+    if (picked == null) return;
+    await _run(() async {
+      await widget.controller.movePerson(_id, picked.id);
+      if (mounted) Navigator.pop(context);
+      _toastVia(messenger, t.nodeMoved);
+      widget.onMoved?.call();
+    });
   }
 
   Future<void> _delete() async {
@@ -188,13 +224,6 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     });
   }
 
-  Future<String?> _promptText(String title, String label) {
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => _TextPromptDialog(title: title, label: label),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
@@ -248,15 +277,28 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
                   ),
                   if (auth.isAuthenticated) ...[
                     FilledButton.tonalIcon(
-                      onPressed: _busy ? null : _addChild,
-                      icon: const Icon(Icons.person_add),
-                      label: Text(t.addChild),
+                      onPressed: _busy ? null : _addChildren,
+                      icon: const Icon(Icons.group_add),
+                      label: Text(t.addChildren),
                     ),
                     FilledButton.tonalIcon(
                       onPressed: _busy ? null : _edit,
                       icon: const Icon(Icons.edit),
                       label: Text(t.edit),
                     ),
+                    // "Add parent" for orphan nodes, "Move" for nodes with a parent.
+                    if (_hasParent == false)
+                      FilledButton.tonalIcon(
+                        onPressed: _busy ? null : _setParent,
+                        icon: const Icon(Icons.account_tree),
+                        label: Text(t.addParent),
+                      ),
+                    if (_hasParent == true)
+                      FilledButton.tonalIcon(
+                        onPressed: _busy ? null : _setParent,
+                        icon: const Icon(Icons.drive_file_move_outline),
+                        label: Text(t.moveNode),
+                      ),
                     if (auth.isStaff && _published != null)
                       FilledButton.tonalIcon(
                         onPressed: _busy ? null : _togglePublish,
@@ -296,24 +338,18 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
   }
 }
 
-/// A small "enter some text" dialog that owns its [TextEditingController].
-///
-/// Keeping the controller in a [State] (rather than disposing it via the
-/// showDialog future's `whenComplete`) means it stays alive through the dialog's
-/// exit transition and is only disposed once the route is gone — avoiding a
-/// "used after being disposed" crash when the closing dialog rebuilds.
-class _TextPromptDialog extends StatefulWidget {
-  const _TextPromptDialog({required this.title, required this.label});
-
-  final String title;
-  final String label;
+/// A dialog for entering multiple child names at once. Each name is added to
+/// a chip list; the whole list is returned when the user confirms.
+class _AddChildrenDialog extends StatefulWidget {
+  const _AddChildrenDialog();
 
   @override
-  State<_TextPromptDialog> createState() => _TextPromptDialogState();
+  State<_AddChildrenDialog> createState() => _AddChildrenDialogState();
 }
 
-class _TextPromptDialogState extends State<_TextPromptDialog> {
+class _AddChildrenDialogState extends State<_AddChildrenDialog> {
   final TextEditingController _controller = TextEditingController();
+  final List<String> _names = [];
 
   @override
   void dispose() {
@@ -321,17 +357,66 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
     super.dispose();
   }
 
+  void _addName() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) return;
+    setState(() {
+      _names.add(name);
+      _controller.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     return GlassDialog(
-      title: widget.title,
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        textCapitalization: TextCapitalization.words,
-        decoration: glassFieldDecoration(context, InputDecoration(labelText: widget.label)),
-        onSubmitted: (v) => Navigator.pop(context, v),
+      title: t.addChildrenTitle,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: glassFieldDecoration(
+                    context,
+                    InputDecoration(
+                      labelText: t.childNameLabel,
+                      hintText: t.childNamesHint,
+                    ),
+                  ),
+                  onSubmitted: (_) => _addName(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonalIcon(
+                onPressed: _addName,
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(t.add),
+              ),
+            ],
+          ),
+          if (_names.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final name in _names)
+                  Chip(
+                    label: Text(name),
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                    onDeleted: () => setState(() => _names.remove(name)),
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
       actions: [
         TextButton(
@@ -339,7 +424,9 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
           child: Text(t.cancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
+          onPressed: _names.isEmpty
+              ? null
+              : () => Navigator.pop(context, List<String>.from(_names)),
           child: Text(t.add),
         ),
       ],

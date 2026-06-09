@@ -222,6 +222,7 @@ class _TreePageState extends State<TreePage>
         controller: _controller,
         auth: widget.auth,
         onCenter: () => _loadRootCentered(node.id),
+        onMoved: () => _loadRootCentered(node.id),
       ),
     );
   }
@@ -444,9 +445,7 @@ class _TreePageState extends State<TreePage>
                   builder: (Node node) {
                     final id = node.key!.value as int;
                     final data = _controller.nodeData[id];
-                    if (data == null) {
-                      return const SizedBox.shrink();
-                    }
+                    if (data == null) return const SizedBox.shrink();
                     return NodeWidget(
                       node: data,
                       isRoot: id == _controller.rootId,

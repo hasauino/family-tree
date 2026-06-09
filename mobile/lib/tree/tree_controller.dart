@@ -150,6 +150,33 @@ class TreeController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Adds multiple children under [parentId] at once. Grafts new nodes into
+  /// the tree. Returns the result (including any duplicate-name warnings).
+  Future<AddChildrenResult> addChildren(
+    int parentId,
+    List<String> childNames,
+  ) async {
+    final result = await _api.addChildren(parentId, childNames);
+    for (final child in result.nodes) {
+      nodeData[child.id] = child;
+      final childNode = Node.Id(child.id);
+      if (!graph.nodes.contains(childNode)) graph.addNode(childNode);
+      final key = '$parentId->${child.id}';
+      if (_edgeKeys.add(key)) graph.addEdge(Node.Id(parentId), childNode);
+    }
+    notifyListeners();
+    return result;
+  }
+
+  /// Moves [personId] under [newParentId]. Throws [GraphQLException] on
+  /// failure. The caller should reload the tree after a successful move.
+  Future<void> movePerson(int personId, int newParentId) async {
+    final result = await _api.movePerson(personId, newParentId: newParentId);
+    if (!result.ok) {
+      throw GraphQLException(result.message ?? 'Could not move person.');
+    }
+  }
+
   /// Removes [personId] from the tree after a successful delete.
   Future<void> deletePerson(int personId) async {
     final result = await _api.deletePerson(personId);

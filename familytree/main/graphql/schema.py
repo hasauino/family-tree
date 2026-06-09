@@ -355,8 +355,79 @@ class EditBookmark(graphene.Mutation, MutationReply):
         return MutationReply.success()
 
 
+class AddChildren(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int(required=True, description="ID of the parent")
+        child_names = graphene.List(graphene.NonNull(graphene.String), required=True)
+
+    nodes = graphene.List(types.NodeType)
+    warnings = graphene.List(graphene.String)
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+    @authenticated_only
+    def mutate(root, info, id, child_names):
+        if not child_names:
+            return AddChildren(ok=False, message="No names provided", nodes=[], warnings=[])
+        user = info.context.user
+        found = Person.objects.filter(pk=id)
+        if not found.exists():
+            return AddChildren(ok=False, message=f"Person with ID {id} does not exist", nodes=[], warnings=[])
+        parent = found.first()
+        nodes = []
+        warnings = []
+        for name in child_names:
+            name = name.strip()
+            if not name:
+                continue
+            existing = parent.children.filter(name=name)
+            if existing.exists():
+                warnings.append(name)
+                child = existing.first()
+            else:
+                child = Person(name=name, parent=parent, access="private")
+                child.save()
+            if user.is_staff:
+                child.access = "public"
+            child.editors.add(user)
+            child.save()
+            nodes.append(child.as_node(user))
+        return AddChildren(ok=True, nodes=nodes, warnings=warnings, message="")
+
+
+class MovePerson(graphene.Mutation, MutationReply, types.NodeType):
+    class Arguments:
+        id = graphene.Int(required=True, description="ID of the person to move")
+        new_parent_id = graphene.Int(required=True, description="ID of the new parent")
+
+    @authenticated_only
+    def mutate(root, info, id, new_parent_id):
+        user = info.context.user
+        found = Person.objects.filter(pk=id)
+        if not found.exists():
+            return MutationReply.fail(f"Person with ID {id} does not exist")
+        person = found.first()
+        if not (user.is_staff or user in person.editors.all()):
+            return MutationReply.fail("You do not have permission to move this person")
+        found = Person.objects.filter(pk=new_parent_id)
+        if not found.exists():
+            return MutationReply.fail(f"Person with ID {new_parent_id} does not exist")
+        new_parent = found.first()
+        # Prevent cycles: walk up from new_parent to ensure person is not an ancestor
+        current = new_parent
+        while current is not None:
+            if current.pk == person.pk:
+                return MutationReply.fail("Cannot move a person to be a descendant of themselves")
+            current = current.parent
+        person.parent = new_parent
+        person.save()
+        return {**MutationReply.success(), **person.as_node(user)}
+
+
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
+    add_children = AddChildren.Field()
+    move_person = MovePerson.Field()
     edit_person = EditPerson.Field()
     delete_person = DeletePerson.Field()
     bookmark_person = BookmarkPerson.Field()

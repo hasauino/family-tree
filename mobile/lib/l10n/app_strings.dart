@@ -71,10 +71,16 @@ class AppStrings {
 
   // Person actions
   String get add => _t('add');
-  String get addChild => _t('addChild');
-  String get addChildTitle => _t('addChildTitle');
+  String get addChildren => _t('addChildren');
+  String get addChildrenTitle => _t('addChildrenTitle');
   String get childNameLabel => _t('childNameLabel');
-  String get childAdded => _t('childAdded');
+  String get childNamesHint => _t('childNamesHint');
+  String get childrenAdded => _t('childrenAdded');
+  String get moveNode => _t('moveNode');
+  String get moveNodeTitle => _t('moveNodeTitle');
+  String get addParent => _t('addParent');
+  String get nodeMoved => _t('nodeMoved');
+  String get selectParentHint => _t('selectParentHint');
   String get edit => _t('edit');
   String get editPersonTitle => _t('editPersonTitle');
   String get save => _t('save');
@@ -96,6 +102,9 @@ class AppStrings {
 
   String deleteConfirm(String name) =>
       _t('deleteConfirm').replaceFirst('{name}', name);
+
+  String childrenAddedWarning(String names) =>
+      _t('childrenAddedWarning').replaceFirst('{names}', names);
 
   String errorPersonNotFound(int id) =>
       _t('errorPersonNotFound').replaceFirst('{id}', '$id');
@@ -137,10 +146,17 @@ class AppStrings {
       'fieldRequired': 'This field is required.',
       'signIn': 'Sign In',
       'add': 'Add',
-      'addChild': 'Add child',
-      'addChildTitle': 'Add a child',
+      'addChildren': 'Add children',
+      'addChildrenTitle': 'Add children',
       'childNameLabel': "Child's name",
-      'childAdded': 'Child added.',
+      'childNamesHint': 'Enter a name then tap +',
+      'childrenAdded': 'Children added.',
+      'childrenAddedWarning': 'Children added. Already existed: {names}',
+      'moveNode': 'Move',
+      'moveNodeTitle': 'Move to new parent',
+      'addParent': 'Add parent',
+      'nodeMoved': 'Person moved.',
+      'selectParentHint': 'Search for the new parent',
       'edit': 'Edit',
       'editPersonTitle': 'Edit person',
       'save': 'Save',
@@ -196,10 +212,17 @@ class AppStrings {
       'fieldRequired': 'هذا الحقل مطلوب.',
       'signIn': 'دخول',
       'add': 'إضافة',
-      'addChild': 'إضافة ابن',
-      'addChildTitle': 'إضافة ابن',
+      'addChildren': 'إضافة أبناء',
+      'addChildrenTitle': 'إضافة أبناء',
       'childNameLabel': 'اسم الابن',
-      'childAdded': 'تمت إضافة الابن.',
+      'childNamesHint': 'أدخل اسمًا ثم اضغط +',
+      'childrenAdded': 'تمت إضافة الأبناء.',
+      'childrenAddedWarning': 'تمت الإضافة. موجود مسبقًا: {names}',
+      'moveNode': 'نقل',
+      'moveNodeTitle': 'نقل إلى أب جديد',
+      'addParent': 'إضافة أب',
+      'nodeMoved': 'تم نقل الشخص.',
+      'selectParentHint': 'ابحث عن الأب الجديد',
       'edit': 'تعديل',
       'editPersonTitle': 'تعديل شخص',
       'save': 'حفظ',
