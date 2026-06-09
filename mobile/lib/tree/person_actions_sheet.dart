@@ -143,7 +143,20 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     if (saved == true && mounted) navigator.pop();
   }
 
-  Future<void> _setParent() async {
+  Future<void> _addParentNode() async {
+    final t = AppStrings.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final name = await _promptText(t.addParentTitle, t.parentNameLabel);
+    if (name == null || name.trim().isEmpty) return;
+    await _run(() async {
+      await widget.controller.addParent(_id, name.trim());
+      if (mounted) Navigator.pop(context);
+      _toastVia(messenger, t.parentAdded);
+      widget.onMoved?.call();
+    });
+  }
+
+  Future<void> _moveNode() async {
     final t = AppStrings.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final picked = await showSearchOverlay(
@@ -160,14 +173,34 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     });
   }
 
+  Future<String?> _promptText(String title, String label) {
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => _TextPromptDialog(title: title, label: label),
+    );
+  }
+
   Future<void> _delete() async {
     final t = AppStrings.of(context);
     final messenger = ScaffoldMessenger.of(context);
+
+    final info = await widget.controller.deleteInfo(_id);
+    if (!mounted) return;
+
+    String confirmMessage;
+    if (info.isRootWithSingleChild) {
+      confirmMessage = t.deleteOrphanConfirm(widget.node.label);
+    } else if (info.descendantCount > 0) {
+      confirmMessage = t.deleteCascadeConfirm(widget.node.label, info.descendantCount);
+    } else {
+      confirmMessage = t.deleteConfirm(widget.node.label);
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => GlassDialog(
         title: t.deleteTitle,
-        content: Text(t.deleteConfirm(widget.node.label)),
+        content: Text(confirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -289,13 +322,13 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
                     // "Add parent" for orphan nodes, "Move" for nodes with a parent.
                     if (_hasParent == false)
                       FilledButton.tonalIcon(
-                        onPressed: _busy ? null : _setParent,
+                        onPressed: _busy ? null : _addParentNode,
                         icon: const Icon(Icons.account_tree),
                         label: Text(t.addParent),
                       ),
                     if (_hasParent == true)
                       FilledButton.tonalIcon(
-                        onPressed: _busy ? null : _setParent,
+                        onPressed: _busy ? null : _moveNode,
                         icon: const Icon(Icons.drive_file_move_outline),
                         label: Text(t.moveNode),
                       ),
@@ -334,6 +367,54 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TextPromptDialog extends StatefulWidget {
+  const _TextPromptDialog({required this.title, required this.label});
+
+  final String title;
+  final String label;
+
+  @override
+  State<_TextPromptDialog> createState() => _TextPromptDialogState();
+}
+
+class _TextPromptDialogState extends State<_TextPromptDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppStrings.of(context);
+    return GlassDialog(
+      title: widget.title,
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: glassFieldDecoration(
+          context,
+          InputDecoration(labelText: widget.label),
+        ),
+        onSubmitted: (v) => Navigator.pop(context, v),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(t.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: Text(t.add),
+        ),
+      ],
     );
   }
 }

@@ -114,3 +114,8 @@ class TreePath(graphene.ObjectType):
 
     nodes = graphene.List(NodeType)
     edges = graphene.List(TreeEdge)
+
+
+class DeleteInfo(graphene.ObjectType):
+    descendant_count = graphene.Int()
+    is_root_with_single_child = graphene.Boolean()

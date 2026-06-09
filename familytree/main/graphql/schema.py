@@ -67,6 +67,11 @@ class Query(graphene.ObjectType):
         description="Check if given person can be deleted by the current user",
         id=graphene.Int(required=True, description="Node's ID to be checked"),
     )
+    delete_info = graphene.Field(
+        types.DeleteInfo,
+        description="Descendant count and orphan-eligibility for a potential deletion",
+        id=graphene.Int(required=True),
+    )
     list_bookmarks = graphene.List(BookmarkType, description="Get list of all bookmarks")
 
     def resolve_connected_nodes(parent, info, id):
@@ -142,6 +147,21 @@ class Query(graphene.ObjectType):
     @authenticated_only
     def resolve_can_delete(parent, info, id):
         return Person.objects.get(pk=id).is_editable_by(info.context.user)
+
+    @authenticated_only
+    def resolve_delete_info(parent, info, id):
+        found = Person.objects.filter(pk=id)
+        if not found.exists():
+            return types.DeleteInfo(descendant_count=0, is_root_with_single_child=False)
+        person = found.first()
+        count = 0
+        queue = list(person.children.all())
+        while queue:
+            current = queue.pop()
+            count += 1
+            queue.extend(list(current.children.all()))
+        is_root_single = person.parent is None and person.children.count() == 1
+        return types.DeleteInfo(descendant_count=count, is_root_with_single_child=is_root_single)
 
     @authenticated_only
     def resolve_list_bookmarks(parent, info):
@@ -221,6 +241,10 @@ class DeletePerson(graphene.Mutation, MutationReply):
         person = found.first()
         if not person.is_editable_by(user):
             return MutationReply.fail(f"Person with ID ${id} cannot be deleted by current user")
+        if person.parent is None and person.children.count() == 1:
+            child = person.children.first()
+            child.parent = None
+            child.save()
         if user.is_staff:
             person.delete()
         else:
@@ -355,6 +379,35 @@ class EditBookmark(graphene.Mutation, MutationReply):
         return MutationReply.success()
 
 
+class AddParent(graphene.Mutation, MutationReply, types.NodeType):
+    class Arguments:
+        id = graphene.Int(required=True, description="ID of the person to add a parent to")
+        parent_name = graphene.String(required=True, description="Name of the new parent node")
+
+    @authenticated_only
+    def mutate(root, info, id, parent_name):
+        if len(parent_name.strip()) < 1:
+            return MutationReply.fail("Invalid parent name, cannot be empty string")
+        user = info.context.user
+        found = Person.objects.filter(pk=id)
+        if not found.exists():
+            return MutationReply.fail(f"Person with ID {id} does not exist")
+        person = found.first()
+        if not (user.is_staff or user in person.editors.all()):
+            return MutationReply.fail("You do not have permission to add a parent to this person")
+        if person.parent is not None:
+            return MutationReply.fail("This person already has a parent")
+        new_parent = Person(name=parent_name.strip(), parent=None, access="private")
+        new_parent.save()
+        if user.is_staff:
+            new_parent.access = "public"
+        new_parent.editors.add(user)
+        new_parent.save()
+        person.parent = new_parent
+        person.save()
+        return {**MutationReply.success(), **new_parent.as_node(user)}
+
+
 class AddChildren(graphene.Mutation):
     class Arguments:
         id = graphene.Int(required=True, description="ID of the parent")
@@ -426,6 +479,7 @@ class MovePerson(graphene.Mutation, MutationReply, types.NodeType):
 
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
+    add_parent = AddParent.Field()
     add_children = AddChildren.Field()
     move_person = MovePerson.Field()
     edit_person = EditPerson.Field()

@@ -290,6 +290,24 @@ class FamilyApi {
     return (data['canDelete'] as bool?) ?? false;
   }
 
+  static const String _deleteInfoDoc = r'''
+    query DeleteInfo($id: Int!) {
+      deleteInfo(id: $id) { descendantCount isRootWithSingleChild }
+    }
+  ''';
+
+  /// Descendant count and whether [personId] is a root with exactly one child.
+  Future<({int descendantCount, bool isRootWithSingleChild})> deleteInfo(
+    int personId,
+  ) async {
+    final data = await _client.query(_deleteInfoDoc, variables: {'id': personId});
+    final info = data['deleteInfo'] as Map<String, dynamic>? ?? {};
+    return (
+      descendantCount: (info['descendantCount'] as int?) ?? 0,
+      isRootWithSingleChild: (info['isRootWithSingleChild'] as bool?) ?? false,
+    );
+  }
+
   static const String _publishStatusDoc = r'''
     query PublishStatus($id: ID!) {
       person(id: $id) { published bookmarked }
@@ -390,6 +408,31 @@ class FamilyApi {
     if (result == null || result['ok'] != true) {
       throw GraphQLException(
         (result?['message'] as String?) ?? 'Could not add child.',
+      );
+    }
+    return FamilyNode.fromConnectedJson(result);
+  }
+
+  static const String _addParentDoc = r'''
+    mutation AddParent($id: Int!, $parentName: String!) {
+      addParent(id: $id, parentName: $parentName) {
+        id label group opacity title font { strokeWidth }
+        ok message
+      }
+    }
+  ''';
+
+  /// Creates a new parent node above [personId] (which must currently be a
+  /// root with no parent). Returns the new parent node on success.
+  Future<FamilyNode> addParent(int personId, String parentName) async {
+    final data = await _client.query(
+      _addParentDoc,
+      variables: {'id': personId, 'parentName': parentName},
+    );
+    final result = data['addParent'] as Map<String, dynamic>?;
+    if (result == null || result['ok'] != true) {
+      throw GraphQLException(
+        (result?['message'] as String?) ?? 'Could not add parent.',
       );
     }
     return FamilyNode.fromConnectedJson(result);

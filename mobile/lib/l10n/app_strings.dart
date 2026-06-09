@@ -79,6 +79,9 @@ class AppStrings {
   String get moveNode => _t('moveNode');
   String get moveNodeTitle => _t('moveNodeTitle');
   String get addParent => _t('addParent');
+  String get addParentTitle => _t('addParentTitle');
+  String get parentNameLabel => _t('parentNameLabel');
+  String get parentAdded => _t('parentAdded');
   String get nodeMoved => _t('nodeMoved');
   String get selectParentHint => _t('selectParentHint');
   String get edit => _t('edit');
@@ -102,6 +105,13 @@ class AppStrings {
 
   String deleteConfirm(String name) =>
       _t('deleteConfirm').replaceFirst('{name}', name);
+
+  String deleteOrphanConfirm(String name) =>
+      _t('deleteOrphanConfirm').replaceFirst('{name}', name);
+
+  String deleteCascadeConfirm(String name, int count) => _t('deleteCascadeConfirm')
+      .replaceFirst('{name}', name)
+      .replaceFirst('{count}', '$count');
 
   String childrenAddedWarning(String names) =>
       _t('childrenAddedWarning').replaceFirst('{names}', names);
@@ -155,6 +165,9 @@ class AppStrings {
       'moveNode': 'Move',
       'moveNodeTitle': 'Move to new parent',
       'addParent': 'Add parent',
+      'addParentTitle': 'Add a parent',
+      'parentNameLabel': "Parent's name",
+      'parentAdded': 'Parent added.',
       'nodeMoved': 'Person moved.',
       'selectParentHint': 'Search for the new parent',
       'edit': 'Edit',
@@ -167,6 +180,10 @@ class AppStrings {
       'delete': 'Delete',
       'deleteTitle': 'Delete person',
       'deleteConfirm': 'Do you really want to delete {name}?',
+      'deleteOrphanConfirm':
+          'Deleting {name} will make their child the new root. Continue?',
+      'deleteCascadeConfirm':
+          'Deleting {name} will permanently delete {count} descendant(s). Continue?',
       'personDeleted': 'Person deleted.',
       'publish': 'Publish',
       'unpublish': 'Unpublish',
@@ -221,6 +238,9 @@ class AppStrings {
       'moveNode': 'نقل',
       'moveNodeTitle': 'نقل إلى أب جديد',
       'addParent': 'إضافة أب',
+      'addParentTitle': 'إضافة أب جديد',
+      'parentNameLabel': 'اسم الأب',
+      'parentAdded': 'تمت إضافة الأب.',
       'nodeMoved': 'تم نقل الشخص.',
       'selectParentHint': 'ابحث عن الأب الجديد',
       'edit': 'تعديل',
@@ -233,6 +253,10 @@ class AppStrings {
       'delete': 'حذف',
       'deleteTitle': 'حذف شخص',
       'deleteConfirm': 'هل تريد حقًّا حذف {name}؟',
+      'deleteOrphanConfirm':
+          'حذف {name} سيجعل ابنه الجذرَ الجديد. هل تريد المتابعة؟',
+      'deleteCascadeConfirm':
+          'حذف {name} سيحذف {count} من أحفاده نهائيًا. هل تريد المتابعة؟',
       'personDeleted': 'تم حذف الشخص.',
       'publish': 'نشر',
       'unpublish': 'إلغاء النشر',

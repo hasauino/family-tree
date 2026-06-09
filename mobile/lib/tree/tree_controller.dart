@@ -113,6 +113,11 @@ class TreeController extends ChangeNotifier {
   /// Whether the current user may delete [personId].
   Future<bool> canDelete(int personId) => _api.canDelete(personId);
 
+  /// Descendant count and orphan-eligibility for [personId].
+  Future<({int descendantCount, bool isRootWithSingleChild})> deleteInfo(
+    int personId,
+  ) => _api.deleteInfo(personId);
+
   /// The publish/bookmark status of [personId], for choosing staff actions.
   Future<({bool published, bool bookmarked})> publishStatus(int personId) =>
       _api.publishStatus(personId);
@@ -147,6 +152,19 @@ class TreeController extends ChangeNotifier {
     if (!graph.nodes.contains(childNode)) graph.addNode(childNode);
     final key = '$parentId->${child.id}';
     if (_edgeKeys.add(key)) graph.addEdge(Node.Id(parentId), childNode);
+    notifyListeners();
+  }
+
+  /// Creates a new parent node above [personId] (which must be a root) and
+  /// grafts it into the tree. The caller should reload after success so the
+  /// new parent is shown in context above the node.
+  Future<void> addParent(int personId, String parentName) async {
+    final parent = await _api.addParent(personId, parentName);
+    nodeData[parent.id] = parent;
+    final parentNode = Node.Id(parent.id);
+    if (!graph.nodes.contains(parentNode)) graph.addNode(parentNode);
+    final key = '${parent.id}->$personId';
+    if (_edgeKeys.add(key)) graph.addEdge(parentNode, Node.Id(personId));
     notifyListeners();
   }
 
