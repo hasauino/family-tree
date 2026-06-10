@@ -78,6 +78,50 @@ class CurrentUser {
   final bool isAuthenticated;
 }
 
+/// Which sign-in/sign-up methods the backend has enabled and configured, from
+/// the `authConfig` query. The UI shows a method only when its flag is true, so
+/// an un-credentialed provider never appears.
+class AuthConfig {
+  const AuthConfig({
+    required this.emailEnabled,
+    required this.googleEnabled,
+    required this.appleEnabled,
+    required this.facebookEnabled,
+    required this.requireActivation,
+  });
+
+  final bool emailEnabled;
+  final bool googleEnabled;
+  final bool appleEnabled;
+  final bool facebookEnabled;
+
+  /// Whether email sign-up needs an activation link before the account works.
+  final bool requireActivation;
+
+  /// A safe default used before the backend responds (or if it can't be
+  /// reached): only email, no social, activation required.
+  static const fallback = AuthConfig(
+    emailEnabled: true,
+    googleEnabled: false,
+    appleEnabled: false,
+    facebookEnabled: false,
+    requireActivation: true,
+  );
+
+  bool get anySocial => googleEnabled || appleEnabled || facebookEnabled;
+}
+
+/// Outcome of an email registration: either the account is live and the caller
+/// is now signed in ([signedIn] with a [user]), or an activation email was sent
+/// and the user must click the link before signing in ([activationSent]).
+enum RegisterOutcome { signedIn, activationSent }
+
+class RegisterResult {
+  RegisterResult(this.outcome, this.user);
+  final RegisterOutcome outcome;
+  final CurrentUser? user;
+}
+
 /// Kind of a node in the home radial tree.
 enum HomeNodeKind { root, tag, bookmark }
 
@@ -468,6 +512,134 @@ class FamilyApi {
       isAuthenticated: (me['isAuthenticated'] as bool?) ?? false,
     );
   }
+
+  // --- Sign in / sign up --------------------------------------------------
+
+  static const String _authConfigDoc = r'''
+    query AuthConfig {
+      authConfig {
+        emailEnabled googleEnabled appleEnabled facebookEnabled requireActivation
+      }
+    }
+  ''';
+
+  /// Which sign-in methods the backend offers. Falls back to email-only if the
+  /// field is missing (older backend) so the app still works.
+  Future<AuthConfig> authConfig() async {
+    final data = await _client.query(_authConfigDoc);
+    final cfg = data['authConfig'] as Map<String, dynamic>?;
+    if (cfg == null) return AuthConfig.fallback;
+    return AuthConfig(
+      emailEnabled: (cfg['emailEnabled'] as bool?) ?? true,
+      googleEnabled: (cfg['googleEnabled'] as bool?) ?? false,
+      appleEnabled: (cfg['appleEnabled'] as bool?) ?? false,
+      facebookEnabled: (cfg['facebookEnabled'] as bool?) ?? false,
+      requireActivation: (cfg['requireActivation'] as bool?) ?? true,
+    );
+  }
+
+  static const String _passwordLoginDoc = r'''
+    mutation PasswordLogin($identifier: String!, $password: String!) {
+      passwordLogin(identifier: $identifier, password: $password) {
+        ok message user { username isStaff isAuthenticated }
+      }
+    }
+  ''';
+
+  /// Signs in with an email or username plus password. Throws
+  /// [AuthFailedException] (with the backend's message) on bad credentials.
+  Future<CurrentUser> passwordLogin(String identifier, String password) async {
+    final data = await _client.query(
+      _passwordLoginDoc,
+      variables: {'identifier': identifier, 'password': password},
+    );
+    return _userFromAuthReply(data['passwordLogin'] as Map<String, dynamic>?);
+  }
+
+  static const String _socialLoginDoc = r'''
+    mutation SocialLogin($provider: String!, $token: String!, $firstName: String, $lastName: String) {
+      socialLogin(provider: $provider, token: $token, firstName: $firstName, lastName: $lastName) {
+        ok message user { username isStaff isAuthenticated }
+      }
+    }
+  ''';
+
+  /// Exchanges a verified provider token for a session. [firstName]/[lastName]
+  /// let the client forward what Apple gives only on first sign-in.
+  Future<CurrentUser> socialLogin(
+    String provider,
+    String token, {
+    String? firstName,
+    String? lastName,
+  }) async {
+    final data = await _client.query(
+      _socialLoginDoc,
+      variables: {
+        'provider': provider,
+        'token': token,
+        'firstName': firstName,
+        'lastName': lastName,
+      },
+    );
+    return _userFromAuthReply(data['socialLogin'] as Map<String, dynamic>?);
+  }
+
+  static const String _registerEmailDoc = r'''
+    mutation RegisterEmail($email: String!, $password: String!, $firstName: String, $lastName: String) {
+      registerEmail(email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
+        ok message user { username isStaff isAuthenticated }
+      }
+    }
+  ''';
+
+  /// Registers a new email account. Returns whether an activation email was
+  /// sent or the user was signed in immediately. Throws [AuthFailedException]
+  /// on validation errors (duplicate email, weak password, ...).
+  Future<RegisterResult> registerEmail(
+    String email,
+    String password, {
+    String? firstName,
+    String? lastName,
+  }) async {
+    final data = await _client.query(
+      _registerEmailDoc,
+      variables: {
+        'email': email,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+      },
+    );
+    final reply = data['registerEmail'] as Map<String, dynamic>?;
+    if (reply == null || reply['ok'] != true) {
+      throw AuthFailedException(
+        (reply?['message'] as String?) ?? 'Registration failed.',
+      );
+    }
+    final user = reply['user'] as Map<String, dynamic>?;
+    if (user == null) {
+      return RegisterResult(RegisterOutcome.activationSent, null);
+    }
+    return RegisterResult(RegisterOutcome.signedIn, _user(user));
+  }
+
+  /// Unwraps an `{ok, message, user}` auth reply into a [CurrentUser], throwing
+  /// [AuthFailedException] when the backend reports failure.
+  CurrentUser _userFromAuthReply(Map<String, dynamic>? reply) {
+    final user = reply?['user'] as Map<String, dynamic>?;
+    if (reply == null || reply['ok'] != true || user == null) {
+      throw AuthFailedException(
+        (reply?['message'] as String?) ?? 'Sign-in failed.',
+      );
+    }
+    return _user(user);
+  }
+
+  CurrentUser _user(Map<String, dynamic> user) => CurrentUser(
+    username: user['username'] as String?,
+    isStaff: (user['isStaff'] as bool?) ?? false,
+    isAuthenticated: (user['isAuthenticated'] as bool?) ?? true,
+  );
 
   // --- Search -------------------------------------------------------------
 

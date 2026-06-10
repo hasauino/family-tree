@@ -30,6 +30,37 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- ============================================================
+             Facebook sign-in — Android setup. See mobile/AUTH_SETUP.md.
+             Left commented so the app builds without credentials (a
+             placeholder app id would crash the Facebook SDK at startup).
+             To enable: add facebook_app_id / facebook_client_token /
+             fb_login_protocol_scheme to res/values/strings.xml, then
+             uncomment this block. The button stays hidden until the
+             backend enables Facebook too.
+
+             Google sign-in needs NO manifest entry on Android — it reads
+             its client id from google-services / the serverClientId you
+             pass via the GOOGLE_SERVER_CLIENT_ID dart-define.
+
+        <meta-data android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"/>
+        <meta-data android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token"/>
+        <activity android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+        <activity android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+             ============================================================ -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -88,6 +88,28 @@ class AppStrings {
   String get passwordLabel => _t('passwordLabel');
   String get fieldRequired => _t('fieldRequired');
   String get signIn => _t('signIn');
+  String get signUp => _t('signUp');
+  String get signInTab => _t('signInTab');
+  String get signUpTab => _t('signUpTab');
+  String get emailLabel => _t('emailLabel');
+  String get emailOrUsernameLabel => _t('emailOrUsernameLabel');
+  String get confirmPasswordLabel => _t('confirmPasswordLabel');
+  String get firstNameLabel => _t('firstNameLabel');
+  String get lastNameLabel => _t('lastNameLabel');
+  String get passwordsDontMatch => _t('passwordsDontMatch');
+  String get invalidEmail => _t('invalidEmail');
+  String get createAccount => _t('createAccount');
+  String get noAccountPrompt => _t('noAccountPrompt');
+  String get haveAccountPrompt => _t('haveAccountPrompt');
+  String get orDivider => _t('orDivider');
+  String get continueWithGoogle => _t('continueWithGoogle');
+  String get continueWithApple => _t('continueWithApple');
+  String get continueWithFacebook => _t('continueWithFacebook');
+  String get activationSentTitle => _t('activationSentTitle');
+  String activationSentBody(String email) =>
+      _t('activationSentBody').replaceFirst('{email}', email);
+  String get backToSignIn => _t('backToSignIn');
+  String get authGenericError => _t('authGenericError');
 
   // Person actions
   String get add => _t('add');
@@ -236,6 +258,29 @@ class AppStrings {
       'passwordLabel': 'Password',
       'fieldRequired': 'This field is required.',
       'signIn': 'Sign In',
+      'signUp': 'Sign Up',
+      'signInTab': 'Sign in',
+      'signUpTab': 'Sign up',
+      'emailLabel': 'Email',
+      'emailOrUsernameLabel': 'Email or username',
+      'confirmPasswordLabel': 'Confirm password',
+      'firstNameLabel': 'First name',
+      'lastNameLabel': 'Last name',
+      'passwordsDontMatch': 'Passwords do not match.',
+      'invalidEmail': 'Enter a valid email address.',
+      'createAccount': 'Create account',
+      'noAccountPrompt': "Don't have an account? Sign up",
+      'haveAccountPrompt': 'Already have an account? Sign in',
+      'orDivider': 'or',
+      'continueWithGoogle': 'Continue with Google',
+      'continueWithApple': 'Continue with Apple',
+      'continueWithFacebook': 'Continue with Facebook',
+      'activationSentTitle': 'Check your email',
+      'activationSentBody':
+          'We sent an activation link to {email}. Tap it to activate your '
+          'account, then sign in.',
+      'backToSignIn': 'Back to sign in',
+      'authGenericError': 'Something went wrong. Please try again.',
       'add': 'Add',
       'addChildren': 'Add children',
       'addChildrenTitle': 'Add children',
@@ -371,6 +416,28 @@ class AppStrings {
       'passwordLabel': 'كلمة المرور',
       'fieldRequired': 'هذا الحقل مطلوب.',
       'signIn': 'دخول',
+      'signUp': 'إنشاء حساب',
+      'signInTab': 'تسجيل الدخول',
+      'signUpTab': 'إنشاء حساب',
+      'emailLabel': 'البريد الإلكتروني',
+      'emailOrUsernameLabel': 'البريد الإلكتروني أو اسم المستخدم',
+      'confirmPasswordLabel': 'تأكيد كلمة المرور',
+      'firstNameLabel': 'الاسم الأول',
+      'lastNameLabel': 'اسم العائلة',
+      'passwordsDontMatch': 'كلمتا المرور غير متطابقتين.',
+      'invalidEmail': 'أدخل بريدًا إلكترونيًا صحيحًا.',
+      'createAccount': 'إنشاء حساب',
+      'noAccountPrompt': 'ليس لديك حساب؟ أنشئ حسابًا',
+      'haveAccountPrompt': 'لديك حساب بالفعل؟ سجّل الدخول',
+      'orDivider': 'أو',
+      'continueWithGoogle': 'المتابعة باستخدام Google',
+      'continueWithApple': 'المتابعة باستخدام Apple',
+      'continueWithFacebook': 'المتابعة باستخدام Facebook',
+      'activationSentTitle': 'تحقق من بريدك الإلكتروني',
+      'activationSentBody':
+          'أرسلنا رابط تفعيل إلى {email}. اضغط عليه لتفعيل حسابك ثم سجّل الدخول.',
+      'backToSignIn': 'العودة إلى تسجيل الدخول',
+      'authGenericError': 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
       'add': 'إضافة',
       'addChildren': 'إضافة أبناء',
       'addChildrenTitle': 'إضافة أبناء',

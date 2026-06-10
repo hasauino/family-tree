@@ -33,6 +33,20 @@ class InvalidCredentialsException extends GraphQLException {
   InvalidCredentialsException() : super('Invalid username or password.');
 }
 
+/// Thrown when a sign-in/sign-up mutation returns `ok: false`; [message] is the
+/// backend's reason (e.g. "An account with this email already exists"), already
+/// suitable to surface to the user.
+class AuthFailedException extends GraphQLException {
+  AuthFailedException(super.message);
+}
+
+/// Thrown when a native social sign-in (Google/Apple/Facebook) is dismissed by
+/// the user before a token is obtained, so the UI can stay silent rather than
+/// showing an error.
+class SocialSignInCancelled implements Exception {
+  const SocialSignInCancelled();
+}
+
 /// Minimal GraphQL-over-HTTP client for the Django `graphene` endpoint, with
 /// just enough Django session support to drive the authenticated mutations
 /// (add child / delete / publish / bookmark).

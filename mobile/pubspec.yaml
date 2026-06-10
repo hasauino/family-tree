@@ -48,6 +48,9 @@ dependencies:
 
   # Persists the Django session cookies so login survives app restarts.
   shared_preferences: ^2.3.2
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^8.1.0
+  flutter_facebook_auth: ^7.1.7
 
 dev_dependencies:
   flutter_test:

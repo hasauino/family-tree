@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'package:family_tree_mobile/auth/auth_service.dart';
+import 'package:family_tree_mobile/auth/social_sign_in.dart';
 import 'package:family_tree_mobile/config.dart';
 import 'package:family_tree_mobile/graphql/graphql_client.dart';
 
@@ -80,6 +81,14 @@ class FakeFamilyBackend {
   final Map<int, FakePerson> _people = {};
   int _nextId = 1;
 
+  // --- auth config the fake reports (tests can flip these before building an
+  // AuthService to exercise the sign-in UI for different provider mixes).
+  bool emailEnabled = true;
+  bool googleEnabled = false;
+  bool appleEnabled = false;
+  bool facebookEnabled = false;
+  bool requireActivation = true;
+
   /// Adds a person named [name] (optionally under [parentId]) and returns
   /// their id.
   int _seed(String name, {int? parentId}) {
@@ -90,8 +99,14 @@ class FakeFamilyBackend {
 
   /// An [AuthService] that talks only to this fake and is seen as a staff user
   /// (so every action — add/edit/publish/bookmark/delete — is available).
-  AuthService authAsStaff() =>
-      AuthService(client: GraphQLClient(httpClient: MockClient(_handle)));
+  AuthService authAsStaff() => authWith();
+
+  /// An [AuthService] wired to this fake, optionally with a fake [social]
+  /// provider so the social sign-in buttons can be exercised in tests.
+  AuthService authWith({SocialSignIn? social}) => AuthService(
+        client: GraphQLClient(httpClient: MockClient(_handle)),
+        social: social,
+      );
 
   /// All people currently stored with exactly [name] (for assertions).
   List<FakePerson> personsNamed(String name) =>
@@ -111,6 +126,37 @@ class FakeFamilyBackend {
       return _ok({
         'me': {'username': 'tester', 'isStaff': true, 'isAuthenticated': true},
       });
+    }
+
+    // --- auth: config query + sign-in/up mutations ------------------------
+    if (doc.contains('authConfig')) {
+      return _ok({
+        'authConfig': {
+          'emailEnabled': emailEnabled,
+          'googleEnabled': googleEnabled,
+          'appleEnabled': appleEnabled,
+          'facebookEnabled': facebookEnabled,
+          'requireActivation': requireActivation,
+        },
+      });
+    }
+    if (doc.contains('passwordLogin(')) {
+      // Accept the canned password "pw"; reject anything else.
+      if (vars['password'] == 'pw') {
+        return _ok({'passwordLogin': _authReplyUser('tester')});
+      }
+      return _ok({'passwordLogin': _authReplyFail('Invalid credentials')});
+    }
+    if (doc.contains('socialLogin(')) {
+      return _ok({'socialLogin': _authReplyUser('social-user')});
+    }
+    if (doc.contains('registerEmail(')) {
+      if (requireActivation) {
+        return _ok({
+          'registerEmail': {'ok': true, 'message': 'activation_sent', 'user': null},
+        });
+      }
+      return _ok({'registerEmail': _authReplyUser('newbie')});
     }
 
     // Mutations (checked before the matching read fields to avoid substring
@@ -205,6 +251,20 @@ class FakeFamilyBackend {
       );
 
   Map<String, dynamic> _status() => {'ok': true, 'message': null};
+
+  /// An `{ok, message, user}` auth reply for a signed-in [username].
+  Map<String, dynamic> _authReplyUser(String username) => {
+        'ok': true,
+        'message': null,
+        'user': {
+          'username': username,
+          'isStaff': true,
+          'isAuthenticated': true,
+        },
+      };
+
+  Map<String, dynamic> _authReplyFail(String message) =>
+      {'ok': false, 'message': message, 'user': null};
 
   /// A `connectedNodes`-shaped node (also used as the base of mutation results).
   Map<String, dynamic> _node(FakePerson p) => {

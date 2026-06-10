@@ -76,5 +76,47 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- ============================================================
+		     Social sign-in (Google / Apple / Facebook) — iOS setup.
+		     See mobile/AUTH_SETUP.md for the full guide. Each provider is
+		     also gated server-side, so it stays hidden until enabled in
+		     the backend. Uncomment a block and fill in real credentials to
+		     turn a provider on (left commented so the app builds as-is).
+
+		     1) Google + Facebook need their OAuth callback URL schemes:
+
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					REVERSED Google iOS client id, e.g.
+					<string>com.googleusercontent.apps.1234567890-abcdef</string>
+					fb + your Facebook app id, e.g.
+					<string>fb1234567890</string>
+				</array>
+			</dict>
+		</array>
+
+		2) Facebook also needs these (replace placeholders):
+
+		<key>FacebookAppID</key>
+		<string>1234567890</string>
+		<key>FacebookClientToken</key>
+		<string>YOUR_FACEBOOK_CLIENT_TOKEN</string>
+		<key>FacebookDisplayName</key>
+		<string>Family Tree</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>fbapi</string>
+			<string>fb-messenger-share-api</string>
+		</array>
+
+		3) Apple needs no Info.plist entry. In Xcode add the
+		   "Sign in with Apple" capability to the Runner target
+		   (Signing & Capabilities), which creates the entitlement.
+		     ============================================================ -->
 	</dict>
 </plist>

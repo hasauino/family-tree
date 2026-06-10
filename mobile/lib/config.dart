@@ -79,4 +79,24 @@ class AppConfig {
   ///   * `Locale('ar')` -> force Arabic (RTL) regardless of the device.
   ///   * `Locale('en')` -> force English regardless of the device.
   static const Locale? locale = Locale('ar');
+
+  // --- Authentication ----------------------------------------------------
+  // Which sign-in methods actually appear is decided by the backend's
+  // `authConfig` query, so a provider only shows once it is enabled AND
+  // credentialed server-side. The values below are the *client-side* pieces a
+  // provider additionally needs, supplied at build time, e.g.:
+  //
+  //   flutter run --dart-define=GOOGLE_SERVER_CLIENT_ID=xxxx.apps.googleusercontent.com
+  //
+  // Facebook and Apple need no Dart value — their credentials live in the
+  // native iOS/Android config (see ios/Runner/Info.plist and
+  // android/app/src/main/res/values/strings.xml).
+
+  /// The OAuth *web/server* client id used as the audience of the Google ID
+  /// token, so the token the app sends verifies against the backend's
+  /// `GOOGLE_CLIENT_IDS`. Required for Google sign-in; leave empty to rely on
+  /// the platform default (Android reads it from `google-services`).
+  static const String googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+  );
 }

@@ -149,6 +149,47 @@ ACCOUNT_ACTIVATION_DAYS = 2
 REGISTRATION_OPEN = True
 AUTH_USER_MODEL = "main.User"
 LOGIN_REDIRECT_URL = "/"
+
+# --- Sign-in / sign-up methods -------------------------------------------
+# Every method below is independently switchable, and the mobile/web client
+# discovers which ones are live through the GraphQL `authConfig` query, so a
+# method only ever appears in the UI once it is both enabled *and* credentialed.
+# A social provider is considered "available" only when its `*_ENABLED` flag is
+# true AND its client ids / app credentials are present.
+
+
+def _env_bool(name, default):
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _env_list(name):
+    """Comma-separated env var -> stripped, non-empty list (e.g. accepted OAuth audiences)."""
+    return [item.strip() for item in os.environ.get(name, "").split(",") if item.strip()]
+
+
+# Email + password sign-in/up.
+AUTH_EMAIL_ENABLED = _env_bool("AUTH_EMAIL_ENABLED", True)
+# When true, registering creates an inactive account and emails an activation
+# link (the existing django-registration flow); when false the account is
+# active immediately and the client is signed straight in.
+AUTH_EMAIL_REQUIRE_ACTIVATION = _env_bool("AUTH_EMAIL_REQUIRE_ACTIVATION", True)
+
+# Google: accepted token audiences (the OAuth client ids of every platform that
+# may sign in — iOS, Android, web). Comma-separated.
+AUTH_GOOGLE_ENABLED = _env_bool("AUTH_GOOGLE_ENABLED", False)
+GOOGLE_CLIENT_IDS = _env_list("GOOGLE_CLIENT_IDS")
+
+# Apple: accepted token audiences (the app's bundle id and/or services id).
+AUTH_APPLE_ENABLED = _env_bool("AUTH_APPLE_ENABLED", False)
+APPLE_CLIENT_IDS = _env_list("APPLE_CLIENT_IDS")
+
+# Facebook: the app id/secret used to validate the access token.
+AUTH_FACEBOOK_ENABLED = _env_bool("AUTH_FACEBOOK_ENABLED", False)
+FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID", "")
+FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.gmx.net")

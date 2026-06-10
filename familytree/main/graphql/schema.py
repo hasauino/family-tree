@@ -4,7 +4,7 @@ import graphene
 from home.models import Bookmark
 from home.types import BookmarkType
 
-from main.graphql import types
+from main.graphql import auth, types
 from main.models import Person
 
 
@@ -57,6 +57,10 @@ class Query(graphene.ObjectType):
     me = graphene.Field(
         types.CurrentUserType,
         description="The currently signed-in user (null fields when anonymous)",
+    )
+    auth_config = graphene.Field(
+        auth.AuthConfigType,
+        description="Which sign-in/sign-up methods the client should offer",
     )
     search_persons = graphene.List(
         types.PersonSearchResult,
@@ -185,6 +189,9 @@ class Query(graphene.ObjectType):
             "is_staff": user.is_staff,
             "is_authenticated": user.is_authenticated,
         }
+
+    def resolve_auth_config(parent, info):
+        return auth.resolve_auth_config(parent, info)
 
     def resolve_search_persons(parent, info, query):
         user = info.context.user
@@ -984,6 +991,9 @@ class SetRootStyle(graphene.Mutation, MutationReply):
 
 
 class Mutations(graphene.ObjectType):
+    password_login = auth.PasswordLogin.Field()
+    social_login = auth.SocialLogin.Field()
+    register_email = auth.RegisterEmail.Field()
     add_person = AddPerson.Field()
     add_parent = AddParent.Field()
     add_children = AddChildren.Field()

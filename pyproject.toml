@@ -18,6 +18,9 @@ dependencies = [
     "gunicorn>=26.0,<27.0",
     "django-pwa>=2.0,<3.0",
     "python-dotenv>=1.0,<2.0",
+    # Verifies Google/Apple OIDC identity tokens (social sign-in). The
+    # [crypto] extra pulls in `cryptography` for the RS256 signature check.
+    "pyjwt[crypto]>=2.8,<3.0",
 ]
 
 [tool.hatch.build.targets.wheel]
