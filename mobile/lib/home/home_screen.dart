@@ -892,6 +892,47 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Scales and pans the viewport so the whole bookmark cloud fits, centred,
+  /// with a small margin. Retries for a few frames if layout isn't ready yet.
+  void _fitToWindow({int retriesLeft = 20}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _positions.isEmpty) return;
+      final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) {
+        if (retriesLeft > 0) _fitToWindow(retriesLeft: retriesLeft - 1);
+        return;
+      }
+      final co = _canvasOffset();
+      final maxR = _maxR;
+      var minX = double.infinity, minY = double.infinity;
+      var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+      for (final pos in _positions.values) {
+        final c = pos + co;
+        minX = math.min(minX, c.dx - maxR);
+        minY = math.min(minY, c.dy - maxR);
+        maxX = math.max(maxX, c.dx + maxR);
+        maxY = math.max(maxY, c.dy + maxR + _labelH);
+      }
+
+      const margin = 32.0; // breathing room inside the viewport
+      final contentW = maxX - minX;
+      final contentH = maxY - minY;
+      final viewport = box.size;
+      final scale = math
+          .min(
+            (viewport.width - margin * 2) / contentW,
+            (viewport.height - margin * 2) / contentH,
+          )
+          .clamp(0.08, 3.0);
+      final contentCenter = Offset(minX + contentW / 2, minY + contentH / 2);
+      final t =
+          Offset(viewport.width / 2, viewport.height / 2) - contentCenter * scale;
+      _viewer.value = Matrix4.identity()
+        ..translateByDouble(t.dx, t.dy, 0, 1)
+        ..scaleByDouble(scale, scale, scale, 1);
+    });
+  }
+
   // ── navigation ────────────────────────────────────────────────────────────
 
   void _openTree(int personId) => Navigator.of(context).push(
@@ -1242,6 +1283,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: t.searchTooltip,
                   icon: const Icon(Icons.search),
                   onPressed: _openSearch,
+                ),
+                IconButton(
+                  tooltip: t.fitTreeTooltip,
+                  icon: const Icon(Icons.fit_screen),
+                  onPressed: _fitToWindow,
                 ),
                 if (widget.auth.isStaff)
                   IconButton(
