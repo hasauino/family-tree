@@ -56,6 +56,11 @@ class AppConfig {
   /// Set to [Duration.zero] to snap instantly.
   static const Duration treePathZoomDuration = Duration(milliseconds: 2000);
 
+  /// How long the home view's load-time intro takes: the camera starts zoomed
+  /// in on the center node and glides back out to fit the whole tree.
+  /// Set to [Duration.zero] to skip the intro and snap straight to the fit.
+  static const Duration homeIntroZoomDuration = Duration(milliseconds: 1100);
+
   // --- Localization ------------------------------------------------------
   // To add a language: add its [Locale] here AND a matching entry in
   // `_values` inside `lib/l10n/app_strings.dart`. Arabic renders right-to-left

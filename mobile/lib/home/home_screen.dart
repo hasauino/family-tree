@@ -881,7 +881,7 @@ class _HomeScreenState extends State<HomeScreen>
         _expandedIds = {focusId};
         _recomputeVisible();
       });
-      _centerOnFocus();
+      _introZoom();
     } catch (e) {
       if (mounted) setState(() => _error = e);
     } finally {
@@ -983,8 +983,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   /// Smoothly animates [_viewer] from its current transform to [target],
-  /// interrupting any in-progress pan.
-  void _animateTo(Matrix4 target) {
+  /// interrupting any in-progress pan. Pass [duration] to override the default
+  /// node-pan timing (e.g. the slower load-time intro glide).
+  void _animateTo(Matrix4 target, {Duration? duration}) {
+    _panController.duration = duration ?? AppConfig.nodePanDuration;
     _panTween = Matrix4Tween(begin: _viewer.value.clone(), end: target);
     _panController.forward(from: 0);
   }
@@ -1021,27 +1023,37 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  void _centerOnFocus({int retriesLeft = 20}) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _positions.isEmpty) return;
-      final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box == null || !box.hasSize) {
-        if (retriesLeft > 0) _centerOnFocus(retriesLeft: retriesLeft - 1);
-        return;
-      }
-      final viewport = box.size;
-      final co = _canvasOffset();
-      final focusCanvas = (_positions[_focusId] ?? Offset.zero) + co;
-      const scale = 0.82;
-      _viewer.value = Matrix4.identity()
-        ..translateByDouble(
-          viewport.width / 2 - focusCanvas.dx * scale,
-          viewport.height / 2 - focusCanvas.dy * scale,
-          0,
-          1,
+  /// The transform that fits the whole bookmark cloud into [viewport],
+  /// centred with a small margin. Shared by [_fitToWindow] and the load-time
+  /// intro glide so both land on exactly the same framing.
+  Matrix4 _fitTransform(Size viewport) {
+    final co = _canvasOffset();
+    final maxR = _maxR;
+    var minX = double.infinity, minY = double.infinity;
+    var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+    for (final pos in _positions.values) {
+      final c = pos + co;
+      minX = math.min(minX, c.dx - maxR);
+      minY = math.min(minY, c.dy - maxR);
+      maxX = math.max(maxX, c.dx + maxR);
+      maxY = math.max(maxY, c.dy + maxR + _labelH);
+    }
+
+    const margin = 32.0; // breathing room inside the viewport
+    final contentW = maxX - minX;
+    final contentH = maxY - minY;
+    final scale = math
+        .min(
+          (viewport.width - margin * 2) / contentW,
+          (viewport.height - margin * 2) / contentH,
         )
-        ..scaleByDouble(scale, scale, scale, 1);
-    });
+        .clamp(0.08, 3.0);
+    final contentCenter = Offset(minX + contentW / 2, minY + contentH / 2);
+    final t =
+        Offset(viewport.width / 2, viewport.height / 2) - contentCenter * scale;
+    return Matrix4.identity()
+      ..translateByDouble(t.dx, t.dy, 0, 1)
+      ..scaleByDouble(scale, scale, scale, 1);
   }
 
   /// Scales and pans the viewport so the whole bookmark cloud fits, centred,
@@ -1054,35 +1066,44 @@ class _HomeScreenState extends State<HomeScreen>
         if (retriesLeft > 0) _fitToWindow(retriesLeft: retriesLeft - 1);
         return;
       }
-      final co = _canvasOffset();
-      final maxR = _maxR;
-      var minX = double.infinity, minY = double.infinity;
-      var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
-      for (final pos in _positions.values) {
-        final c = pos + co;
-        minX = math.min(minX, c.dx - maxR);
-        minY = math.min(minY, c.dy - maxR);
-        maxX = math.max(maxX, c.dx + maxR);
-        maxY = math.max(maxY, c.dy + maxR + _labelH);
+      _viewer.value = _fitTransform(box.size);
+    });
+  }
+
+  /// The load-time intro: start zoomed in on the focus node, then glide the
+  /// camera back out to the full fit. Runs on first load and on every refresh.
+  /// Retries for a few frames while the layout/viewport isn't ready yet.
+  void _introZoom({int retriesLeft = 20}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _positions.isEmpty) return;
+      final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) {
+        if (retriesLeft > 0) _introZoom(retriesLeft: retriesLeft - 1);
+        return;
+      }
+      final viewport = box.size;
+      final fit = _fitTransform(viewport);
+
+      if (AppConfig.homeIntroZoomDuration == Duration.zero) {
+        _viewer.value = fit;
+        return;
       }
 
-      const margin = 32.0; // breathing room inside the viewport
-      final contentW = maxX - minX;
-      final contentH = maxY - minY;
-      final viewport = box.size;
-      final scale = math
-          .min(
-            (viewport.width - margin * 2) / contentW,
-            (viewport.height - margin * 2) / contentH,
-          )
-          .clamp(0.08, 3.0);
-      final contentCenter = Offset(minX + contentW / 2, minY + contentH / 2);
-      final t =
-          Offset(viewport.width / 2, viewport.height / 2) -
-          contentCenter * scale;
+      // Start framed tight on the focus node, then glide out to the fit. The
+      // intro scale is the fit scale magnified, but never below a readable
+      // close-up, so even a sparse tree still visibly zooms out.
+      final fitScale = fit.getMaxScaleOnAxis();
+      final introScale = math.max(fitScale * 2.4, 1.4);
+      final focusCanvas = (_positions[_focusId] ?? Offset.zero) + _canvasOffset();
       _viewer.value = Matrix4.identity()
-        ..translateByDouble(t.dx, t.dy, 0, 1)
-        ..scaleByDouble(scale, scale, scale, 1);
+        ..translateByDouble(
+          viewport.width / 2 - focusCanvas.dx * introScale,
+          viewport.height / 2 - focusCanvas.dy * introScale,
+          0,
+          1,
+        )
+        ..scaleByDouble(introScale, introScale, introScale, 1);
+      _animateTo(fit, duration: AppConfig.homeIntroZoomDuration);
     });
   }
 
