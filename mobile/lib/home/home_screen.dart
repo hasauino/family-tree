@@ -654,6 +654,7 @@ class _BookmarkLabel extends StatelessWidget {
     required this.scale,
     required this.align,
     this.showName = true,
+    this.applyFontColor = true,
   });
 
   final HomeNode node;
@@ -663,6 +664,12 @@ class _BookmarkLabel extends StatelessWidget {
   /// Whether to render the name line. The center bookmark shows its name
   /// inside its bubble, so its side label carries only the description.
   final bool showName;
+
+  /// Whether the node's custom font color applies to this label. The
+  /// center bookmark's custom color is reserved for the text inside its
+  /// bubble; its side label follows the default label color (like every
+  /// other node) — white in dark mode, black in light mode.
+  final bool applyFontColor;
 
   TextAlign get _textAlign => switch (align) {
     CrossAxisAlignment.start => TextAlign.left,
@@ -696,7 +703,8 @@ class _BookmarkLabel extends StatelessWidget {
                       node.fontSizeOverride != null ? double.infinity : 13.0,
                     ),
                 fontWeight: FontWeight.w600,
-                color: node.fontColor ?? scheme.onSurface,
+                color: (applyFontColor ? node.fontColor : null) ??
+                    scheme.onSurface,
                 height: 1.2,
               ),
             ),
@@ -713,7 +721,8 @@ class _BookmarkLabel extends StatelessWidget {
                 fontSize: showName
                     ? (10 * scale).clamp(8.0, 12.0)
                     : (node.fontSizeOverride?.toDouble() ?? 12) * scale,
-                color: node.fontColor ?? scheme.onSurfaceVariant,
+                color: (applyFontColor ? node.fontColor : null) ??
+                    scheme.onSurfaceVariant,
               ),
             ),
         ],
@@ -1657,6 +1666,9 @@ class _HomeScreenState extends State<HomeScreen>
           scale: scale,
           align: CrossAxisAlignment.center,
           showName: false,
+          // The center bookmark's custom font color is reserved for the
+          // text inside its bubble; its label uses the default label color.
+          applyFontColor: false,
         ),
       );
       return;
