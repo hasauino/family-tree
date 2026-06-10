@@ -428,7 +428,7 @@ class _TreePageState extends State<TreePage>
           key: _viewportKey,
           transformationController: _viewer,
           constrained: false,
-          boundaryMargin: const EdgeInsets.all(800),
+          boundaryMargin: const EdgeInsets.all(double.infinity),
           minScale: 0.1,
           maxScale: 3.0,
           child: Stack(

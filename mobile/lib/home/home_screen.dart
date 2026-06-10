@@ -1290,7 +1290,7 @@ class _HomeScreenState extends State<HomeScreen> {
           key: _viewportKey,
           transformationController: _viewer,
           constrained: false,
-          boundaryMargin: const EdgeInsets.all(600),
+          boundaryMargin: const EdgeInsets.all(double.infinity),
           minScale: 0.08,
           maxScale: 3.0,
           child: SizedBox(
