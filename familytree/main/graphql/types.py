@@ -123,3 +123,56 @@ class TreePath(graphene.ObjectType):
 class DeleteInfo(graphene.ObjectType):
     descendant_count = graphene.Int()
     is_root_with_single_child = graphene.Boolean()
+
+
+class HomeNode(graphene.ObjectType):
+    """A node in the home radial tree.
+
+    kind values:
+      'root'     – the single virtual centre node
+      'tag'      – an admin-defined label (rendered as a rounded rectangle)
+      'bookmark' – a bookmarked person (rendered as a circle)
+    """
+
+    id = graphene.Int()
+    kind = graphene.String()
+    label = graphene.String()
+    group = graphene.String()
+    title = graphene.String()
+    opacity = graphene.Float()
+    color = graphene.String(
+        description="Admin-configured override color (hex, no '#'), or null for the default palette color."
+    )
+    font_color = graphene.String(
+        description="Admin-configured label text color (hex, no '#'), or null for the default."
+    )
+    font_size = graphene.Int(description="Admin-configured label font size, or null for the default.")
+
+
+class NodeSizeConfig(graphene.ObjectType):
+    """Admin-configurable parameters controlling how node size scales with
+    depth from the global tree root (see HomeSettings)."""
+
+    max_scale = graphene.Float(description="Visual scale of nodes at the root.")
+    min_scale = graphene.Float(description="Visual scale of the deepest (leaf) nodes.")
+    decay = graphene.Float(description="How quickly node size shrinks per generation away from the root.")
+
+
+class HomeTree(graphene.ObjectType):
+    """Radial tree for the home screen: virtual root + tag nodes + bookmark nodes."""
+
+    nodes = graphene.List(HomeNode)
+    edges = graphene.List(TreeEdge)
+    center_id = graphene.Int(
+        description="ID of the home node that should be centered (admin-configurable). "
+        "0 (the virtual root) if no center has been chosen."
+    )
+    node_size_config = graphene.Field(NodeSizeConfig, description="Admin-configurable node size scaling parameters.")
+
+
+class TagType(graphene.ObjectType):
+    """A lightweight tag record used by listTags and createTag."""
+
+    id = graphene.Int()
+    name = graphene.String()
+    parent_id = graphene.Int(description="ID of the parent tag, or null if top-level")

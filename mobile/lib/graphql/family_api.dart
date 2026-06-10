@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../models/family_node.dart';
 import 'graphql_client.dart';
 
@@ -49,6 +51,127 @@ class CurrentUser {
   final String? username;
   final bool isStaff;
   final bool isAuthenticated;
+}
+
+/// Kind of a node in the home radial tree.
+enum HomeNodeKind { root, tag, bookmark }
+
+/// A node in the home radial tree (virtual root, admin tag, or bookmarked person).
+class HomeNode {
+  HomeNode({
+    required this.id,
+    required this.kind,
+    required this.label,
+    this.group = 'g0',
+    this.title,
+    this.opacity = 1.0,
+    this.colorOverride,
+    this.fontColorOverride,
+    this.fontSizeOverride,
+  });
+
+  final int id;
+  final HomeNodeKind kind;
+  final String label;
+  final String group;
+  final String? title;
+  final double opacity;
+
+  /// Admin-configured override color (hex, no '#'), or null for the default
+  /// palette color.
+  final String? colorOverride;
+
+  /// Admin-configured label text color (hex, no '#'), or null for the default.
+  final String? fontColorOverride;
+
+  /// Admin-configured label font size, or null for the default.
+  final int? fontSizeOverride;
+
+  bool get isRoot => kind == HomeNodeKind.root;
+  bool get isTag => kind == HomeNodeKind.tag;
+  bool get isBookmark => kind == HomeNodeKind.bookmark;
+
+  Color get color {
+    if (colorOverride != null && colorOverride!.isNotEmpty) {
+      final hex = int.tryParse(colorOverride!, radix: 16);
+      if (hex != null) return Color(0xFF000000 | hex);
+    }
+    final n = int.tryParse(group.replaceFirst('g', '')) ?? 0;
+    return kGroupColors[n % kColorCount];
+  }
+
+  /// Admin-configured label text color, or null for the default.
+  Color? get fontColor {
+    if (fontColorOverride == null || fontColorOverride!.isEmpty) return null;
+    final hex = int.tryParse(fontColorOverride!, radix: 16);
+    return hex == null ? null : Color(0xFF000000 | hex);
+  }
+
+  String get initial {
+    final t = label.trim();
+    return t.isEmpty ? '?' : t.characters.first.toUpperCase();
+  }
+
+  String? get subtitle {
+    final t = title?.trim();
+    if (t == null || t.isEmpty) return null;
+    final firstLine = t.split('\n').first.trim();
+    return firstLine.isEmpty ? null : firstLine;
+  }
+}
+
+/// A lightweight tag record returned by listTags and createTag.
+class TagInfo {
+  TagInfo({required this.id, required this.name, this.parentId});
+  final int id;
+  final String name;
+
+  /// ID of the parent tag, or null if this is a top-level tag.
+  final int? parentId;
+}
+
+/// Admin-configurable parameters controlling how home-tree node size scales
+/// with depth from the global tree root.
+class NodeSizeConfig {
+  const NodeSizeConfig({
+    required this.maxScale,
+    required this.minScale,
+    required this.decay,
+  });
+
+  /// Visual scale of nodes at the root.
+  final double maxScale;
+
+  /// Visual scale of the deepest (leaf) nodes.
+  final double minScale;
+
+  /// How quickly node size shrinks per generation away from the root.
+  final double decay;
+
+  static const fallback = NodeSizeConfig(
+    maxScale: 1.2,
+    minScale: 0.5,
+    decay: 0.15,
+  );
+}
+
+/// The home tree payload: all nodes (root + tags + bookmarks) and the edges.
+class HomeData {
+  HomeData({
+    required this.nodes,
+    required this.edges,
+    this.centerId = 0,
+    this.nodeSizeConfig = NodeSizeConfig.fallback,
+  });
+  final List<HomeNode> nodes;
+  final List<(int from, int to)> edges;
+
+  /// ID of the home node to center the view on (admin-configurable).
+  /// 0 means the virtual root (default).
+  final int centerId;
+
+  /// Admin-configurable node size scaling parameters.
+  final NodeSizeConfig nodeSizeConfig;
 }
 
 /// The result of a mutation that can fail with a user-facing message.
@@ -122,7 +245,10 @@ class FamilyApi {
   /// [isStaff] is forwarded to [FamilyNode.fromPersonJson] so that admins see
   /// unpublished nodes dimmed (opacity 0.3) from the very first load.
   Future<TreeFragment> bootstrap(int personId, {bool isStaff = false}) async {
-    final data = await _client.query(_bootstrapDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _bootstrapDoc,
+      variables: {'id': personId},
+    );
     final person = data['person'] as Map<String, dynamic>?;
     if (person == null) {
       throw PersonNotFoundException(personId);
@@ -149,28 +275,48 @@ class FamilyApi {
         grandfatherId = int.parse(grandfather['id'].toString());
         final ggf = grandfather['parent'] as Map<String, dynamic>?;
         final ggfId = ggf == null ? null : int.parse(ggf['id'].toString());
-        addNode(FamilyNode.fromPersonJson(grandfather, parentId: ggfId, isStaff: isStaff));
-        addNode(FamilyNode.fromPersonJson(father, parentId: grandfatherId, isStaff: isStaff));
+        addNode(
+          FamilyNode.fromPersonJson(
+            grandfather,
+            parentId: ggfId,
+            isStaff: isStaff,
+          ),
+        );
+        addNode(
+          FamilyNode.fromPersonJson(
+            father,
+            parentId: grandfatherId,
+            isStaff: isStaff,
+          ),
+        );
         edges.add((grandfatherId, fatherId));
       } else {
-        addNode(FamilyNode.fromPersonJson(father, parentId: null, isStaff: isStaff));
+        addNode(
+          FamilyNode.fromPersonJson(father, parentId: null, isStaff: isStaff),
+        );
       }
       edges.add((fatherId, personId0));
     }
 
     // --- the focused person ---
-    addNode(FamilyNode.fromPersonJson(person, parentId: fatherId, isStaff: isStaff));
+    addNode(
+      FamilyNode.fromPersonJson(person, parentId: fatherId, isStaff: isStaff),
+    );
 
     // --- descendants: sons, then grandsons ---
     for (final c in (person['children'] as List<dynamic>? ?? const [])) {
       final child = c as Map<String, dynamic>;
       final childId = int.parse(child['id'].toString());
-      addNode(FamilyNode.fromPersonJson(child, parentId: personId0, isStaff: isStaff));
+      addNode(
+        FamilyNode.fromPersonJson(child, parentId: personId0, isStaff: isStaff),
+      );
       edges.add((personId0, childId));
       for (final g in (child['children'] as List<dynamic>? ?? const [])) {
         final grand = g as Map<String, dynamic>;
         final grandId = int.parse(grand['id'].toString());
-        addNode(FamilyNode.fromPersonJson(grand, parentId: childId, isStaff: isStaff));
+        addNode(
+          FamilyNode.fromPersonJson(grand, parentId: childId, isStaff: isStaff),
+        );
         edges.add((childId, grandId));
       }
     }
@@ -180,8 +326,10 @@ class FamilyApi {
 
   /// Loads the parent and visible children of [personId] (interactive expand).
   Future<TreeFragment> connectedNodes(int personId) async {
-    final data =
-        await _client.query(_connectedDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _connectedDoc,
+      variables: {'id': personId},
+    );
     final connected = data['connectedNodes'] as Map<String, dynamic>?;
     if (connected == null) {
       return TreeFragment(nodes: const [], edges: const []);
@@ -236,10 +384,7 @@ class FamilyApi {
     ];
     final edges = [
       for (final e in (path['edges'] as List<dynamic>? ?? const []))
-        (
-          (e as Map<String, dynamic>)['fromId'] as int,
-          e['toId'] as int,
-        ),
+        ((e as Map<String, dynamic>)['fromId'] as int, e['toId'] as int),
     ];
     return TreeFragment(nodes: nodes, edges: edges);
   }
@@ -293,7 +438,10 @@ class FamilyApi {
 
   /// Whether the current user is allowed to delete [personId].
   Future<bool> canDelete(int personId) async {
-    final data = await _client.query(_canDeleteDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _canDeleteDoc,
+      variables: {'id': personId},
+    );
     return (data['canDelete'] as bool?) ?? false;
   }
 
@@ -307,7 +455,10 @@ class FamilyApi {
   Future<({int descendantCount, bool isRootWithSingleChild})> deleteInfo(
     int personId,
   ) async {
-    final data = await _client.query(_deleteInfoDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _deleteInfoDoc,
+      variables: {'id': personId},
+    );
     final info = data['deleteInfo'] as Map<String, dynamic>? ?? {};
     return (
       descendantCount: (info['descendantCount'] as int?) ?? 0,
@@ -326,8 +477,10 @@ class FamilyApi {
   Future<({bool published, bool bookmarked})> publishStatus(
     int personId,
   ) async {
-    final data =
-        await _client.query(_publishStatusDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _publishStatusDoc,
+      variables: {'id': personId},
+    );
     final person = data['person'] as Map<String, dynamic>?;
     return (
       published: (person?['published'] as bool?) ?? false,
@@ -343,8 +496,10 @@ class FamilyApi {
 
   /// Fetches the raw editable fields of [personId] to prefill the edit form.
   Future<PersonDetails> personDetails(int personId) async {
-    final data =
-        await _client.query(_personDetailsDoc, variables: {'id': personId});
+    final data = await _client.query(
+      _personDetailsDoc,
+      variables: {'id': personId},
+    );
     final person = data['person'] as Map<String, dynamic>?;
     if (person == null) throw PersonNotFoundException(personId);
     final parentJson = person['parent'] as Map<String, dynamic>?;
@@ -380,12 +535,15 @@ class FamilyApi {
     required String designation,
     required String history,
   }) async {
-    final data = await _client.query(_editPersonDoc, variables: {
-      'id': personId,
-      'name': name,
-      'designation': designation,
-      'history': history,
-    });
+    final data = await _client.query(
+      _editPersonDoc,
+      variables: {
+        'id': personId,
+        'name': name,
+        'designation': designation,
+        'history': history,
+      },
+    );
     final result = data['editPerson'] as Map<String, dynamic>?;
     if (result == null || result['ok'] != true) {
       throw GraphQLException(
@@ -543,6 +701,295 @@ class FamilyApi {
 
   Future<MutationResult> unbookmarkPerson(int personId) =>
       _simpleMutation(_unbookmarkDoc, 'unbookmarkPerson', personId);
+
+  // --- Home tree --------------------------------------------------------------
+
+  static const String _homeTreeDoc = r'''
+    query HomeTree {
+      homeTree {
+        nodes { id kind label group title opacity color fontColor fontSize }
+        edges { fromId toId }
+        centerId
+        nodeSizeConfig { maxScale minScale decay }
+      }
+    }
+  ''';
+
+  Future<HomeData> homeTree() async {
+    final data = await _client.query(_homeTreeDoc);
+    final tree = data['homeTree'] as Map<String, dynamic>?;
+    if (tree == null) return HomeData(nodes: [], edges: []);
+
+    final nodes = [
+      for (final n in (tree['nodes'] as List<dynamic>? ?? const []))
+        HomeNode(
+          id: (n as Map<String, dynamic>)['id'] as int,
+          kind: _parseKind((n['kind'] as String?) ?? 'bookmark'),
+          label: (n['label'] as String?) ?? '',
+          group: (n['group'] as String?) ?? 'g0',
+          title: n['title'] as String?,
+          opacity: (n['opacity'] as num?)?.toDouble() ?? 1.0,
+          colorOverride: n['color'] as String?,
+          fontColorOverride: n['fontColor'] as String?,
+          fontSizeOverride: n['fontSize'] as int?,
+        ),
+    ];
+
+    final edges = [
+      for (final e in (tree['edges'] as List<dynamic>? ?? const []))
+        ((e as Map<String, dynamic>)['fromId'] as int, e['toId'] as int),
+    ];
+
+    final sizeConfig = tree['nodeSizeConfig'] as Map<String, dynamic>?;
+
+    return HomeData(
+      nodes: nodes,
+      edges: edges,
+      centerId: (tree['centerId'] as int?) ?? 0,
+      nodeSizeConfig: sizeConfig == null
+          ? NodeSizeConfig.fallback
+          : NodeSizeConfig(
+              maxScale:
+                  (sizeConfig['maxScale'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.maxScale,
+              minScale:
+                  (sizeConfig['minScale'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.minScale,
+              decay:
+                  (sizeConfig['decay'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.decay,
+            ),
+    );
+  }
+
+  static HomeNodeKind _parseKind(String raw) => switch (raw) {
+    'root' => HomeNodeKind.root,
+    'tag' => HomeNodeKind.tag,
+    _ => HomeNodeKind.bookmark,
+  };
+
+  // --- Tag management (staff only) ------------------------------------------
+
+  static const String _listTagsDoc = r'''
+    query ListTags {
+      listTags { id name parentId }
+    }
+  ''';
+
+  Future<List<TagInfo>> listTags() async {
+    final data = await _client.query(_listTagsDoc);
+    return [
+      for (final t in (data['listTags'] as List<dynamic>? ?? const []))
+        TagInfo(
+          id: (t as Map<String, dynamic>)['id'] as int,
+          name: (t['name'] as String?) ?? '',
+          parentId: t['parentId'] as int?,
+        ),
+    ];
+  }
+
+  static const String _createTagDoc = r'''
+    mutation CreateTag($name: String!, $parentNodeId: Int) {
+      createTag(name: $name, parentNodeId: $parentNodeId) { ok message id name }
+    }
+  ''';
+
+  /// Creates a new tag, optionally nested under the home-tree node
+  /// [parentNodeId] (a negative tag id, a positive bookmarked person id, or
+  /// null/0 for top-level).
+  Future<({bool ok, String? message, int? id, String? name})> createTag(
+    String name, {
+    int? parentNodeId,
+  }) async {
+    final data = await _client.query(
+      _createTagDoc,
+      variables: {'name': name, 'parentNodeId': parentNodeId},
+    );
+    final r = data['createTag'] as Map<String, dynamic>?;
+    return (
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+      id: r?['id'] as int?,
+      name: r?['name'] as String?,
+    );
+  }
+
+  static const String _renameTagDoc = r'''
+    mutation RenameTag($id: Int!, $name: String!) {
+      renameTag(id: $id, name: $name) { ok message }
+    }
+  ''';
+
+  Future<MutationResult> renameTag(int id, String name) async {
+    final data = await _client.query(
+      _renameTagDoc,
+      variables: {'id': id, 'name': name},
+    );
+    final r = data['renameTag'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _moveTagDoc = r'''
+    mutation MoveTag($id: Int!, $parentNodeId: Int) {
+      moveTag(id: $id, parentNodeId: $parentNodeId) { ok message }
+    }
+  ''';
+
+  /// Re-parents a tag under the home-tree node [parentNodeId] (a negative tag
+  /// id, a positive bookmarked person id, or null/0 for top-level).
+  Future<MutationResult> moveTag(int id, int? parentNodeId) async {
+    final data = await _client.query(
+      _moveTagDoc,
+      variables: {'id': id, 'parentNodeId': parentNodeId},
+    );
+    final r = data['moveTag'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _deleteTagDoc = r'''
+    mutation DeleteTag($id: Int!) {
+      deleteTag(id: $id) { ok message }
+    }
+  ''';
+
+  Future<MutationResult> deleteTag(int id) async {
+    final data = await _client.query(_deleteTagDoc, variables: {'id': id});
+    final r = data['deleteTag'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _setBookmarkTagDoc = r'''
+    mutation SetBookmarkTag($personId: Int!, $tagId: Int) {
+      setBookmarkTag(personId: $personId, tagId: $tagId) { ok message }
+    }
+  ''';
+
+  /// Pass [tagId] = null to remove the tag (bookmark becomes floating).
+  Future<MutationResult> setBookmarkTag(int personId, int? tagId) async {
+    final data = await _client.query(
+      _setBookmarkTagDoc,
+      variables: {'personId': personId, 'tagId': tagId},
+    );
+    final r = data['setBookmarkTag'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _setHomeCenterDoc = r'''
+    mutation SetHomeCenter($personId: Int) {
+      setHomeCenter(personId: $personId) { ok message }
+    }
+  ''';
+
+  /// Sets the bookmark used as the center of the home tree, or pass
+  /// [personId] = null to reset to the default (virtual root).
+  Future<MutationResult> setHomeCenter(int? personId) async {
+    final data = await _client.query(
+      _setHomeCenterDoc,
+      variables: {'personId': personId},
+    );
+    final r = data['setHomeCenter'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _setNodeSizeConfigDoc = r'''
+    mutation SetNodeSizeConfig($maxScale: Float!, $minScale: Float!, $decay: Float!) {
+      setNodeSizeConfig(maxScale: $maxScale, minScale: $minScale, decay: $decay) { ok message }
+    }
+  ''';
+
+  /// Configures how home-tree node size scales with depth from the global root.
+  Future<MutationResult> setNodeSizeConfig(NodeSizeConfig config) async {
+    final data = await _client.query(
+      _setNodeSizeConfigDoc,
+      variables: {
+        'maxScale': config.maxScale,
+        'minScale': config.minScale,
+        'decay': config.decay,
+      },
+    );
+    final r = data['setNodeSizeConfig'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _setTagStyleDoc = r'''
+    mutation SetTagStyle($id: Int!, $color: String, $fontColor: String, $fontSize: Float) {
+      setTagStyle(id: $id, color: $color, fontColor: $fontColor, fontSize: $fontSize) { ok message }
+    }
+  ''';
+
+  /// Configures a tag's color, font color, and font size. Pass an empty
+  /// string for [color]/[fontColor] or -1 for [fontSize] to reset to the
+  /// default.
+  Future<MutationResult> setTagStyle(
+    int id, {
+    String? color,
+    String? fontColor,
+    double? fontSize,
+  }) async {
+    final data = await _client.query(
+      _setTagStyleDoc,
+      variables: {
+        'id': id,
+        'color': color,
+        'fontColor': fontColor,
+        'fontSize': fontSize,
+      },
+    );
+    final r = data['setTagStyle'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _setBookmarkStyleDoc = r'''
+    mutation SetBookmarkStyle($id: Int!, $color: String, $fontColor: String, $fontSize: Float) {
+      editBookmark(id: $id, color: $color, fontColor: $fontColor, fontSize: $fontSize) { ok message }
+    }
+  ''';
+
+  /// Configures a bookmarked person's node color, font color, and font size.
+  /// Pass an empty string for [color]/[fontColor] or -1 for [fontSize] to
+  /// reset to the default.
+  Future<MutationResult> setBookmarkStyle(
+    int personId, {
+    String? color,
+    String? fontColor,
+    double? fontSize,
+  }) async {
+    final data = await _client.query(
+      _setBookmarkStyleDoc,
+      variables: {
+        'id': personId,
+        'color': color,
+        'fontColor': fontColor,
+        'fontSize': fontSize,
+      },
+    );
+    final r = data['editBookmark'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
 
   /// Runs a mutation shaped like `field(id: $id) { ok message }`.
   Future<MutationResult> _simpleMutation(

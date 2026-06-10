@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'auth/auth_service.dart';
-import 'tree/tree_page.dart';
+import 'home/home_screen.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key, required this.auth});
@@ -41,7 +41,7 @@ class _SplashPageState extends State<SplashPage>
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, _) => TreePage(auth: widget.auth),
+        pageBuilder: (_, animation, _) => HomeScreen(auth: widget.auth),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 500),

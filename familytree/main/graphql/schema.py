@@ -73,6 +73,8 @@ class Query(graphene.ObjectType):
         id=graphene.Int(required=True),
     )
     list_bookmarks = graphene.List(BookmarkType, description="Get list of all bookmarks")
+    home_tree = graphene.Field(types.HomeTree, description="Radial home tree: virtual root + tags + bookmarks")
+    list_tags = graphene.List(types.TagType, description="All admin-defined tags")
 
     def resolve_connected_nodes(parent, info, id):
         user = info.context.user
@@ -166,6 +168,139 @@ class Query(graphene.ObjectType):
     @authenticated_only
     def resolve_list_bookmarks(parent, info):
         return Bookmark.objects.all()
+
+    def resolve_home_tree(parent, info):
+        from home.models import HomeSettings, Tag
+
+        user = info.context.user
+        tags = list(Tag.objects.all())
+        bookmarks = list(Bookmark.objects.select_related("person", "tag").all())
+
+        settings = HomeSettings.load()
+        center_id = settings.center_person_id or 0
+        node_size_config = types.NodeSizeConfig(
+            max_scale=settings.node_max_scale,
+            min_scale=settings.node_min_scale,
+            decay=settings.node_size_decay,
+        )
+
+        # Always include the virtual root.
+        root_node = types.HomeNode(id=0, kind="root", label="", group="g0", opacity=1.0)
+        nodes_out = [root_node]
+        edges_out = []
+
+        if not tags and not bookmarks:
+            return types.HomeTree(nodes=nodes_out, edges=edges_out, center_id=0, node_size_config=node_size_config)
+
+        # ── Tag nodes (nested rings) ──────────────────────────────────────────
+        # Tags may be nested under other tags or under a bookmarked person; an
+        # edge connects each tag to its parent tag (negative id), its parent
+        # bookmark (positive id), or to the virtual root (0) if top-level.
+        bookmarked_pks = {b.person_id for b in bookmarks}
+        for i, tag in enumerate(tags):
+            nodes_out.append(
+                types.HomeNode(
+                    id=-tag.id,  # negative to avoid collision with person PKs
+                    kind="tag",
+                    label=tag.name,
+                    group=f"g{i % 11}",  # cycle through the colour palette
+                    opacity=1.0,
+                    color=tag.color,
+                    font_color=tag.font_color,
+                    font_size=tag.font_size,
+                )
+            )
+            if tag.parent_id is not None:
+                parent_node_id = -tag.parent_id
+            elif tag.parent_bookmark_id is not None and tag.parent_bookmark_id in bookmarked_pks:
+                parent_node_id = tag.parent_bookmark_id
+            else:
+                parent_node_id = 0
+            edges_out.append(types.TreeEdge(from_id=parent_node_id, to_id=-tag.id))
+
+        # ── Effective-tag propagation ─────────────────────────────────────────
+        # A bookmark's effective tag = its own tag (if set) OR the effective
+        # tag of its closest bookmarked ancestor.  This lets admins tag only
+        # the root bookmark of a branch; descendants inherit the tag.
+        all_bookmarked_persons = [b.person for b in bookmarks]
+        bm_by_pk = {b.person.pk: b for b in bookmarks}
+
+        # closest bookmarked parent within the bookmark set
+        parent_in_bm_tree = {}
+        for person in all_bookmarked_persons:
+            bm_parent, _ = person.find_closest_parent(all_bookmarked_persons)
+            if bm_parent:
+                parent_in_bm_tree[person.pk] = bm_parent.pk
+
+        effective_tag_cache = {}
+
+        def effective_tag(pk, _seen=None):
+            if pk in effective_tag_cache:
+                return effective_tag_cache[pk]
+            _seen = _seen or set()
+            if pk in _seen:
+                effective_tag_cache[pk] = None
+                return None
+            _seen.add(pk)
+            bm = bm_by_pk.get(pk)
+            if bm is None:
+                return None
+            if bm.tag_id is not None:
+                effective_tag_cache[pk] = bm.tag_id
+                return bm.tag_id
+            par_pk = parent_in_bm_tree.get(pk)
+            result = effective_tag(par_pk, _seen) if par_pk is not None else None
+            effective_tag_cache[pk] = result
+            return result
+
+        for bm in bookmarks:
+            effective_tag(bm.person.pk)
+
+        # ── Bookmark nodes ────────────────────────────────────────────────────
+        for bm in bookmarks:
+            person = bm.person
+            raw = person.as_node(user)
+            nodes_out.append(
+                types.HomeNode(
+                    id=person.pk,
+                    kind="bookmark",
+                    label=raw.get("label", person.name),
+                    group=raw.get("group", "g0"),
+                    title=raw.get("title"),
+                    opacity=raw.get("opacity", 1.0),
+                    color=bm.color,
+                    font_color=bm.font_color,
+                    font_size=bm.font_size,
+                )
+            )
+
+            et = effective_tag_cache.get(person.pk)
+            par_pk = parent_in_bm_tree.get(person.pk)
+
+            if par_pk is not None:
+                par_et = effective_tag_cache.get(par_pk)
+                if et == par_et:
+                    # Same effective tag as parent → connect directly to parent bookmark
+                    edges_out.append(types.TreeEdge(from_id=par_pk, to_id=person.pk))
+                elif et is not None:
+                    # This bookmark breaks the chain (own tag differs) → root of its tag
+                    edges_out.append(types.TreeEdge(from_id=-et, to_id=person.pk))
+                else:
+                    # No effective tag and parent has a tag → floating under root
+                    edges_out.append(types.TreeEdge(from_id=0, to_id=person.pk))
+            else:
+                # No bookmarked parent
+                if et is not None:
+                    edges_out.append(types.TreeEdge(from_id=-et, to_id=person.pk))
+                else:
+                    edges_out.append(types.TreeEdge(from_id=0, to_id=person.pk))
+
+        return types.HomeTree(nodes=nodes_out, edges=edges_out, center_id=center_id, node_size_config=node_size_config)
+
+    def resolve_list_tags(parent, info):
+        from home.models import Tag
+
+        return [types.TagType(id=t.id, name=t.name, parent_id=t.parent_id) for t in Tag.objects.all()]
 
 
 class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
@@ -477,6 +612,236 @@ class MovePerson(graphene.Mutation, MutationReply, types.NodeType):
         return {**MutationReply.success(), **person.as_node(user)}
 
 
+class CreateTag(graphene.Mutation, MutationReply):
+    class Arguments:
+        name = graphene.String(required=True)
+        parent_node_id = graphene.Int(
+            required=False,
+            description="Optional parent home-tree node ID: a negative tag ID, "
+            "a positive bookmarked person ID, or null/0 for top-level.",
+        )
+
+    id = graphene.Int()
+    name = graphene.String()
+
+    @staff_only
+    def mutate(root, info, name, parent_node_id=None):
+        from home.models import Tag
+
+        if not name.strip():
+            return {**MutationReply.fail("Tag name cannot be empty"), "id": None, "name": None}
+        parent = None
+        parent_bookmark = None
+        if parent_node_id is not None and parent_node_id != 0:
+            if parent_node_id < 0:
+                parent = Tag.objects.filter(pk=-parent_node_id).first()
+                if parent is None:
+                    return {**MutationReply.fail(f"Tag {-parent_node_id} not found"), "id": None, "name": None}
+            else:
+                if not Bookmark.objects.filter(person__pk=parent_node_id).exists():
+                    return {
+                        **MutationReply.fail(f"No bookmark for person {parent_node_id}"),
+                        "id": None,
+                        "name": None,
+                    }
+                parent_bookmark_id = parent_node_id
+                parent_bookmark = Person.objects.filter(pk=parent_bookmark_id).first()
+        tag = Tag.objects.create(name=name.strip(), parent=parent, parent_bookmark=parent_bookmark)
+        return {**MutationReply.success(), "id": tag.id, "name": tag.name}
+
+
+class RenameTag(graphene.Mutation, MutationReply):
+    class Arguments:
+        id = graphene.Int(required=True)
+        name = graphene.String(required=True)
+
+    @staff_only
+    def mutate(root, info, id, name):
+        from home.models import Tag
+
+        if not name.strip():
+            return MutationReply.fail("Tag name cannot be empty")
+        tag = Tag.objects.filter(pk=id).first()
+        if tag is None:
+            return MutationReply.fail(f"Tag {id} not found")
+        tag.name = name.strip()
+        tag.save()
+        return MutationReply.success()
+
+
+class MoveTag(graphene.Mutation, MutationReply):
+    """Re-parent a tag, placing it under another tag, under a bookmarked person, or
+    under the root if parentNodeId is null/0."""
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        parent_node_id = graphene.Int(
+            required=False,
+            description="New parent home-tree node ID: a negative tag ID, "
+            "a positive bookmarked person ID, or null/0 for top-level.",
+        )
+
+    @staff_only
+    def mutate(root, info, id, parent_node_id=None):
+        from home.models import Tag
+
+        tag = Tag.objects.filter(pk=id).first()
+        if tag is None:
+            return MutationReply.fail(f"Tag {id} not found")
+
+        if parent_node_id is not None and parent_node_id != 0:
+            if parent_node_id < 0:
+                parent_id = -parent_node_id
+                if parent_id == id:
+                    return MutationReply.fail("A tag cannot be its own parent")
+                new_parent = Tag.objects.filter(pk=parent_id).first()
+                if new_parent is None:
+                    return MutationReply.fail(f"Tag {parent_id} not found")
+                # Walk up from new_parent: if we reach `tag`, this would create a cycle.
+                ancestor = new_parent
+                while ancestor is not None:
+                    if ancestor.pk == tag.pk:
+                        return MutationReply.fail("Cannot move a tag under one of its own descendants")
+                    ancestor = ancestor.parent
+                tag.parent = new_parent
+                tag.parent_bookmark = None
+            else:
+                if not Bookmark.objects.filter(person__pk=parent_node_id).exists():
+                    return MutationReply.fail(f"No bookmark for person {parent_node_id}")
+                tag.parent = None
+                tag.parent_bookmark_id = parent_node_id
+        else:
+            tag.parent = None
+            tag.parent_bookmark = None
+        tag.save()
+        return MutationReply.success()
+
+
+class DeleteTag(graphene.Mutation, MutationReply):
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    @staff_only
+    def mutate(root, info, id):
+        from home.models import Tag
+
+        Tag.objects.filter(pk=id).delete()  # bookmarks/child tags → SET_NULL automatically
+        return MutationReply.success()
+
+
+class SetTagStyle(graphene.Mutation, MutationReply):
+    """Configure a tag's color, font color, and font size. Pass an empty string for
+    color/font_color or -1 for font_size to reset to the default."""
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        color = graphene.String(
+            required=False,
+            description="Overwrite default color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Empty string to reset.",
+        )
+        font_color = graphene.String(
+            required=False,
+            description="Overwrite default font color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Empty string to reset.",
+        )
+        font_size = graphene.Float(required=False, description="Overwrite default font size. Set to -1 to reset")
+
+    @staff_only
+    def mutate(root, info, id, color=None, font_color=None, font_size=None):
+        from home.models import Tag
+
+        tag = Tag.objects.filter(pk=id).first()
+        if tag is None:
+            return MutationReply.fail(f"Tag {id} not found")
+
+        if font_size == -1:
+            tag.font_size = None
+            font_size = None
+        if color == "":
+            tag.color = None
+            color = None
+        if font_color == "":
+            tag.font_color = None
+            font_color = None
+
+        fields = {"color": color, "font_color": font_color, "font_size": font_size}
+        for key, value in fields.items():
+            if value is not None:
+                setattr(tag, key, value)
+        tag.save()
+        return MutationReply.success()
+
+
+class SetBookmarkTag(graphene.Mutation, MutationReply):
+    """Assign (or clear) the tag of a bookmark.  Pass tagId=null to untag."""
+
+    class Arguments:
+        person_id = graphene.Int(required=True)
+        tag_id = graphene.Int()  # nullable → untag
+
+    @staff_only
+    def mutate(root, info, person_id, tag_id=None):
+        bookmark = Bookmark.objects.filter(person__pk=person_id).first()
+        if bookmark is None:
+            return MutationReply.fail(f"No bookmark for person {person_id}")
+        bookmark.tag_id = tag_id
+        bookmark.save()
+        return MutationReply.success()
+
+
+class SetHomeCenter(graphene.Mutation, MutationReply):
+    """Set (or clear) the bookmark used as the center of the home tree.  Pass personId=null to reset."""
+
+    class Arguments:
+        person_id = graphene.Int()  # nullable → reset to default
+
+    @staff_only
+    def mutate(root, info, person_id=None):
+        from home.models import HomeSettings
+
+        if person_id is not None:
+            bookmark = Bookmark.objects.filter(person__pk=person_id).first()
+            if bookmark is None:
+                return MutationReply.fail(f"No bookmark for person {person_id}")
+
+        settings = HomeSettings.load()
+        settings.center_person_id = person_id
+        settings.save()
+        return MutationReply.success()
+
+
+class SetNodeSizeConfig(graphene.Mutation, MutationReply):
+    """Configure how home-tree node size scales with depth from the global root."""
+
+    class Arguments:
+        max_scale = graphene.Float(required=True, description="Visual scale of nodes at the root.")
+        min_scale = graphene.Float(required=True, description="Visual scale of the deepest (leaf) nodes.")
+        decay = graphene.Float(
+            required=True, description="How quickly node size shrinks per generation away from the root."
+        )
+
+    @staff_only
+    def mutate(root, info, max_scale, min_scale, decay):
+        from home.models import HomeSettings
+
+        if min_scale <= 0 or max_scale <= 0:
+            return MutationReply.fail("Scales must be greater than 0")
+        if min_scale > max_scale:
+            return MutationReply.fail("Min scale cannot be greater than max scale")
+        if decay < 0:
+            return MutationReply.fail("Decay cannot be negative")
+
+        settings = HomeSettings.load()
+        settings.node_max_scale = max_scale
+        settings.node_min_scale = min_scale
+        settings.node_size_decay = decay
+        settings.save()
+        return MutationReply.success()
+
+
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
     add_parent = AddParent.Field()
@@ -489,6 +854,14 @@ class Mutations(graphene.ObjectType):
     publish_person = PublishPerson.Field()
     unpublish_person = UnPublishPerson.Field()
     edit_bookmark = EditBookmark.Field()
+    create_tag = CreateTag.Field()
+    rename_tag = RenameTag.Field()
+    move_tag = MoveTag.Field()
+    delete_tag = DeleteTag.Field()
+    set_tag_style = SetTagStyle.Field()
+    set_bookmark_tag = SetBookmarkTag.Field()
+    set_home_center = SetHomeCenter.Field()
+    set_node_size_config = SetNodeSizeConfig.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

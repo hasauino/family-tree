@@ -17,9 +17,13 @@ import 'tree_path_dialog.dart';
 
 /// The interactive, pan/zoomable family-tree screen.
 class TreePage extends StatefulWidget {
-  const TreePage({super.key, required this.auth});
+  const TreePage({super.key, required this.auth, this.initialPersonId});
 
   final AuthService auth;
+
+  /// The person to center the tree on when the page first opens.
+  /// Falls back to [AppConfig.rootPersonId] when null.
+  final int? initialPersonId;
 
   @override
   State<TreePage> createState() => _TreePageState();
@@ -54,7 +58,7 @@ class _TreePageState extends State<TreePage>
             tween.lerp(Curves.easeInOut.transform(_panController.value));
       }
     });
-    _loadRootCentered(AppConfig.rootPersonId);
+    _loadRootCentered(widget.initialPersonId ?? AppConfig.rootPersonId);
   }
 
   @override
@@ -324,6 +328,12 @@ class _TreePageState extends State<TreePage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                IconButton(
+                  tooltip: t.goHomeTooltip,
+                  icon: const Icon(Icons.home_outlined),
+                  onPressed: () =>
+                      Navigator.of(context).popUntil((route) => route.isFirst),
+                ),
                 IconButton(
                   tooltip: t.searchTooltip,
                   icon: const Icon(Icons.search),

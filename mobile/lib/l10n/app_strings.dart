@@ -103,15 +103,60 @@ class AppStrings {
   String get bookmarked => _t('bookmarked');
   String get bookmarkRemoved => _t('bookmarkRemoved');
 
+  // Home screen
+  String get homeTitle => _t('homeTitle');
+  String get noBookmarks => _t('noBookmarks');
+  String get openTreeTooltip => _t('openTreeTooltip');
+
+  // Tag management
+  String get createTagTooltip => _t('createTagTooltip');
+  String get createTagTitle => _t('createTagTitle');
+  String get tagNameLabel => _t('tagNameLabel');
+  String get tagCreated => _t('tagCreated');
+  String get renameTagTitle => _t('renameTagTitle');
+  String get tagRenamed => _t('tagRenamed');
+  String get deleteTagTitle => _t('deleteTagTitle');
+  String get tagDeleted => _t('tagDeleted');
+  String get assignTag => _t('assignTag');
+  String get noTag => _t('noTag');
+  String get tagAssigned => _t('tagAssigned');
+  String get parentTagLabel => _t('parentTagLabel');
+  String get topLevelTag => _t('topLevelTag');
+  String get moveTagTitle => _t('moveTagTitle');
+  String get tagMoved => _t('tagMoved');
+  String get goHomeTooltip => _t('goHomeTooltip');
+  String get setHomeCenter => _t('setHomeCenter');
+  String get resetHomeCenter => _t('resetHomeCenter');
+  String get homeCenterUpdated => _t('homeCenterUpdated');
+  String get nodeSizeSettingsTooltip => _t('nodeSizeSettingsTooltip');
+  String get nodeSizeSettingsTitle => _t('nodeSizeSettingsTitle');
+  String get nodeMaxScaleLabel => _t('nodeMaxScaleLabel');
+  String get nodeMinScaleLabel => _t('nodeMinScaleLabel');
+  String get nodeSizeDecayLabel => _t('nodeSizeDecayLabel');
+  String get nodeSizeSettingsHelp => _t('nodeSizeSettingsHelp');
+  String get nodeSizeSettingsInvalid => _t('nodeSizeSettingsInvalid');
+  String get nodeSizeSettingsUpdated => _t('nodeSizeSettingsUpdated');
+  String get editStyleTitle => _t('editStyleTitle');
+  String get nodeColorLabel => _t('nodeColorLabel');
+  String get fontColorLabel => _t('fontColorLabel');
+  String get fontSizeLabel => _t('fontSizeLabel');
+  String get colorHexHint => _t('colorHexHint');
+  String get resetToDefault => _t('resetToDefault');
+  String get styleUpdated => _t('styleUpdated');
+  String get styleInvalid => _t('styleInvalid');
+
+  String deleteTagConfirm(String name) =>
+      _t('deleteTagConfirm').replaceFirst('{name}', name);
+
   String deleteConfirm(String name) =>
       _t('deleteConfirm').replaceFirst('{name}', name);
 
   String deleteOrphanConfirm(String name) =>
       _t('deleteOrphanConfirm').replaceFirst('{name}', name);
 
-  String deleteCascadeConfirm(String name, int count) => _t('deleteCascadeConfirm')
-      .replaceFirst('{name}', name)
-      .replaceFirst('{count}', '$count');
+  String deleteCascadeConfirm(String name, int count) => _t(
+    'deleteCascadeConfirm',
+  ).replaceFirst('{name}', name).replaceFirst('{count}', '$count');
 
   String childrenAddedWarning(String names) =>
       _t('childrenAddedWarning').replaceFirst('{names}', names);
@@ -193,6 +238,51 @@ class AppStrings {
       'removeBookmark': 'Remove bookmark',
       'bookmarked': 'Bookmarked.',
       'bookmarkRemoved': 'Bookmark removed.',
+      'homeTitle': 'Family Tree',
+      'noBookmarks':
+          'No bookmarks yet.\nOpen the tree and bookmark people to see them here.',
+      'openTreeTooltip': 'Open full tree',
+      'createTagTooltip': 'New tag',
+      'createTagTitle': 'New tag',
+      'tagNameLabel': 'Tag name',
+      'tagCreated': 'Tag created.',
+      'renameTagTitle': 'Rename tag',
+      'tagRenamed': 'Tag renamed.',
+      'deleteTagTitle': 'Delete tag',
+      'deleteTagConfirm':
+          'Delete tag "{name}"? Bookmarks will become untagged.',
+      'tagDeleted': 'Tag deleted.',
+      'assignTag': 'Assign tag',
+      'noTag': 'No tag (floating)',
+      'tagAssigned': 'Tag updated.',
+      'parentTagLabel': 'Parent tag',
+      'topLevelTag': 'Top level (no parent)',
+      'moveTagTitle': 'Move tag',
+      'tagMoved': 'Tag moved.',
+      'goHomeTooltip': 'Back to home',
+      'setHomeCenter': 'Set as home center',
+      'resetHomeCenter': 'Reset home center',
+      'homeCenterUpdated': 'Home center updated.',
+      'nodeSizeSettingsTooltip': 'Node size settings',
+      'nodeSizeSettingsTitle': 'Node size settings',
+      'nodeMaxScaleLabel': 'Root node size',
+      'nodeMinScaleLabel': 'Leaf node size',
+      'nodeSizeDecayLabel': 'Shrink rate',
+      'nodeSizeSettingsHelp':
+          'Controls how node size shrinks with distance from the tree root. '
+          'Higher shrink rate makes the difference between root and leaf '
+          'nodes more pronounced.',
+      'nodeSizeSettingsInvalid':
+          'Enter valid, positive numbers (leaf size ≤ root size).',
+      'nodeSizeSettingsUpdated': 'Node size settings updated.',
+      'editStyleTitle': 'Edit style',
+      'nodeColorLabel': 'Node color',
+      'fontColorLabel': 'Font color',
+      'fontSizeLabel': 'Font size',
+      'colorHexHint': 'RRGGBB',
+      'resetToDefault': 'Reset to default',
+      'styleUpdated': 'Style updated.',
+      'styleInvalid': 'Colors must be 6 hex digits (RRGGBB) or empty.',
     },
     'ar': {
       'appTitle': 'شجرة العائلة',
@@ -214,7 +304,8 @@ class AppStrings {
       'treePathToHint': 'ابحث عن الحفيد',
       'treePathPickHint': 'اضغط لاختيار شخص',
       'treePathGo': 'انتقال',
-      'errorNoPath': 'لم يُعثر على مسار. تأكد أن الشخص الأول هو جد الشخص الثاني.',
+      'errorNoPath':
+          'لم يُعثر على مسار. تأكد أن الشخص الأول هو جد الشخص الثاني.',
       'searchTooltip': 'البحث بالاسم',
       'searchHint': 'البحث بالاسم',
       'searchError': 'فشل البحث. تحقّق من اتصالك وحاول مرة أخرى.',
@@ -266,6 +357,50 @@ class AppStrings {
       'removeBookmark': 'إزالة الإشارة المرجعية',
       'bookmarked': 'تمت إضافة الإشارة المرجعية.',
       'bookmarkRemoved': 'تمت إزالة الإشارة المرجعية.',
+      'homeTitle': 'شجرة العائلة',
+      'noBookmarks':
+          'لا توجد إشارات مرجعية بعد.\nافتح الشجرة وأضف إشارات مرجعية لتظهر هنا.',
+      'openTreeTooltip': 'فتح الشجرة الكاملة',
+      'createTagTooltip': 'تصنيف جديد',
+      'createTagTitle': 'تصنيف جديد',
+      'tagNameLabel': 'اسم التصنيف',
+      'tagCreated': 'تم إنشاء التصنيف.',
+      'renameTagTitle': 'إعادة تسمية التصنيف',
+      'tagRenamed': 'تم تغيير اسم التصنيف.',
+      'deleteTagTitle': 'حذف التصنيف',
+      'deleteTagConfirm': 'حذف التصنيف "{name}"؟ ستصبح الإشارات غير مصنّفة.',
+      'tagDeleted': 'تم حذف التصنيف.',
+      'assignTag': 'تعيين تصنيف',
+      'noTag': 'بدون تصنيف',
+      'tagAssigned': 'تم تحديث التصنيف.',
+      'parentTagLabel': 'التصنيف الأب',
+      'topLevelTag': 'المستوى الأعلى (بدون أب)',
+      'moveTagTitle': 'نقل التصنيف',
+      'tagMoved': 'تم نقل التصنيف.',
+      'goHomeTooltip': 'العودة إلى الرئيسية',
+      'setHomeCenter': 'اجعله مركز الصفحة الرئيسية',
+      'resetHomeCenter': 'إعادة تعيين مركز الصفحة الرئيسية',
+      'homeCenterUpdated': 'تم تحديث مركز الصفحة الرئيسية.',
+      'nodeSizeSettingsTooltip': 'إعدادات حجم العقد',
+      'nodeSizeSettingsTitle': 'إعدادات حجم العقد',
+      'nodeMaxScaleLabel': 'حجم العقدة الجذرية',
+      'nodeMinScaleLabel': 'حجم العقد الطرفية',
+      'nodeSizeDecayLabel': 'معدل التصغير',
+      'nodeSizeSettingsHelp':
+          'يتحكم في كيفية تصغير حجم العقد كلما ابتعدنا عن جذر الشجرة. '
+          'كلما زاد معدل التصغير، زاد الفرق بين حجم العقدة الجذرية والعقد الطرفية.',
+      'nodeSizeSettingsInvalid':
+          'أدخل أرقامًا موجبة وصحيحة (حجم العقدة الطرفية ≤ حجم العقدة الجذرية).',
+      'nodeSizeSettingsUpdated': 'تم تحديث إعدادات حجم العقد.',
+      'editStyleTitle': 'تعديل المظهر',
+      'nodeColorLabel': 'لون العقدة',
+      'fontColorLabel': 'لون الخط',
+      'fontSizeLabel': 'حجم الخط',
+      'colorHexHint': 'RRGGBB',
+      'resetToDefault': 'إعادة التعيين إلى الافتراضي',
+      'styleUpdated': 'تم تحديث المظهر.',
+      'styleInvalid':
+          'يجب أن تكون الألوان 6 أرقام سداسية عشرية (RRGGBB) أو فارغة.',
     },
   };
 }
@@ -274,9 +409,8 @@ class _AppStringsDelegate extends LocalizationsDelegate<AppStrings> {
   const _AppStringsDelegate();
 
   @override
-  bool isSupported(Locale locale) => AppStrings._values.containsKey(
-        locale.languageCode,
-      );
+  bool isSupported(Locale locale) =>
+      AppStrings._values.containsKey(locale.languageCode);
 
   @override
   Future<AppStrings> load(Locale locale) async => AppStrings(locale);
