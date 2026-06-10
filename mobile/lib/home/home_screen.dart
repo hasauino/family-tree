@@ -1770,19 +1770,22 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(child: body),
-            Align(
-              alignment: Alignment.bottomCenter,
+      // No top SafeArea: the tree paints edge-to-edge behind the transparent
+      // status bar instead of being pushed below it. Only the bottom action
+      // bar stays inside the safe area so it clears the home indicator.
+      body: Stack(
+        children: [
+          Positioned.fill(child: body),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _actionBar(t),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

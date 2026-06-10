@@ -387,42 +387,45 @@ class _TreePageState extends State<TreePage>
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ListenableBuilder(
-                listenable: _controller,
-                builder: (context, _) {
-                  if (_controller.loading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (_controller.error != null &&
-                      _controller.graph.nodeCount() == 0) {
-                    return _ErrorView(
-                      error: _controller.error!,
-                      onRetry: () => _controller.loadRoot(
-                        _controller.rootId ?? AppConfig.rootPersonId,
-                        isStaff: widget.auth.isStaff,
-                      ),
-                    );
-                  }
-                  if (_controller.graph.nodeCount() == 0) {
-                    return Center(child: Text(t.noData));
-                  }
-                  return _buildGraph();
-                },
-              ),
+      // No top SafeArea: the graph paints edge-to-edge behind the transparent
+      // status bar instead of being pushed below it. Only the bottom action
+      // bar stays inside the safe area so it clears the home indicator.
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: ListenableBuilder(
+              listenable: _controller,
+              builder: (context, _) {
+                if (_controller.loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (_controller.error != null &&
+                    _controller.graph.nodeCount() == 0) {
+                  return _ErrorView(
+                    error: _controller.error!,
+                    onRetry: () => _controller.loadRoot(
+                      _controller.rootId ?? AppConfig.rootPersonId,
+                      isStaff: widget.auth.isStaff,
+                    ),
+                  );
+                }
+                if (_controller.graph.nodeCount() == 0) {
+                  return Center(child: Text(t.noData));
+                }
+                return _buildGraph();
+              },
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _actionBar(t),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

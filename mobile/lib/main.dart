@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'auth/auth_service.dart';
@@ -132,28 +133,42 @@ class _GradientBackground extends StatelessWidget {
     final base = isDark ? _darkBase : _lightBase;
     final pools = isDark ? _darkPools : _lightPools;
 
-    return RepaintBoundary(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ColoredBox(color: base),
-          for (final pool in pools)
-            Align(
-              alignment: pool.alignment,
-              child: FractionallySizedBox(
-                widthFactor: 1.7,
-                heightFactor: 1.3,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      colors: [pool.color, pool.color.withValues(alpha: 0)],
+    // Keep the OS status bar (clock/wifi/battery) legible against the gradient:
+    // dark icons over the light theme, light icons over the dark theme. The
+    // bar stays transparent so the tree/gradient shows through underneath it.
+    // None of the tree pages use an AppBar, so this is the only thing driving
+    // the overlay style — set it here so every page gets it.
+    final overlay = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlay,
+      child: RepaintBoundary(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: base),
+            for (final pool in pools)
+              Align(
+                alignment: pool.alignment,
+                child: FractionallySizedBox(
+                  widthFactor: 1.7,
+                  heightFactor: 1.3,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [pool.color, pool.color.withValues(alpha: 0)],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ?child,
-        ],
+            ?child,
+          ],
+        ),
       ),
     );
   }
