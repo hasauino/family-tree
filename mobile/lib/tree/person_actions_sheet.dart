@@ -5,6 +5,7 @@ import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
 import '../widgets/glass.dart';
+import '../widgets/top_toast.dart';
 import 'edit_person_page.dart';
 import 'search_overlay.dart';
 import 'tree_controller.dart';
@@ -82,13 +83,13 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
 
   void _toast(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    showTopToast(context, message);
   }
 
-  /// Shows a snackbar via [messenger], which stays valid even after the sheet
-  /// is popped (used for "success" toasts that follow a dismiss).
-  void _toastVia(ScaffoldMessengerState messenger, String message) {
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+  /// Shows a toast via [overlay], which stays valid even after the sheet is
+  /// popped (used for "success" toasts that follow a dismiss).
+  void _toastVia(OverlayState overlay, String message) {
+    showTopToastOn(overlay, message);
   }
 
   /// Runs an authenticated action with a busy guard and uniform error toast.
@@ -109,7 +110,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
 
   Future<void> _addChildren() async {
     final t = AppStrings.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     final names = await showDialog<List<String>>(
       context: context,
       builder: (ctx) => const _AddChildrenDialog(),
@@ -119,10 +120,10 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
       final result = await widget.controller.addChildren(_id, names);
       if (mounted) Navigator.pop(context);
       if (result.warnings.isEmpty) {
-        _toastVia(messenger, t.childrenAdded);
+        _toastVia(overlay, t.childrenAdded);
       } else {
         _toastVia(
-          messenger,
+          overlay,
           t.childrenAddedWarning(result.warnings.join(', ')),
         );
       }
@@ -145,20 +146,20 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
 
   Future<void> _addParentNode() async {
     final t = AppStrings.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     final name = await _promptText(t.addParentTitle, t.parentNameLabel);
     if (name == null || name.trim().isEmpty) return;
     await _run(() async {
       await widget.controller.addParent(_id, name.trim());
       if (mounted) Navigator.pop(context);
-      _toastVia(messenger, t.parentAdded);
+      _toastVia(overlay, t.parentAdded);
       widget.onMoved?.call();
     });
   }
 
   Future<void> _moveNode() async {
     final t = AppStrings.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     final picked = await showSearchOverlay(
       context,
       widget.auth.api,
@@ -168,7 +169,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     await _run(() async {
       await widget.controller.movePerson(_id, picked.id);
       if (mounted) Navigator.pop(context);
-      _toastVia(messenger, t.nodeMoved);
+      _toastVia(overlay, t.nodeMoved);
       widget.onMoved?.call();
     });
   }
@@ -182,7 +183,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
 
   Future<void> _delete() async {
     final t = AppStrings.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
 
     final info = await widget.controller.deleteInfo(_id);
     if (!mounted) return;
@@ -218,7 +219,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     await _run(() async {
       await widget.controller.deletePerson(_id);
       if (mounted) Navigator.pop(context);
-      _toastVia(messenger, t.personDeleted);
+      _toastVia(overlay, t.personDeleted);
     });
   }
 

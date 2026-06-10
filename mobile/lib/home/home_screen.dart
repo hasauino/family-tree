@@ -14,6 +14,7 @@ import '../tree/search_overlay.dart';
 import '../tree/tree_page.dart';
 import '../widgets/color_wheel.dart';
 import '../widgets/glass.dart';
+import '../widgets/top_toast.dart';
 
 /// Sentinel returned by [_TagPickerSheet] when the user picks "top level"
 /// (i.e. no parent tag), as opposed to dismissing the sheet without a choice.
@@ -1128,7 +1129,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _toast(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    showTopToast(context, msg);
   }
 
   Future<void> _editNodeSizeSettings() async {

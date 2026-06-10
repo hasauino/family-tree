@@ -4,6 +4,7 @@ import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/glass.dart';
+import '../widgets/top_toast.dart';
 import 'tree_controller.dart';
 
 /// A native form for editing a person's name / designation / history — the
@@ -59,7 +60,7 @@ class _EditPersonPageState extends State<EditPersonPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
     final t = AppStrings.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     setState(() {
       _saving = true;
       _error = null;
@@ -72,7 +73,7 @@ class _EditPersonPageState extends State<EditPersonPage> {
         history: _history.text.trim(),
       );
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text(t.personUpdated)));
+      showTopToastOn(overlay, t.personUpdated);
       Navigator.pop(context, true);
     } on GraphQLException catch (e) {
       if (mounted) setState(() => _error = e.message);
