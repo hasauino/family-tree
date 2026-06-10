@@ -91,38 +91,90 @@ class Query(graphene.ObjectType):
 
     def resolve_tree_path(parent, info, from_id, to_id):
         """
-        Mirrors the web `tree_from_to` view: walks up from the descendant to
-        the ancestor, collecting each step's siblings as a level, then returns
-        those levels (root-first) as nodes plus the parent -> child edges
-        between them. Returns None if either person doesn't exist, isn't
-        visible to the current user, or the first isn't an ancestor of the
-        second.
+        Connects two people in the tree. When one is an ancestor of the other,
+        the route is the straight line between them; otherwise it runs up from
+        each endpoint to their lowest common ancestor. Returns the route plus
+        the siblings at each step (so it can be drawn in context), the parent
+        -> child edges between all those nodes, and metadata describing the
+        relationship (see types.TreePath).
+
+        Returns None if either person doesn't exist or isn't visible to the
+        current user, if any node on the way to the root is hidden, or if the
+        two share no visible common ancestor (disconnected trees).
         """
         user = info.context.user
-        found = Person.objects.filter(pk=from_id)
-        if not found.exists():
+        from_person = Person.objects.filter(pk=from_id).first()
+        to_person = Person.objects.filter(pk=to_id).first()
+        if from_person is None or to_person is None:
             return None
-        from_person = found.first()
-        found = Person.objects.filter(pk=to_id)
-        if not found.exists():
-            return None
-        to_person = found.first()
-        if not from_person.is_visible_to(user):
+        if not from_person.is_visible_to(user) or not to_person.is_visible_to(user):
             return None
 
-        levels = []
-        person = to_person
-        while person != from_person:
-            if not person.is_visible_to(user) or person.parent is None:
-                return None
-            levels.append([sibling for sibling in person.parent.children.all()])
-            person = person.parent
-        levels.append([from_person])
+        def ancestor_chain(person):
+            """[person, parent, ..., root]; None if any node is hidden."""
+            chain = []
+            current = person
+            while current is not None:
+                if not current.is_visible_to(user):
+                    return None
+                chain.append(current)
+                current = current.parent
+            return chain
 
-        all_persons = [p for level in levels[::-1] for p in level if p.is_visible_to(user)]
+        from_chain = ancestor_chain(from_person)
+        to_chain = ancestor_chain(to_person)
+        if from_chain is None or to_chain is None:
+            return None
+
+        # Lowest common ancestor: walking up from `to`, the first node that is
+        # also an ancestor (or self) of `from` is the deepest shared node.
+        from_depth = {p.pk: i for i, p in enumerate(from_chain)}
+        meeting = None
+        to_generations = None
+        for i, person in enumerate(to_chain):
+            if person.pk in from_depth:
+                meeting = person
+                to_generations = i
+                break
+        if meeting is None:
+            return None
+        from_generations = from_depth[meeting.pk]
+
+        # The route: from -> ... -> meeting -> ... -> to (no siblings).
+        route = from_chain[: from_generations + 1] + list(reversed(to_chain[:to_generations]))
+
+        # Display nodes: every route node plus its siblings, for context.
+        loaded = {}
+
+        def add(person):
+            if person.pk not in loaded and person.is_visible_to(user):
+                loaded[person.pk] = person
+
+        for person in route:
+            add(person)
+            if person.parent is not None:
+                for sibling in person.parent.children.all():
+                    add(sibling)
+
+        def depth(person):
+            count = 0
+            while person.parent is not None:
+                count += 1
+                person = person.parent
+            return count
+
+        persons = sorted(loaded.values(), key=depth)
+        edges = [
+            {"from_id": p.parent.pk, "to_id": p.pk} for p in persons if p.parent is not None and p.parent.pk in loaded
+        ]
         return {
-            "nodes": [p.as_node(user) for p in all_persons],
-            "edges": [{"from_id": p.parent.pk, "to_id": p.pk} for p in all_persons[1:]],
+            "nodes": [p.as_node(user) for p in persons],
+            "edges": edges,
+            "path_ids": [p.pk for p in route],
+            "meeting_id": meeting.pk,
+            "from_generations": from_generations,
+            "to_generations": to_generations,
+            "is_direct": from_generations == 0 or to_generations == 0,
         }
 
     def resolve_me(parent, info):

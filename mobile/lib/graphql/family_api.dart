@@ -11,6 +11,31 @@ class TreeFragment {
   final List<(int from, int to)> edges;
 }
 
+/// The result of a "connect two people" query: the [fragment] to render, the
+/// ordered [pathIds] forming the route to highlight (from → meeting → to), and
+/// metadata describing the relationship.
+///
+/// [isDirect] is true when one endpoint is an ancestor of the other; then
+/// [meetingId] is that ancestor and one of [fromGenerations]/[toGenerations]
+/// is 0. Otherwise [meetingId] is their lowest common ancestor and each count
+/// is the number of generations between an endpoint and the meeting node.
+class TreePathResult {
+  TreePathResult({
+    required this.fragment,
+    required this.pathIds,
+    required this.meetingId,
+    required this.fromGenerations,
+    required this.toGenerations,
+    required this.isDirect,
+  });
+  final TreeFragment fragment;
+  final List<int> pathIds;
+  final int meetingId;
+  final int fromGenerations;
+  final int toGenerations;
+  final bool isDirect;
+}
+
 /// A single "search by name" match (id + the full name with ancestors).
 class PersonSearchResult {
   PersonSearchResult({required this.id, required this.name});
@@ -381,16 +406,21 @@ class FamilyApi {
       treePath(fromId: $fromId, toId: $toId) {
         nodes { id label group opacity title font { strokeWidth } }
         edges { fromId toId }
+        pathIds
+        meetingId
+        fromGenerations
+        toGenerations
+        isDirect
       }
     }
   ''';
 
-  /// Loads the chain of nodes connecting ancestor [fromId] to descendant
-  /// [toId] — the mobile equivalent of the web "from ancestor to person"
-  /// navigation page. Throws [NoTreePathException] when no such chain exists
-  /// (either person is missing, not visible, or [fromId] is not an ancestor
-  /// of [toId]).
-  Future<TreeFragment> treePath(int fromId, int toId) async {
+  /// Connects two people in the tree. When [fromId] is an ancestor of [toId]
+  /// (or vice-versa) the result describes the straight line between them;
+  /// otherwise it runs up to their lowest common ancestor. Throws
+  /// [NoTreePathException] when no connection exists (either person is missing
+  /// or not visible, or the two share no common ancestor).
+  Future<TreePathResult> treePath(int fromId, int toId) async {
     final data = await _client.query(
       _treePathDoc,
       variables: {'fromId': fromId, 'toId': toId},
@@ -406,7 +436,17 @@ class FamilyApi {
       for (final e in (path['edges'] as List<dynamic>? ?? const []))
         ((e as Map<String, dynamic>)['fromId'] as int, e['toId'] as int),
     ];
-    return TreeFragment(nodes: nodes, edges: edges);
+    return TreePathResult(
+      fragment: TreeFragment(nodes: nodes, edges: edges),
+      pathIds: [
+        for (final id in (path['pathIds'] as List<dynamic>? ?? const []))
+          id as int,
+      ],
+      meetingId: path['meetingId'] as int,
+      fromGenerations: path['fromGenerations'] as int,
+      toGenerations: path['toGenerations'] as int,
+      isDirect: path['isDirect'] as bool? ?? false,
+    );
   }
 
   // --- Account ------------------------------------------------------------

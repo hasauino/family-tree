@@ -13,6 +13,8 @@ class NodeWidget extends StatelessWidget {
     required this.node,
     required this.isRoot,
     required this.isExpanding,
+    this.isOnPath = false,
+    this.dimmed = false,
     this.onTap,
     this.onDoubleTap,
     this.onLongPress,
@@ -21,6 +23,14 @@ class NodeWidget extends StatelessWidget {
   final FamilyNode node;
   final bool isRoot;
   final bool isExpanding;
+
+  /// Whether this node sits on the highlighted "connect two people" route.
+  final bool isOnPath;
+
+  /// Whether a route is being shown and this node is *not* on it, so it should
+  /// be faded back to let the route stand out.
+  final bool dimmed;
+
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
   final VoidCallback? onLongPress;
@@ -30,6 +40,7 @@ class NodeWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accent = node.color;
     final subtitle = node.subtitle;
+    final highlight = scheme.primary;
 
     final card = Container(
       constraints: const BoxConstraints(minWidth: 150, maxWidth: 230),
@@ -37,15 +48,24 @@ class NodeWidget extends StatelessWidget {
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isRoot ? accent : scheme.outlineVariant,
-          width: isRoot ? 2 : 1,
+          color: isOnPath
+              ? highlight
+              : (isRoot ? accent : scheme.outlineVariant),
+          width: isOnPath ? 2.5 : (isRoot ? 2 : 1),
         ),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
+          if (isOnPath)
+            BoxShadow(
+              color: highlight.withValues(alpha: 0.45),
+              blurRadius: 16,
+              spreadRadius: 1,
+            )
+          else
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -97,8 +117,11 @@ class NodeWidget extends StatelessWidget {
       ),
     );
 
-    final content = node.opacity < 1.0
-        ? Opacity(opacity: node.opacity, child: card)
+    // Combine the node's own opacity (e.g. dimmed unpublished nodes) with the
+    // route fade, so an off-path node never appears brighter than on-path ones.
+    final effectiveOpacity = dimmed ? node.opacity * 0.25 : node.opacity;
+    final content = effectiveOpacity < 1.0
+        ? Opacity(opacity: effectiveOpacity, child: card)
         : card;
 
     return RepaintBoundary(

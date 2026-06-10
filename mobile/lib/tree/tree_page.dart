@@ -266,7 +266,95 @@ class _TreePageState extends State<TreePage>
           animationDuration: AppConfig.treePathZoomDuration,
         ),
       );
+      _showPathResultSheet();
     });
+  }
+
+  /// Summarizes the freshly loaded route in a bottom sheet: how the two people
+  /// are related and how many generations separate them. No-op if the load
+  /// failed (an error banner is shown instead).
+  void _showPathResultSheet() {
+    final info = _controller.pathInfo;
+    if (info == null || !mounted) return;
+    final t = AppStrings.of(context);
+    String nameOf(int id) => _controller.nodeData[id]?.label ?? '#$id';
+
+    final List<Widget> lines;
+    if (info.isDirect) {
+      // One endpoint is an ancestor of the other; name them in that order.
+      final ancestorId = info.fromGenerations == 0 ? info.fromId : info.toId;
+      final descendantId = info.fromGenerations == 0 ? info.toId : info.fromId;
+      lines = [
+        Text(
+          t.treePathDirectLine(nameOf(ancestorId), nameOf(descendantId)),
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+        const SizedBox(height: 8),
+        _PathStatChip(label: t.treePathApart(info.directGenerations)),
+      ];
+    } else {
+      lines = [
+        Text(
+          t.treePathMeetAt(nameOf(info.meetingId)),
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+        const SizedBox(height: 12),
+        _PathStatChip(
+          label: t.treePathGenerationsAway(
+            nameOf(info.fromId),
+            info.fromGenerations,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _PathStatChip(
+          label: t.treePathGenerationsAway(
+            nameOf(info.toId),
+            info.toGenerations,
+          ),
+        ),
+      ];
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => GlassPanel(
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Text(
+                  t.treePathResultTitle,
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                ...lines,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _handleLogin() async {
@@ -431,7 +519,25 @@ class _TreePageState extends State<TreePage>
   }
 
   Widget _buildGraph() {
-    final edgeColor = Theme.of(context).colorScheme.outline;
+    final scheme = Theme.of(context).colorScheme;
+    final edgeColor = scheme.outline;
+    // When a route is highlighted, paint its parent→child edges in the accent
+    // color (and thicker); leave every other edge on the default paint. Both
+    // endpoints of a route edge are always on the route (see resolve_tree_path),
+    // so "both ids on the path" exactly identifies the route edges.
+    final pathEdgePaint = Paint()
+      ..color = scheme.primary
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    for (final edge in _controller.graph.edges) {
+      final from = edge.source.key?.value as int?;
+      final to = edge.destination.key?.value as int?;
+      final onPath = from != null &&
+          to != null &&
+          _controller.isOnPath(from) &&
+          _controller.isOnPath(to);
+      edge.paint = onPath ? pathEdgePaint : null;
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         final viewport = constraints.biggest;
@@ -468,10 +574,14 @@ class _TreePageState extends State<TreePage>
                     final id = node.key!.value as int;
                     final data = _controller.nodeData[id];
                     if (data == null) return const SizedBox.shrink();
+                    final pathActive = _controller.pathActive;
+                    final onPath = _controller.isOnPath(id);
                     return NodeWidget(
                       node: data,
                       isRoot: id == _controller.rootId,
                       isExpanding: _controller.isExpanding(id),
+                      isOnPath: pathActive && onPath,
+                      dimmed: pathActive && !onPath,
                       onTap: () {
                         _centerNode(id, animated: true);
                         _controller.expand(id).then((_) {
@@ -488,6 +598,41 @@ class _TreePageState extends State<TreePage>
           ),
         );
       },
+    );
+  }
+}
+
+/// A small pill used in the path-result sheet to show a generation count.
+class _PathStatChip extends StatelessWidget {
+  const _PathStatChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.account_tree_outlined, size: 16, color: scheme.primary),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -15,6 +15,32 @@ class TreeError {
 
 enum TreeErrorKind { personNotFound, connection, noPath }
 
+/// Describes a connection between two people, used to render the summary sheet.
+///
+/// When [isDirect] is true, one endpoint is an ancestor of the other and
+/// [meetingId] is that ancestor (one of the generation counts is 0). Otherwise
+/// [meetingId] is the lowest common ancestor and each count is the number of
+/// generations between an endpoint and the meeting node.
+class TreePathInfo {
+  TreePathInfo({
+    required this.fromId,
+    required this.toId,
+    required this.meetingId,
+    required this.fromGenerations,
+    required this.toGenerations,
+    required this.isDirect,
+  });
+  final int fromId;
+  final int toId;
+  final int meetingId;
+  final int fromGenerations;
+  final int toGenerations;
+  final bool isDirect;
+
+  /// In a direct line, the total generations between the two endpoints.
+  int get directGenerations => fromGenerations + toGenerations;
+}
+
 /// Holds the interactive tree state and talks to [FamilyApi].
 ///
 /// The [Graph] is the layout/render model consumed by `GraphView`; [nodeData]
@@ -37,6 +63,16 @@ class TreeController extends ChangeNotifier {
   int? rootId;
   bool loading = false;
   TreeError? error;
+
+  /// Set while a "connect two people" route is being shown. [pathIds] holds the
+  /// ids on the highlighted route; [pathInfo] carries the relationship details
+  /// (meeting node + generation counts) for the summary sheet. Both are cleared
+  /// by [_reset] (i.e. on any other navigation).
+  final Set<int> pathIds = {};
+  TreePathInfo? pathInfo;
+
+  bool get pathActive => pathIds.isNotEmpty;
+  bool isOnPath(int id) => pathIds.contains(id);
 
   bool isExpanding(int id) => _expanding.contains(id);
   bool isExpanded(int id) => _expanded.contains(id);
@@ -64,10 +100,11 @@ class TreeController extends ChangeNotifier {
     }
   }
 
-  /// Resets the tree and loads the chain of nodes from ancestor [fromId] down
-  /// to descendant [toId] — the mobile equivalent of the web "from ancestor
-  /// to person" navigation. Sets [rootId] to [toId] so centering and retry
-  /// both target the descendant.
+  /// Resets the tree and loads the route connecting [fromId] and [toId],
+  /// highlighting it. When one is an ancestor of the other the route is the
+  /// straight line between them; otherwise it runs up to their lowest common
+  /// ancestor. Sets [rootId] to [toId] so centering and retry both target it,
+  /// and populates [pathIds]/[pathInfo] for highlighting and the summary sheet.
   Future<void> loadPath(int fromId, int toId) async {
     loading = true;
     error = null;
@@ -75,8 +112,19 @@ class TreeController extends ChangeNotifier {
     _reset();
     notifyListeners();
     try {
-      final fragment = await _api.treePath(fromId, toId);
-      _apply(fragment);
+      final result = await _api.treePath(fromId, toId);
+      _apply(result.fragment);
+      pathIds
+        ..clear()
+        ..addAll(result.pathIds);
+      pathInfo = TreePathInfo(
+        fromId: fromId,
+        toId: toId,
+        meetingId: result.meetingId,
+        fromGenerations: result.fromGenerations,
+        toGenerations: result.toGenerations,
+        isDirect: result.isDirect,
+      );
       _expanded.add(toId);
     } on NoTreePathException catch (_) {
       error = TreeError(TreeErrorKind.noPath);
@@ -255,6 +303,8 @@ class TreeController extends ChangeNotifier {
     _edgeKeys.clear();
     _expanded.clear();
     _expanding.clear();
+    pathIds.clear();
+    pathInfo = null;
     graph.nodes.clear();
     graph.edges.clear();
   }

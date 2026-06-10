@@ -112,12 +112,30 @@ class TreeEdge(graphene.ObjectType):
 
 class TreePath(graphene.ObjectType):
     """
-    The chain of nodes connecting an ancestor to one of their descendants
-    (inclusive on both ends), plus the parent -> child edges between them
+    The connection between two people in the tree: every node needed to draw
+    the route in context (the route itself plus the immediate siblings at each
+    step), the parent -> child edges between them, and metadata describing the
+    relationship.
+
+    Two cases:
+      * direct line  – one person is an ancestor of the other. ``meeting_id`` is
+        the ancestor, and the two are ``from_generations``/``to_generations``
+        apart (one of which is 0).
+      * common root  – neither is an ancestor of the other. ``meeting_id`` is
+        their lowest common ancestor; each endpoint is ``*_generations`` away
+        from it.
     """
 
     nodes = graphene.List(NodeType)
     edges = graphene.List(TreeEdge)
+    path_ids = graphene.List(
+        graphene.Int,
+        description="Ordered ids of the route (from -> meeting -> to) to highlight.",
+    )
+    meeting_id = graphene.Int(description="Id of the ancestor where the two endpoints meet.")
+    from_generations = graphene.Int(description="Generations between the 'from' person and the meeting node.")
+    to_generations = graphene.Int(description="Generations between the 'to' person and the meeting node.")
+    is_direct = graphene.Boolean(description="True when one endpoint is an ancestor of the other.")
 
 
 class DeleteInfo(graphene.ObjectType):

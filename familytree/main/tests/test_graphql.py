@@ -139,6 +139,11 @@ def test_resolve_tree_path_returns_chain_with_siblings_and_edges(make_person):
         (parent.pk, child2.pk),
         (child1.pk, grandchild.pk),
     }
+    assert result["path_ids"] == [grandparent.pk, parent.pk, child1.pk, grandchild.pk]
+    assert result["meeting_id"] == grandparent.pk
+    assert result["from_generations"] == 0
+    assert result["to_generations"] == 3
+    assert result["is_direct"] is True
 
 
 def test_resolve_tree_path_returns_single_node_when_endpoints_match(make_person):
@@ -148,14 +153,36 @@ def test_resolve_tree_path_returns_single_node_when_endpoints_match(make_person)
 
     assert [n["id"] for n in result["nodes"]] == [person.pk]
     assert result["edges"] == []
+    assert result["path_ids"] == [person.pk]
+    assert result["meeting_id"] == person.pk
+    assert result["from_generations"] == 0
+    assert result["to_generations"] == 0
+    assert result["is_direct"] is True
 
 
-def test_resolve_tree_path_returns_none_when_from_is_not_an_ancestor(make_person):
+def test_resolve_tree_path_meets_at_common_ancestor_when_neither_is_an_ancestor(make_person):
     root = make_person(name="Root")
     branch_a = make_person(name="BranchA", parent=root)
     branch_b = make_person(name="BranchB", parent=root)
 
     result = Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=branch_a.pk, to_id=branch_b.pk)
+
+    assert result["meeting_id"] == root.pk
+    assert result["from_generations"] == 1
+    assert result["to_generations"] == 1
+    assert result["is_direct"] is False
+    assert result["path_ids"] == [branch_a.pk, root.pk, branch_b.pk]
+    assert {(e["from_id"], e["to_id"]) for e in result["edges"]} == {
+        (root.pk, branch_a.pk),
+        (root.pk, branch_b.pk),
+    }
+
+
+def test_resolve_tree_path_returns_none_when_trees_are_disconnected(make_person):
+    root_a = make_person(name="RootA")
+    root_b = make_person(name="RootB")
+
+    result = Query.resolve_tree_path(None, info_for(AnonymousUser()), from_id=root_a.pk, to_id=root_b.pk)
 
     assert result is None
 

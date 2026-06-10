@@ -58,6 +58,19 @@ class AppStrings {
   String get treePathPickHint => _t('treePathPickHint');
   String get treePathGo => _t('treePathGo');
   String get errorNoPath => _t('errorNoPath');
+  String get treePathResultTitle => _t('treePathResultTitle');
+  String treePathDirectLine(String ancestor, String descendant) =>
+      _t('treePathDirectLine')
+          .replaceFirst('{ancestor}', ancestor)
+          .replaceFirst('{descendant}', descendant);
+  String treePathApart(int count) =>
+      _t('treePathApart').replaceFirst('{count}', '$count');
+  String treePathMeetAt(String name) =>
+      _t('treePathMeetAt').replaceFirst('{name}', name);
+  String treePathGenerationsAway(String name, int count) =>
+      _t('treePathGenerationsAway')
+          .replaceFirst('{name}', name)
+          .replaceFirst('{count}', '$count');
 
   // Search
   String get searchTooltip => _t('searchTooltip');
@@ -195,16 +208,21 @@ class AppStrings {
       'errorConnection':
           'Could not load the family tree. Check your connection and try again.',
       'errorPersonNotFound': 'Person #{id} was not found.',
-      'treePathTooltip': 'Show path from ancestor to descendant',
-      'treePathTitle': 'Show path',
-      'treePathFromLabel': 'From (ancestor)',
-      'treePathToLabel': 'To (descendant)',
-      'treePathFromHint': 'Search for the ancestor',
-      'treePathToHint': 'Search for the descendant',
+      'treePathTooltip': 'Show how two people are connected',
+      'treePathTitle': 'Connect two people',
+      'treePathFromLabel': 'Person A',
+      'treePathToLabel': 'Person B',
+      'treePathFromHint': 'Search for the first person',
+      'treePathToHint': 'Search for the second person',
       'treePathPickHint': 'Tap to choose a person',
       'treePathGo': 'Go',
       'errorNoPath':
-          'No path found. Make sure the first person is an ancestor of the second.',
+          'These two people are not connected in the tree.',
+      'treePathResultTitle': 'Connection',
+      'treePathDirectLine': '{ancestor} is a direct ancestor of {descendant}.',
+      'treePathApart': '{count} generations apart',
+      'treePathMeetAt': 'They meet at {name}',
+      'treePathGenerationsAway': '{name}: {count} generations away',
       'searchTooltip': 'Search by name',
       'searchHint': 'Search by name',
       'searchError': 'Search failed. Check your connection and try again.',
@@ -325,16 +343,21 @@ class AppStrings {
       'errorConnection':
           'تعذّر تحميل شجرة العائلة. تحقّق من اتصالك وحاول مرة أخرى.',
       'errorPersonNotFound': 'لم يتم العثور على الشخص رقم {id}.',
-      'treePathTooltip': 'عرض المسار من الجد إلى الحفيد',
-      'treePathTitle': 'عرض المسار',
-      'treePathFromLabel': 'من (الجد)',
-      'treePathToLabel': 'إلى (الحفيد)',
-      'treePathFromHint': 'ابحث عن الجد',
-      'treePathToHint': 'ابحث عن الحفيد',
+      'treePathTooltip': 'عرض صلة القرابة بين شخصين',
+      'treePathTitle': 'الربط بين شخصين',
+      'treePathFromLabel': 'الشخص الأول',
+      'treePathToLabel': 'الشخص الثاني',
+      'treePathFromHint': 'ابحث عن الشخص الأول',
+      'treePathToHint': 'ابحث عن الشخص الثاني',
       'treePathPickHint': 'اضغط لاختيار شخص',
       'treePathGo': 'انتقال',
       'errorNoPath':
-          'لم يُعثر على مسار. تأكد أن الشخص الأول هو جد الشخص الثاني.',
+          'لا توجد صلة بين هذين الشخصين في الشجرة.',
+      'treePathResultTitle': 'صلة القرابة',
+      'treePathDirectLine': '{ancestor} جدٌّ مباشر لـ {descendant}.',
+      'treePathApart': 'يفصل بينهما {count} أجيال',
+      'treePathMeetAt': 'يلتقيان عند {name}',
+      'treePathGenerationsAway': '{name}: يبعد {count} أجيال',
       'searchTooltip': 'البحث بالاسم',
       'searchHint': 'البحث بالاسم',
       'searchError': 'فشل البحث. تحقّق من اتصالك وحاول مرة أخرى.',
