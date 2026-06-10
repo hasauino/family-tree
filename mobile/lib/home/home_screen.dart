@@ -2248,10 +2248,11 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
     final scheme = Theme.of(context).colorScheme;
     return GlassDialog(
       title: t.nodeSizeSettingsTitle,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Text(
             t.nodeSizeSettingsHelp,
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
@@ -2334,7 +2335,8 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
             const SizedBox(height: 8),
             Text(_error!, style: TextStyle(color: scheme.error, fontSize: 12)),
           ],
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
