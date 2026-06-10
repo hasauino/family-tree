@@ -993,16 +993,18 @@ class FamilyApi {
   }
 
   static const String _setBookmarkStyleDoc = r'''
-    mutation SetBookmarkStyle($id: Int!, $color: String, $fontColor: String, $fontSize: Float) {
-      editBookmark(id: $id, color: $color, fontColor: $fontColor, fontSize: $fontSize) { ok message }
+    mutation SetBookmarkStyle($id: Int!, $label: String, $color: String, $fontColor: String, $fontSize: Float) {
+      editBookmark(id: $id, label: $label, color: $color, fontColor: $fontColor, fontSize: $fontSize) { ok message }
     }
   ''';
 
-  /// Configures a bookmarked person's node color, font color, and font size.
-  /// Pass an empty string for [color]/[fontColor] or -1 for [fontSize] to
-  /// reset to the default.
+  /// Configures a bookmarked person's node label, color, font color, and font
+  /// size. Pass null to leave a field unchanged, an empty string for
+  /// [label]/[color]/[fontColor] or -1 for [fontSize] to reset to the default.
+  /// Only the home-center bookmark uses [label] (its in-bubble text).
   Future<MutationResult> setBookmarkStyle(
     int personId, {
+    String? label,
     String? color,
     String? fontColor,
     double? fontSize,
@@ -1011,6 +1013,7 @@ class FamilyApi {
       _setBookmarkStyleDoc,
       variables: {
         'id': personId,
+        'label': label,
         'color': color,
         'fontColor': fontColor,
         'fontSize': fontSize,

@@ -149,6 +149,8 @@ class AppStrings {
   String get styleInvalid => _t('styleInvalid');
   String get rootLabelLabel => _t('rootLabelLabel');
   String get rootLabelHint => _t('rootLabelHint');
+  String get nodeLabelLabel => _t('nodeLabelLabel');
+  String get nodeLabelHint => _t('nodeLabelHint');
 
   String deleteTagConfirm(String name) =>
       _t('deleteTagConfirm').replaceFirst('{name}', name);
@@ -293,6 +295,8 @@ class AppStrings {
       'styleInvalid': 'Colors must be 6 hex digits (RRGGBB) or empty.',
       'rootLabelLabel': 'Root label',
       'rootLabelHint': 'Leave empty for the default icon',
+      'nodeLabelLabel': 'Label',
+      'nodeLabelHint': 'Leave empty for the default name',
     },
     'ar': {
       'appTitle': 'شجرة العائلة',
@@ -416,6 +420,8 @@ class AppStrings {
           'يجب أن تكون الألوان 6 أرقام سداسية عشرية (RRGGBB) أو فارغة.',
       'rootLabelLabel': 'نص العقدة الجذرية',
       'rootLabelHint': 'اتركه فارغًا لعرض الأيقونة الافتراضية',
+      'nodeLabelLabel': 'النص',
+      'nodeLabelHint': 'اتركه فارغًا لعرض الاسم الافتراضي',
     },
   };
 }

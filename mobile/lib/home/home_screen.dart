@@ -9,9 +9,9 @@ import '../auth/login_page.dart';
 import '../config.dart';
 import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
-import '../models/family_node.dart' show kGroupColors;
 import '../tree/search_overlay.dart';
 import '../tree/tree_page.dart';
+import '../widgets/color_wheel.dart';
 import '../widgets/glass.dart';
 
 /// Sentinel returned by [_TagPickerSheet] when the user picks "top level"
@@ -194,10 +194,17 @@ class _RadialLayout {
     double coreRadius(int id) {
       final n = nodeById[id]!;
       final depth = globalDepth[id] ?? 1;
-      return math.max(
+      final base = math.max(
         _NodeSize.halfW(n, depth, sizeConfig),
         _NodeSize.halfH(n, depth, sizeConfig),
       );
+      // The center bookmark renders its description label below the bubble, so
+      // it must reserve enough room to keep the child ring clear of that label.
+      if (id == center) {
+        final scale = _NodeSize.scaleForDepth(depth, sizeConfig);
+        return math.max(base, _NodeSize.centerLabelRadius(n, scale));
+      }
+      return base;
     }
 
     // Gap kept between a child disk and its parent's glyph / its siblings.
@@ -218,7 +225,10 @@ class _RadialLayout {
     );
     final edgeFactor = math.max(1.0, sizeConfig.edgeFactor);
 
-    ({double rmag, Map<int, Offset> pos}) layout(int node, {bool isRoot = false}) {
+    ({double rmag, Map<int, Offset> pos}) layout(
+      int node, {
+      bool isRoot = false,
+    }) {
       final core = coreRadius(node);
       final kids = children[node] ?? const <int>[];
       if (kids.isEmpty) {
@@ -398,6 +408,23 @@ class _NodeSize {
     if (n.isTag) return 20.0 * scale;
     return 26.0 * scale;
   }
+
+  /// Width of the home-center bookmark's description label (also used by
+  /// [_positionedNode] when laying the label out).
+  static const double centerLabelWidth = 110.0;
+
+  /// The radius the center bookmark must reserve so its description label —
+  /// drawn just below the bubble, [centerLabelWidth]-wide and up to two lines
+  /// tall — stays inside the node's disk and clear of the surrounding child
+  /// ring. Returns 0 when there is no description to show.
+  static double centerLabelRadius(HomeNode n, double scale) {
+    if (!n.isBookmark || n.subtitle == null) return 0;
+    final fontSize = (n.fontSizeOverride?.toDouble() ?? 12) * scale;
+    final labelHeight = fontSize * 1.35 * 2; // up to two wrapped lines
+    final radial = 26.0 * scale + 4.0 + labelHeight; // bubble + gap + label
+    final halfWidth = centerLabelWidth * scale / 2;
+    return math.sqrt(halfWidth * halfWidth + radial * radial);
+  }
 }
 
 /// Central anchor node – large filled circle. Shows the configured root label
@@ -548,12 +575,19 @@ class _BookmarkCircle extends StatelessWidget {
   const _BookmarkCircle({
     required this.node,
     this.scale = 1.0,
+    this.showFullLabel = false,
     this.onTap,
     this.onLongPress,
   });
 
   final HomeNode node;
   final double scale;
+
+  /// When true, the bubble shows the node's full (admin-customizable) label
+  /// wrapped inside it instead of a single initial. Used only for the
+  /// home-center bookmark, which stands in for the root; every other bookmark
+  /// keeps the compact initial.
+  final bool showFullLabel;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
@@ -587,12 +621,21 @@ class _BookmarkCircle extends StatelessWidget {
           ],
         ),
         child: Center(
-          child: Text(
-            node.initial,
-            style: TextStyle(
-              color: fgColor,
-              fontSize: 17 * scale,
-              fontWeight: FontWeight.w700,
+          child: Padding(
+            padding: EdgeInsets.all(showFullLabel ? 6 * scale : 0),
+            child: Text(
+              showFullLabel ? node.label : node.initial,
+              textAlign: TextAlign.center,
+              maxLines: showFullLabel ? 3 : 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: node.fontColor ?? fgColor,
+                fontSize: showFullLabel
+                    ? (node.fontSizeOverride?.toDouble() ?? 14) * scale
+                    : 17 * scale,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
+              ),
             ),
           ),
         ),
@@ -609,11 +652,16 @@ class _BookmarkLabel extends StatelessWidget {
     required this.node,
     required this.scale,
     required this.align,
+    this.showName = true,
   });
 
   final HomeNode node;
   final double scale;
   final CrossAxisAlignment align;
+
+  /// Whether to render the name line. The center bookmark shows its name
+  /// inside its bubble, so its side label carries only the description.
+  final bool showName;
 
   TextAlign get _textAlign => switch (align) {
     CrossAxisAlignment.start => TextAlign.left,
@@ -634,30 +682,36 @@ class _BookmarkLabel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: align,
         children: [
-          Text(
-            node.label,
-            textAlign: _textAlign,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: ((node.fontSizeOverride?.toDouble() ?? 11) * scale)
-                  .clamp(
-                    9.0,
-                    node.fontSizeOverride != null ? double.infinity : 13.0,
-                  ),
-              fontWeight: FontWeight.w600,
-              color: node.fontColor ?? scheme.onSurface,
-              height: 1.2,
+          if (showName)
+            Text(
+              node.label,
+              textAlign: _textAlign,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: ((node.fontSizeOverride?.toDouble() ?? 11) * scale)
+                    .clamp(
+                      9.0,
+                      node.fontSizeOverride != null ? double.infinity : 13.0,
+                    ),
+                fontWeight: FontWeight.w600,
+                color: node.fontColor ?? scheme.onSurface,
+                height: 1.2,
+              ),
             ),
-          ),
           if (node.subtitle != null)
             Text(
               node.subtitle!,
               textAlign: _textAlign,
-              maxLines: 1,
+              maxLines: showName ? 1 : 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: (10 * scale).clamp(8.0, 12.0),
+                // For the center bookmark the description is the whole label,
+                // so it honours the node's customizable font size; other nodes
+                // keep a fixed, compact subtitle size.
+                fontSize: showName
+                    ? (10 * scale).clamp(8.0, 12.0)
+                    : (node.fontSizeOverride?.toDouble() ?? 12) * scale,
                 color: node.fontColor ?? scheme.onSurfaceVariant,
               ),
             ),
@@ -771,8 +825,9 @@ class _HomeScreenState extends State<HomeScreen>
     _panController.addListener(() {
       final tween = _panTween;
       if (tween != null) {
-        _viewer.value =
-            tween.lerp(Curves.easeInOut.transform(_panController.value));
+        _viewer.value = tween.lerp(
+          Curves.easeInOut.transform(_panController.value),
+        );
       }
     });
     _load();
@@ -798,7 +853,11 @@ class _HomeScreenState extends State<HomeScreen>
       final focusId = data.centerId == 0
           ? _rootIdOf(data.nodes, data.edges)
           : data.centerId;
-      final childrenMap = _rerootedChildren(display.nodes, display.edges, focusId);
+      final childrenMap = _rerootedChildren(
+        display.nodes,
+        display.edges,
+        focusId,
+      );
       setState(() {
         _nodes = data.nodes;
         _edges = data.edges;
@@ -1008,7 +1067,8 @@ class _HomeScreenState extends State<HomeScreen>
           .clamp(0.08, 3.0);
       final contentCenter = Offset(minX + contentW / 2, minY + contentH / 2);
       final t =
-          Offset(viewport.width / 2, viewport.height / 2) - contentCenter * scale;
+          Offset(viewport.width / 2, viewport.height / 2) -
+          contentCenter * scale;
       _viewer.value = Matrix4.identity()
         ..translateByDouble(t.dx, t.dy, 0, 1)
         ..scaleByDouble(scale, scale, scale, 1);
@@ -1273,9 +1333,16 @@ class _HomeScreenState extends State<HomeScreen>
         },
         onEditStyle: () async {
           Navigator.pop(ctx);
+          // Only the home-center bookmark may set custom in-bubble text; other
+          // bookmarks just get color/font styling.
+          final isCenter = _centerId == bookmark.id;
           final result = await showDialog<StyleSettingsResult>(
             context: context,
             builder: (ctx2) => _StyleSettingsDialog(
+              showLabel: isCenter,
+              labelIsRoot: false,
+              showFontFields: isCenter,
+              initialLabel: isCenter ? bookmark.label : null,
               initialColor: bookmark.colorOverride,
               initialFontColor: bookmark.fontColorOverride,
               initialFontSize: bookmark.fontSizeOverride,
@@ -1285,6 +1352,7 @@ class _HomeScreenState extends State<HomeScreen>
           try {
             final r = await _api.setBookmarkStyle(
               bookmark.id,
+              label: result.label,
               color: result.color,
               fontColor: result.fontColor,
               fontSize: result.fontSize,
@@ -1549,6 +1617,7 @@ class _HomeScreenState extends State<HomeScreen>
           _BookmarkCircle(
             node: node,
             scale: scale,
+            showFullLabel: isFocus,
             onTap: (hasChildren && !isFocus)
                 ? () {
                     _toggleExpand(node.id);
@@ -1566,6 +1635,25 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     );
+
+    // The center bookmark's label sits directly below its bubble, centered,
+    // within the radius reserved for it in the layout (see coreRadius) so it
+    // stays clear of the surrounding child ring.
+    if (isFocus) {
+      final width = _NodeSize.centerLabelWidth * scale;
+      yield Positioned(
+        left: pos.dx + co.dx - width / 2,
+        top: pos.dy + co.dy + hh + 4.0,
+        width: width,
+        child: _BookmarkLabel(
+          node: node,
+          scale: scale,
+          align: CrossAxisAlignment.center,
+          showName: false,
+        ),
+      );
+      return;
+    }
 
     final focusPos = _positions[_focusId] ?? pos;
     final dir = pos - focusPos;
@@ -2282,6 +2370,8 @@ class _StyleSettingsDialog extends StatefulWidget {
     this.initialFontSize,
     this.initialLabel,
     this.showLabel = false,
+    this.labelIsRoot = true,
+    this.showFontFields = true,
   });
 
   final String? initialColor;
@@ -2289,9 +2379,18 @@ class _StyleSettingsDialog extends StatefulWidget {
   final int? initialFontSize;
   final String? initialLabel;
 
-  /// Whether to show an editable label field (used for the root node, whose
-  /// text is admin-configurable). Tags/bookmarks edit their label elsewhere.
+  /// Whether to show the font color/size fields. Disabled for ordinary
+  /// bookmarks — only the home-center bookmark (and the root/tags) may tune
+  /// their label font.
+  final bool showFontFields;
+
+  /// Whether to show an editable label field. Used by the root node and the
+  /// home-center bookmark, whose in-bubble text is admin-configurable.
   final bool showLabel;
+
+  /// Tailors the label field's caption/hint: the root falls back to an icon
+  /// when blank, the center bookmark falls back to the person's name.
+  final bool labelIsRoot;
 
   @override
   State<_StyleSettingsDialog> createState() => _StyleSettingsDialogState();
@@ -2328,6 +2427,65 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
     return '${channel(c.r).toRadixString(16).padLeft(2, '0')}'
         '${channel(c.g).toRadixString(16).padLeft(2, '0')}'
         '${channel(c.b).toRadixString(16).padLeft(2, '0')}';
+  }
+
+  /// Parses a 6-digit hex into a [Color], or null if [text] isn't valid hex.
+  static Color? _hexToColor(String text) {
+    final t = text.trim();
+    return _hexRegExp.hasMatch(t) ? Color(int.parse('FF$t', radix: 16)) : null;
+  }
+
+  /// Opens the colour wheel seeded from [ctrl]'s current hex (falling back to
+  /// the theme's primary), writing the chosen colour back as a hex string.
+  Future<void> _pickColor(TextEditingController ctrl, String title) async {
+    final t = AppStrings.of(context);
+    final seed =
+        _hexToColor(ctrl.text) ?? Theme.of(context).colorScheme.primary;
+    final result = await showDialog<Color>(
+      context: context,
+      builder: (ctx) {
+        var temp = seed;
+        return GlassDialog(
+          title: title,
+          content: StatefulBuilder(
+            builder: (c, setSB) => ColorWheelPicker(
+              color: seed,
+              onChanged: (col) => setSB(() => temp = col),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(t.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, temp),
+              child: Text(t.save),
+            ),
+          ],
+        );
+      },
+    );
+    if (result != null) {
+      setState(() => ctrl.text = _colorToHex(result));
+    }
+  }
+
+  /// A small circular preview of [ctrl]'s current colour, shown as the field's
+  /// prefix; empty (outlined) when the field is blank or not yet valid hex.
+  Widget _colorSwatch(TextEditingController ctrl) {
+    final scheme = Theme.of(context).colorScheme;
+    final c = _hexToColor(ctrl.text);
+    return Container(
+      width: 22,
+      height: 22,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: c ?? Colors.transparent,
+        shape: BoxShape.circle,
+        border: Border.all(color: scheme.outline, width: 1),
+      ),
+    );
   }
 
   void _submit() {
@@ -2375,8 +2533,12 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
                 decoration: glassFieldDecoration(
                   context,
                   InputDecoration(
-                    labelText: t.rootLabelLabel,
-                    hintText: t.rootLabelHint,
+                    labelText: widget.labelIsRoot
+                        ? t.rootLabelLabel
+                        : t.nodeLabelLabel,
+                    hintText: widget.labelIsRoot
+                        ? t.rootLabelHint
+                        : t.nodeLabelHint,
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.clear),
                       tooltip: t.resetToDefault,
@@ -2387,30 +2549,10 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
               ),
               const SizedBox(height: 12),
             ],
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final c in kGroupColors)
-                  GestureDetector(
-                    onTap: () =>
-                        setState(() => _colorCtrl.text = _colorToHex(c)),
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: scheme.outline, width: 1),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
             TextField(
               controller: _colorCtrl,
               autofocus: true,
+              onChanged: (_) => setState(() {}),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
                 LengthLimitingTextInputFormatter(6),
@@ -2420,56 +2562,86 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
                 InputDecoration(
                   labelText: t.nodeColorLabel,
                   hintText: t.colorHexHint,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    tooltip: t.resetToDefault,
-                    onPressed: () => setState(() => _colorCtrl.clear()),
+                  prefixIcon: _colorSwatch(_colorCtrl),
+                  prefixIconConstraints: const BoxConstraints(),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.colorize),
+                        tooltip: t.nodeColorLabel,
+                        onPressed: () =>
+                            _pickColor(_colorCtrl, t.nodeColorLabel),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        tooltip: t.resetToDefault,
+                        onPressed: () => setState(() => _colorCtrl.clear()),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _fontColorCtrl,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
-                LengthLimitingTextInputFormatter(6),
-              ],
-              decoration: glassFieldDecoration(
-                context,
-                InputDecoration(
-                  labelText: t.fontColorLabel,
-                  hintText: t.colorHexHint,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    tooltip: t.resetToDefault,
-                    onPressed: () => setState(() => _fontColorCtrl.clear()),
+            if (widget.showFontFields) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _fontColorCtrl,
+                onChanged: (_) => setState(() {}),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
+                  LengthLimitingTextInputFormatter(6),
+                ],
+                decoration: glassFieldDecoration(
+                  context,
+                  InputDecoration(
+                    labelText: t.fontColorLabel,
+                    hintText: t.colorHexHint,
+                    prefixIcon: _colorSwatch(_fontColorCtrl),
+                    prefixIconConstraints: const BoxConstraints(),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.colorize),
+                          tooltip: t.fontColorLabel,
+                          onPressed: () =>
+                              _pickColor(_fontColorCtrl, t.fontColorLabel),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: t.resetToDefault,
+                          onPressed: () =>
+                              setState(() => _fontColorCtrl.clear()),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _fontSizeCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
-              decoration: glassFieldDecoration(
-                context,
-                InputDecoration(
-                  labelText: t.fontSizeLabel,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    tooltip: t.resetToDefault,
-                    onPressed: () => setState(() => _fontSizeCtrl.clear()),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _fontSizeCtrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                ],
+                decoration: glassFieldDecoration(
+                  context,
+                  InputDecoration(
+                    labelText: t.fontSizeLabel,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: t.resetToDefault,
+                      onPressed: () => setState(() => _fontSizeCtrl.clear()),
+                    ),
                   ),
                 ),
+                onSubmitted: (_) => _submit(),
               ),
-              onSubmitted: (_) => _submit(),
-            ),
+            ],
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(

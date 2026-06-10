@@ -276,7 +276,10 @@ class Query(graphene.ObjectType):
                 types.HomeNode(
                     id=person.pk,
                     kind="bookmark",
-                    label=raw.get("label", person.name),
+                    # Only the home-center bookmark may override its label text
+                    # (shown inside its bubble); every other bookmark keeps the
+                    # person's name and renders as an initial.
+                    label=bm.label if (person.pk == center_id and bm.label) else raw.get("label", person.name),
                     group=raw.get("group", "g0"),
                     title=raw.get("title"),
                     opacity=raw.get("opacity", 1.0),

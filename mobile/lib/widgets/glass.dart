@@ -76,7 +76,7 @@ class GlassDialog extends StatelessWidget {
                 Text(title!, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 16),
               ],
-              content,
+              Flexible(child: content),
               if (actions.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Row(
