@@ -6,6 +6,7 @@ import 'package:flutter/services.dart'
 
 import '../auth/auth_service.dart';
 import '../auth/login_page.dart';
+import '../config.dart';
 import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart' show kGroupColors;
@@ -650,11 +651,18 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   static final _layout = _RadialLayout();
 
   final _viewer = TransformationController();
   final _viewportKey = GlobalKey();
+
+  late final AnimationController _panController = AnimationController(
+    vsync: this,
+    duration: AppConfig.nodePanDuration,
+  );
+  Matrix4Tween? _panTween;
 
   List<HomeNode> _nodes = [];
   List<(int, int)> _edges = [];
@@ -733,11 +741,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _panController.addListener(() {
+      final tween = _panTween;
+      if (tween != null) {
+        _viewer.value =
+            tween.lerp(Curves.easeInOut.transform(_panController.value));
+      }
+    });
     _load();
   }
 
   @override
   void dispose() {
+    _panController.dispose();
     _viewer.dispose();
     super.dispose();
   }
@@ -867,6 +883,45 @@ class _HomeScreenState extends State<HomeScreen> {
         _pad +
         _labelH;
     return Size(maxX + offset.dx, maxY + offset.dy);
+  }
+
+  /// Smoothly animates [_viewer] from its current transform to [target],
+  /// interrupting any in-progress pan.
+  void _animateTo(Matrix4 target) {
+    _panTween = Matrix4Tween(begin: _viewer.value.clone(), end: target);
+    _panController.forward(from: 0);
+  }
+
+  /// Pans the viewport so [id]'s node sits at the center, preserving the
+  /// current zoom. Runs after the next frame so it reads the layout produced
+  /// by a just-completed expand/collapse, and retries for a few frames while
+  /// the position or viewport isn't ready yet. Pass [animated] to glide
+  /// instead of snapping.
+  void _panToNode(int id, {bool animated = true, int retriesLeft = 20}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
+      final pos = _positions[id];
+      if (pos == null || box == null || !box.hasSize) {
+        if (retriesLeft > 0) {
+          _panToNode(id, animated: animated, retriesLeft: retriesLeft - 1);
+        }
+        return;
+      }
+      final viewport = box.size;
+      final scale = _viewer.value.getMaxScaleOnAxis();
+      final nodeCanvas = pos + _canvasOffset();
+      final t =
+          Offset(viewport.width / 2, viewport.height / 2) - nodeCanvas * scale;
+      final target = Matrix4.identity()
+        ..translateByDouble(t.dx, t.dy, 0, 1)
+        ..scaleByDouble(scale, scale, scale, 1);
+      if (animated) {
+        _animateTo(target);
+      } else {
+        _viewer.value = target;
+      }
+    });
   }
 
   void _centerOnFocus({int retriesLeft = 20}) {
@@ -1391,7 +1446,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final hasChildren = _hasChildren(node.id);
-    final collapsed = _isCollapsed(node.id);
+    // The focus (root) node is uncollapsible: it always stays expanded and
+    // tapping it opens the tree like any other bookmark, rather than toggling
+    // the home view's collapse state.
+    final isFocus = node.id == _focusId;
+    final collapsed = _isCollapsed(node.id) && !isFocus;
 
     if (node.isTag) {
       yield Positioned(
@@ -1403,7 +1462,10 @@ class _HomeScreenState extends State<HomeScreen> {
             _TagNode(
               node: node,
               scale: scale,
-              onTap: hasChildren ? () => _toggleExpand(node.id) : null,
+              onTap: () {
+                if (hasChildren) _toggleExpand(node.id);
+                _panToNode(node.id);
+              },
               onLongPress: isStaff ? () => _showTagOptions(node) : null,
             ),
             if (collapsed)
@@ -1427,8 +1489,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _BookmarkCircle(
             node: node,
             scale: scale,
-            onTap: hasChildren
-                ? () => _toggleExpand(node.id)
+            onTap: (hasChildren && !isFocus)
+                ? () {
+                    _toggleExpand(node.id);
+                    _panToNode(node.id);
+                  }
                 : () => _openTree(node.id),
             onLongPress: isStaff ? () => _showBookmarkOptions(node) : null,
           ),
