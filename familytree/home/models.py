@@ -92,6 +92,20 @@ class HomeSettings(models.Model):
         ),
     )
 
+    root_label = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_("Root label"),
+        help_text=_("Text shown on the central root node. Leave empty to show the default tree icon."),
+    )
+    root_color = models.CharField(max_length=6, null=True, blank=True, default=None, verbose_name=_("Root color"))
+    root_font_color = models.CharField(
+        max_length=6, null=True, blank=True, default=None, verbose_name=_("Root font color")
+    )
+    root_font_size = models.PositiveIntegerField(null=True, blank=True, default=None, verbose_name=_("Root font size"))
+
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)

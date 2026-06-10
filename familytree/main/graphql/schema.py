@@ -188,7 +188,16 @@ class Query(graphene.ObjectType):
         )
 
         # Always include the virtual root.
-        root_node = types.HomeNode(id=0, kind="root", label="", group="g0", opacity=1.0)
+        root_node = types.HomeNode(
+            id=0,
+            kind="root",
+            label=settings.root_label or "",
+            group="g0",
+            opacity=1.0,
+            color=settings.root_color,
+            font_color=settings.root_font_color,
+            font_size=settings.root_font_size,
+        )
         nodes_out = [root_node]
         edges_out = []
 
@@ -866,6 +875,59 @@ class SetNodeSizeConfig(graphene.Mutation, MutationReply):
         return MutationReply.success()
 
 
+class SetRootStyle(graphene.Mutation, MutationReply):
+    """Configure the central root node's label, color, font color, and font size.
+    Pass an empty string for label/color/font_color or -1 for font_size to reset."""
+
+    class Arguments:
+        label = graphene.String(
+            required=False, description="Text shown on the root node. Empty string to reset to the default icon."
+        )
+        color = graphene.String(
+            required=False,
+            description="Overwrite default color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Empty string to reset.",
+        )
+        font_color = graphene.String(
+            required=False,
+            description="Overwrite default font color. "
+            "It should be an HTML color hex value without the leading #. "
+            "Empty string to reset.",
+        )
+        font_size = graphene.Float(required=False, description="Overwrite default font size. Set to -1 to reset")
+
+    @staff_only
+    def mutate(root, info, label=None, color=None, font_color=None, font_size=None):
+        from home.models import HomeSettings
+
+        settings = HomeSettings.load()
+        if font_size == -1:
+            settings.root_font_size = None
+            font_size = None
+        if label == "":
+            settings.root_label = None
+            label = None
+        if color == "":
+            settings.root_color = None
+            color = None
+        if font_color == "":
+            settings.root_font_color = None
+            font_color = None
+
+        fields = {
+            "root_label": label,
+            "root_color": color,
+            "root_font_color": font_color,
+            "root_font_size": font_size,
+        }
+        for key, value in fields.items():
+            if value is not None:
+                setattr(settings, key, value)
+        settings.save()
+        return MutationReply.success()
+
+
 class Mutations(graphene.ObjectType):
     add_person = AddPerson.Field()
     add_parent = AddParent.Field()
@@ -886,6 +948,7 @@ class Mutations(graphene.ObjectType):
     set_bookmark_tag = SetBookmarkTag.Field()
     set_home_center = SetHomeCenter.Field()
     set_node_size_config = SetNodeSizeConfig.Field()
+    set_root_style = SetRootStyle.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

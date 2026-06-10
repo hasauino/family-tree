@@ -400,31 +400,58 @@ class _NodeSize {
   }
 }
 
-/// Central anchor node – large filled circle with a tree icon.
+/// Central anchor node – large filled circle. Shows the configured root label
+/// (styled like any other node) when one is set, otherwise falls back to the
+/// default tree icon. Color, font color, and font size are all admin-overridable.
 class _RootNode extends StatelessWidget {
-  const _RootNode();
+  const _RootNode({required this.node, this.onLongPress});
+
+  final HomeNode node;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 76,
-      height: 76,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: scheme.primary,
-        boxShadow: [
-          BoxShadow(
-            color: scheme.primary.withValues(alpha: 0.30),
-            blurRadius: 22,
-            spreadRadius: 4,
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.account_tree_rounded,
-        color: scheme.onPrimary,
-        size: 34,
+    final hasColor =
+        node.colorOverride != null && node.colorOverride!.isNotEmpty;
+    final fill = hasColor ? node.color : scheme.primary;
+    final onFill = ThemeData.estimateBrightnessForColor(fill) == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+    final label = node.label.trim();
+
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Container(
+        width: 76,
+        height: 76,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: fill,
+          boxShadow: [
+            BoxShadow(
+              color: fill.withValues(alpha: 0.30),
+              blurRadius: 22,
+              spreadRadius: 4,
+            ),
+          ],
+        ),
+        child: label.isEmpty
+            ? Icon(Icons.account_tree_rounded, color: onFill, size: 34)
+            : Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: node.fontColor ?? onFill,
+                  fontSize: node.fontSizeOverride?.toDouble() ?? 16,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
+              ),
       ),
     );
   }
@@ -1029,6 +1056,36 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  /// Long-pressing the central root node (staff only) opens the style dialog,
+  /// which for the root also includes an editable label so it can show custom
+  /// text instead of the default tree icon.
+  Future<void> _showRootOptions(HomeNode root) async {
+    final t = AppStrings.of(context);
+    final result = await showDialog<StyleSettingsResult>(
+      context: context,
+      builder: (ctx) => _StyleSettingsDialog(
+        showLabel: true,
+        initialLabel: root.label,
+        initialColor: root.colorOverride,
+        initialFontColor: root.fontColorOverride,
+        initialFontSize: root.fontSizeOverride,
+      ),
+    );
+    if (result == null || !mounted) return;
+    try {
+      final r = await _api.setRootStyle(
+        label: result.label,
+        color: result.color,
+        fontColor: result.fontColor,
+        fontSize: result.fontSize,
+      );
+      _toast(r.ok ? t.styleUpdated : (r.message ?? t.errorConnection));
+      if (r.ok) _load();
+    } catch (_) {
+      _toast(t.errorConnection);
+    }
+  }
+
   Future<void> _createTag() async {
     final t = AppStrings.of(context);
     final name = await _promptText(t.createTagTitle, t.tagNameLabel);
@@ -1134,7 +1191,7 @@ class _HomeScreenState extends State<HomeScreen>
         },
         onEditStyle: () async {
           Navigator.pop(ctx);
-          final result = await showDialog<(String, String, double)>(
+          final result = await showDialog<StyleSettingsResult>(
             context: context,
             builder: (ctx2) => _StyleSettingsDialog(
               initialColor: tag.colorOverride,
@@ -1146,9 +1203,9 @@ class _HomeScreenState extends State<HomeScreen>
           try {
             final r = await _api.setTagStyle(
               tagDbId,
-              color: result.$1,
-              fontColor: result.$2,
-              fontSize: result.$3,
+              color: result.color,
+              fontColor: result.fontColor,
+              fontSize: result.fontSize,
             );
             _toast(r.ok ? t.styleUpdated : (r.message ?? t.errorConnection));
             if (r.ok) _load();
@@ -1216,7 +1273,7 @@ class _HomeScreenState extends State<HomeScreen>
         },
         onEditStyle: () async {
           Navigator.pop(ctx);
-          final result = await showDialog<(String, String, double)>(
+          final result = await showDialog<StyleSettingsResult>(
             context: context,
             builder: (ctx2) => _StyleSettingsDialog(
               initialColor: bookmark.colorOverride,
@@ -1228,9 +1285,9 @@ class _HomeScreenState extends State<HomeScreen>
           try {
             final r = await _api.setBookmarkStyle(
               bookmark.id,
-              color: result.$1,
-              fontColor: result.$2,
-              fontSize: result.$3,
+              color: result.color,
+              fontColor: result.fontColor,
+              fontSize: result.fontSize,
             );
             _toast(r.ok ? t.styleUpdated : (r.message ?? t.errorConnection));
             if (r.ok) _load();
@@ -1440,7 +1497,10 @@ class _HomeScreenState extends State<HomeScreen>
       yield Positioned(
         left: pos.dx + co.dx - hw,
         top: pos.dy + co.dy - hh,
-        child: const _RootNode(),
+        child: _RootNode(
+          node: node,
+          onLongPress: isStaff ? () => _showRootOptions(node) : null,
+        ),
       );
       return;
     }
@@ -2201,26 +2261,46 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
 
 // ─── Node/tag style settings dialog ────────────────────────────────────────────
 
-/// Lets staff override a bookmark's or tag's node color, font color, and
-/// font size. Returns `(color, fontColor, fontSize)` where an empty string
-/// resets the color to the default and `-1` resets the font size, or null if
-/// cancelled.
+/// The style values returned by [_StyleSettingsDialog]. An empty [color] /
+/// [fontColor] resets that color to the default, [fontSize] is -1 to reset,
+/// and [label] is null when the dialog has no label field.
+typedef StyleSettingsResult = ({
+  String? label,
+  String color,
+  String fontColor,
+  double fontSize,
+});
+
+/// Lets staff override a node's color, font color, and font size — and, when
+/// [showLabel] is set (the root node), its label text too. Returns a
+/// [StyleSettingsResult] where an empty string resets a color and `-1` resets
+/// the font size, or null if cancelled.
 class _StyleSettingsDialog extends StatefulWidget {
   const _StyleSettingsDialog({
     this.initialColor,
     this.initialFontColor,
     this.initialFontSize,
+    this.initialLabel,
+    this.showLabel = false,
   });
 
   final String? initialColor;
   final String? initialFontColor;
   final int? initialFontSize;
+  final String? initialLabel;
+
+  /// Whether to show an editable label field (used for the root node, whose
+  /// text is admin-configurable). Tags/bookmarks edit their label elsewhere.
+  final bool showLabel;
 
   @override
   State<_StyleSettingsDialog> createState() => _StyleSettingsDialogState();
 }
 
 class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
+  late final TextEditingController _labelCtrl = TextEditingController(
+    text: widget.initialLabel ?? '',
+  );
   late final TextEditingController _colorCtrl = TextEditingController(
     text: widget.initialColor ?? '',
   );
@@ -2236,6 +2316,7 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
 
   @override
   void dispose() {
+    _labelCtrl.dispose();
     _colorCtrl.dispose();
     _fontColorCtrl.dispose();
     _fontSizeCtrl.dispose();
@@ -2268,7 +2349,12 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
       return;
     }
 
-    Navigator.pop(context, (color, fontColor, fontSize));
+    Navigator.pop<StyleSettingsResult>(context, (
+      label: widget.showLabel ? _labelCtrl.text : null,
+      color: color,
+      fontColor: fontColor,
+      fontSize: fontSize,
+    ));
   }
 
   @override
@@ -2282,6 +2368,25 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.showLabel) ...[
+              TextField(
+                controller: _labelCtrl,
+                textCapitalization: TextCapitalization.words,
+                decoration: glassFieldDecoration(
+                  context,
+                  InputDecoration(
+                    labelText: t.rootLabelLabel,
+                    hintText: t.rootLabelHint,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: t.resetToDefault,
+                      onPressed: () => setState(() => _labelCtrl.clear()),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Wrap(
               spacing: 8,
               runSpacing: 8,

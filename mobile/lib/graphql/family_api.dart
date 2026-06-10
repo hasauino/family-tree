@@ -1023,6 +1023,37 @@ class FamilyApi {
     );
   }
 
+  static const String _setRootStyleDoc = r'''
+    mutation SetRootStyle($label: String, $color: String, $fontColor: String, $fontSize: Float) {
+      setRootStyle(label: $label, color: $color, fontColor: $fontColor, fontSize: $fontSize) { ok message }
+    }
+  ''';
+
+  /// Configures the central root node's label, color, font color, and font
+  /// size. Pass an empty string for [label]/[color]/[fontColor] or -1 for
+  /// [fontSize] to reset that field to the default.
+  Future<MutationResult> setRootStyle({
+    String? label,
+    String? color,
+    String? fontColor,
+    double? fontSize,
+  }) async {
+    final data = await _client.query(
+      _setRootStyleDoc,
+      variables: {
+        'label': label,
+        'color': color,
+        'fontColor': fontColor,
+        'fontSize': fontSize,
+      },
+    );
+    final r = data['setRootStyle'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
   /// Runs a mutation shaped like `field(id: $id) { ok message }`.
   Future<MutationResult> _simpleMutation(
     String document,
