@@ -67,6 +67,30 @@ class HomeSettings(models.Model):
             "Higher values shrink faster; 0 makes all nodes the same size."
         ),
     )
+    node_padding = models.FloatField(
+        default=8.0,
+        verbose_name=_("Cluster spacing"),
+        help_text=_(
+            "Gap (in logical pixels) kept between a node and its parent/siblings "
+            "when packing the home tree. 0 packs nodes edge-to-edge."
+        ),
+    )
+    node_spread_degrees = models.FloatField(
+        default=160.0,
+        verbose_name=_("Spread angle"),
+        help_text=_(
+            "Preferred breadth (in degrees) of the fan a node spreads its children "
+            "over. Wider angles give shorter edges when a node has many children."
+        ),
+    )
+    node_edge_factor = models.FloatField(
+        default=2.0,
+        verbose_name=_("Max edge length"),
+        help_text=_(
+            "Caps how far a child sits from its parent, as a multiple of the minimum "
+            "spacing. Lower values shorten edges; when hit, the fan widens instead."
+        ),
+    )
 
     def save(self, *args, **kwargs):
         self.pk = 1

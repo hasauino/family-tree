@@ -137,6 +137,9 @@ class NodeSizeConfig {
     required this.maxScale,
     required this.minScale,
     required this.decay,
+    this.padding = 8.0,
+    this.spreadDegrees = 160.0,
+    this.edgeFactor = 2.0,
   });
 
   /// Visual scale of nodes at the root.
@@ -148,10 +151,27 @@ class NodeSizeConfig {
   /// How quickly node size shrinks per generation away from the root.
   final double decay;
 
+  /// Gap (in logical pixels) kept between a node disk and its parent / its
+  /// siblings when packing the home tree. 0 packs disks edge-to-edge.
+  final double padding;
+
+  /// Preferred breadth (in degrees) of the forward fan a non-root node spreads
+  /// its children over, centered on its outward axis. Wider = shorter edges
+  /// when a node has many children.
+  final double spreadDegrees;
+
+  /// Caps how far a child may sit from its parent, as a multiple of the
+  /// minimum (no-overlap) spacing. Lower = shorter edges; when the cap is hit,
+  /// the fan widens past [spreadDegrees] instead of stretching the edges.
+  final double edgeFactor;
+
   static const fallback = NodeSizeConfig(
     maxScale: 1.2,
     minScale: 0.5,
     decay: 0.15,
+    padding: 8.0,
+    spreadDegrees: 160.0,
+    edgeFactor: 2.0,
   );
 }
 
@@ -710,7 +730,7 @@ class FamilyApi {
         nodes { id kind label group title opacity color fontColor fontSize }
         edges { fromId toId }
         centerId
-        nodeSizeConfig { maxScale minScale decay }
+        nodeSizeConfig { maxScale minScale decay padding spreadDegrees edgeFactor }
       }
     }
   ''';
@@ -758,6 +778,15 @@ class FamilyApi {
               decay:
                   (sizeConfig['decay'] as num?)?.toDouble() ??
                   NodeSizeConfig.fallback.decay,
+              padding:
+                  (sizeConfig['padding'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.padding,
+              spreadDegrees:
+                  (sizeConfig['spreadDegrees'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.spreadDegrees,
+              edgeFactor:
+                  (sizeConfig['edgeFactor'] as num?)?.toDouble() ??
+                  NodeSizeConfig.fallback.edgeFactor,
             ),
     );
   }
@@ -907,8 +936,8 @@ class FamilyApi {
   }
 
   static const String _setNodeSizeConfigDoc = r'''
-    mutation SetNodeSizeConfig($maxScale: Float!, $minScale: Float!, $decay: Float!) {
-      setNodeSizeConfig(maxScale: $maxScale, minScale: $minScale, decay: $decay) { ok message }
+    mutation SetNodeSizeConfig($maxScale: Float!, $minScale: Float!, $decay: Float!, $padding: Float!, $spreadDegrees: Float!, $edgeFactor: Float!) {
+      setNodeSizeConfig(maxScale: $maxScale, minScale: $minScale, decay: $decay, padding: $padding, spreadDegrees: $spreadDegrees, edgeFactor: $edgeFactor) { ok message }
     }
   ''';
 
@@ -920,6 +949,9 @@ class FamilyApi {
         'maxScale': config.maxScale,
         'minScale': config.minScale,
         'decay': config.decay,
+        'padding': config.padding,
+        'spreadDegrees': config.spreadDegrees,
+        'edgeFactor': config.edgeFactor,
       },
     );
     final r = data['setNodeSizeConfig'] as Map<String, dynamic>?;

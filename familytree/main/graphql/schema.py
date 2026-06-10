@@ -182,6 +182,9 @@ class Query(graphene.ObjectType):
             max_scale=settings.node_max_scale,
             min_scale=settings.node_min_scale,
             decay=settings.node_size_decay,
+            padding=settings.node_padding,
+            spread_degrees=settings.node_spread_degrees,
+            edge_factor=settings.node_edge_factor,
         )
 
         # Always include the virtual root.
@@ -822,9 +825,18 @@ class SetNodeSizeConfig(graphene.Mutation, MutationReply):
         decay = graphene.Float(
             required=True, description="How quickly node size shrinks per generation away from the root."
         )
+        padding = graphene.Float(
+            required=False, description="Gap kept between a node disk and its parent/siblings when packing the tree."
+        )
+        spread_degrees = graphene.Float(
+            required=False, description="Preferred fan breadth (degrees) a node spreads its children over."
+        )
+        edge_factor = graphene.Float(
+            required=False, description="Cap on parent->child distance, as a multiple of the minimum spacing."
+        )
 
     @staff_only
-    def mutate(root, info, max_scale, min_scale, decay):
+    def mutate(root, info, max_scale, min_scale, decay, padding=None, spread_degrees=None, edge_factor=None):
         from home.models import HomeSettings
 
         if min_scale <= 0 or max_scale <= 0:
@@ -833,11 +845,23 @@ class SetNodeSizeConfig(graphene.Mutation, MutationReply):
             return MutationReply.fail("Min scale cannot be greater than max scale")
         if decay < 0:
             return MutationReply.fail("Decay cannot be negative")
+        if padding is not None and padding < 0:
+            return MutationReply.fail("Padding cannot be negative")
+        if spread_degrees is not None and not (0 < spread_degrees <= 360):
+            return MutationReply.fail("Spread angle must be between 0 and 360 degrees")
+        if edge_factor is not None and edge_factor < 1:
+            return MutationReply.fail("Max edge length must be at least 1")
 
         settings = HomeSettings.load()
         settings.node_max_scale = max_scale
         settings.node_min_scale = min_scale
         settings.node_size_decay = decay
+        if padding is not None:
+            settings.node_padding = padding
+        if spread_degrees is not None:
+            settings.node_spread_degrees = spread_degrees
+        if edge_factor is not None:
+            settings.node_edge_factor = edge_factor
         settings.save()
         return MutationReply.success()
 

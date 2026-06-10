@@ -98,34 +98,65 @@ Map<int, int> _computeGlobalDepths(
   return (nodes: newNodes, edges: newEdges);
 }
 
+/// Re-roots [edges] (an undirected adjacency over [nodes]) at [center] via
+/// BFS, returning each node's children in the resulting tree. Used to drive
+/// the collapse/expand state of the home tree.
+Map<int, List<int>> _rerootedChildren(
+  List<HomeNode> nodes,
+  List<(int, int)> edges,
+  int center,
+) {
+  final adjacency = <int, List<int>>{};
+  for (final (from, to) in edges) {
+    adjacency.putIfAbsent(from, () => []).add(to);
+    adjacency.putIfAbsent(to, () => []).add(from);
+  }
+  final children = <int, List<int>>{};
+  final visited = <int>{center};
+  final queue = <int>[center];
+  var qi = 0;
+  while (qi < queue.length) {
+    final node = queue[qi++];
+    for (final nb in adjacency[node] ?? const <int>[]) {
+      if (visited.add(nb)) {
+        children.putIfAbsent(node, () => []).add(nb);
+        queue.add(nb);
+      }
+    }
+  }
+  return children;
+}
+
+/// Finds the root of [nodes]/[edges]: the one node that is never a target of
+/// an edge (the virtual root, id 0, in the original admin-defined hierarchy).
+int _rootIdOf(List<HomeNode> nodes, List<(int, int)> edges) {
+  final childIds = {for (final (_, to) in edges) to};
+  for (final n in nodes) {
+    if (!childIds.contains(n.id)) return n.id;
+  }
+  return nodes.isNotEmpty ? nodes.first.id : 0;
+}
+
 // ─── Radial layout ────────────────────────────────────────────────────────────
 
+/// Lays out the home tree with **bottom-up, outward-oriented wedge packing**.
+///
+/// Each subtree is sized by its *magnetic radius* (Rmag): the radius of the
+/// smallest circle, centered on the node, enclosing the node's glyph plus all
+/// of its (recursively packed) children. A node fans its children around its
+/// **outward axis** — the ray from its parent through it — within a wedge
+/// capped at [_maxWedge], never behind it. Each child reserves a disjoint
+/// angular slice sized by its Rmag, so sibling *and* cousin subtrees never
+/// overlap (the slices cascade). The result reads as outward-branching
+/// clusters, with each cluster rotated to face the global radial direction.
 class _RadialLayout {
-  // Force-simulation tuning:
-  static const double _repulsion =
-      18000.0; // node-vs-node repulsion (force = k / dist^2)
-  static const double _attraction =
-      0.05; // pulls a node toward its parent past _maxEdgeLength
-  static const double _margin = 16.0; // minimum gap kept between node edges
-  static const double _collisionStrength =
-      0.6; // how hard overlapping nodes push apart
-  static const double _maxStep = 12.0;
-  static const double _minDistance = 1.0;
-  static const int _iterations = 300;
-
-  // Bounds for the (viewport-derived) max edge length.
-  static const double _minEdgeLength = 70.0;
-  static const double _maxEdgeLength = 170.0;
-
-  /// Lays out [nodes]/[edges] as a radial tree re-rooted at [centerId]
-  /// (falling back to the existing root if [centerId] isn't a known node).
-  /// The ideal/maximum edge length is derived from [viewportSize] so that
-  /// most nodes land within view.
+  /// Re-roots [nodes]/[edges] at [centerId] (falling back to the first node if
+  /// [centerId] isn't present) and returns each node's position, with the
+  /// center placed at the origin.
   Map<int, Offset> compute(
     List<HomeNode> nodes,
     List<(int, int)> edges, {
     required int centerId,
-    required Size viewportSize,
     required Map<int, int> globalDepth,
     required NodeSizeConfig sizeConfig,
   }) {
@@ -143,9 +174,7 @@ class _RadialLayout {
 
     final center = nodeById.containsKey(centerId) ? centerId : ids.first;
 
-    // BFS from `center` over the undirected graph -> re-rooted parent/children/depth.
-    final parentOf = <int, int>{};
-    final depth = <int, int>{center: 0};
+    // BFS from `center` -> re-rooted children.
     final children = <int, List<int>>{};
     final visited = <int>{center};
     final bfsQueue = <int>[center];
@@ -154,53 +183,14 @@ class _RadialLayout {
       final node = bfsQueue[qi++];
       for (final nb in adjacency[node] ?? const <int>[]) {
         if (visited.add(nb)) {
-          parentOf[nb] = node;
-          depth[nb] = depth[node]! + 1;
           children.putIfAbsent(node, () => []).add(nb);
           bfsQueue.add(nb);
         }
       }
     }
 
-    final maxDepth = depth.values.fold(0, math.max);
-
-    // Pick the max edge length so the deepest ring roughly fits the viewport.
-    final available =
-        math.min(viewportSize.width, viewportSize.height) / 2 * 0.85;
-    final maxEdgeLength = (available / math.max(maxDepth, 1)).clamp(
-      _minEdgeLength,
-      _maxEdgeLength,
-    );
-
-    // ── initial positions: sector-proportional radial layout ───────────────
-    final positions = <int, Offset>{for (final id in ids) id: Offset.zero};
-
-    int subtreeSize(int n) {
-      final kids = children[n] ?? const <int>[];
-      if (kids.isEmpty) return 1;
-      return kids.fold(0, (s, c) => s + subtreeSize(c));
-    }
-
-    void layout(int node, double start, double end, double radius) {
-      final kids = children[node] ?? const <int>[];
-      if (kids.isEmpty) return;
-      final total = math.max(1, kids.fold(0, (s, k) => s + subtreeSize(k)));
-      var cur = start;
-      for (final kid in kids) {
-        final sector = (end - start) * subtreeSize(kid) / total;
-        final mid = cur + sector / 2;
-        positions[kid] = Offset(radius * math.cos(mid), radius * math.sin(mid));
-        layout(kid, cur, cur + sector, radius + maxEdgeLength);
-        cur += sector;
-      }
-    }
-
-    layout(center, 0, 2 * math.pi, maxEdgeLength);
-
-    if (ids.length <= 2) return positions;
-
-    // Half-extent of each node's visual footprint, used for overlap margins.
-    double collisionRadius(int id) {
+    // Radius of the smallest circle enclosing a node's own glyph.
+    double coreRadius(int id) {
       final n = nodeById[id]!;
       final depth = globalDepth[id] ?? 1;
       return math.max(
@@ -209,67 +199,131 @@ class _RadialLayout {
       );
     }
 
-    // ── force-directed relaxation ───────────────────────────────────────────
-    for (var iter = 0; iter < _iterations; iter++) {
-      final cooling = (1.0 - iter / _iterations).clamp(0.05, 1.0);
-      final disp = <int, Offset>{for (final id in ids) id: Offset.zero};
+    // Gap kept between a child disk and its parent's glyph / its siblings.
+    final pad = sizeConfig.padding;
 
-      // Every pair of nodes repels each other.
-      for (var i = 0; i < ids.length; i++) {
-        final a = ids[i];
-        final pa = positions[a]!;
-        for (var j = i + 1; j < ids.length; j++) {
-          final b = ids[j];
-          final pb = positions[b]!;
-          var delta = pa - pb;
-          var dist = delta.distance;
-          if (dist < _minDistance) {
-            final angle = (a * 12.9898 + b * 78.233) % (2 * math.pi);
-            delta = Offset(math.cos(angle), math.sin(angle));
-            dist = _minDistance;
-          }
+    // Recursively packs [node]'s subtree in a *canonical frame*: the node sits
+    // at the local origin and its children fan symmetrically around the +x
+    // axis (the outward direction). The caller rotates this whole cloud so +x
+    // aligns with the node's real outward direction. Returns the subtree Rmag
+    // and the canonical positions.
+    //
+    // [isRoot] fans children over the full circle (the center has no outward
+    // direction); every other node prefers a fan of [spread] but may widen it
+    // toward the full circle to honor the [_ringRadius] edge-length cap.
+    final spread = (sizeConfig.spreadDegrees * math.pi / 180.0).clamp(
+      0.0,
+      2 * math.pi,
+    );
+    final edgeFactor = math.max(1.0, sizeConfig.edgeFactor);
 
-          final minDist = collisionRadius(a) + collisionRadius(b) + _margin;
-          Offset f;
-          if (dist < minDist) {
-            // Overlapping (or within the margin): push apart harder.
-            f = delta / dist * (_collisionStrength * (minDist - dist));
-          } else {
-            f = delta / dist * (_repulsion / (dist * dist));
-          }
-          disp[a] = disp[a]! + f;
-          disp[b] = disp[b]! - f;
-        }
+    ({double rmag, Map<int, Offset> pos}) layout(int node, {bool isRoot = false}) {
+      final core = coreRadius(node);
+      final kids = children[node] ?? const <int>[];
+      if (kids.isEmpty) {
+        return (rmag: core, pos: {node: Offset.zero});
       }
 
-      // Each node is attracted to its (re-rooted) parent once their distance
-      // exceeds the max edge length.
-      for (final id in ids) {
-        final parent = parentOf[id];
-        if (parent == null) continue;
-        final pa = positions[id]!;
-        final pp = positions[parent]!;
-        final delta = pp - pa;
-        final dist = math.max(delta.distance, _minDistance);
-        if (dist > maxEdgeLength) {
-          final f = delta / dist * (_attraction * (dist - maxEdgeLength));
-          disp[id] = disp[id]! + f;
-          disp[parent] = disp[parent]! - f;
-        }
+      final results = [for (final k in kids) layout(k)];
+      final radii = [for (final r in results) r.rmag];
+
+      // Preferred fan breadth for this node's children.
+      final wedge = isRoot ? 2 * math.pi : spread;
+      final ring = _ringRadius(core, radii, pad, wedge, edgeFactor);
+
+      // Actual angular slice each child needs at the chosen ring so its
+      // Rmag-disk stays clear of its siblings'. If the edge cap forced a ring
+      // smaller than `wedge` would require, these sum past `wedge` — the fan
+      // widens (up to the full circle) instead of the edges stretching.
+      final widths = [
+        for (final r in radii) 2 * math.asin(math.min(1.0, (r + pad) / ring)),
+      ];
+      final totalW = widths.fold(0.0, (a, b) => a + b);
+
+      // The root spreads its children evenly over the whole circle; a non-root
+      // keeps them tightly fanned (minimal gaps) around its outward axis.
+      final span = isRoot ? 2 * math.pi : totalW;
+
+      final pos = <int, Offset>{node: Offset.zero};
+      var cursor = -span / 2; // fan is centered on +x (outward)
+      for (var i = 0; i < kids.length; i++) {
+        final slice = totalW > 0
+            ? widths[i] / totalW * span
+            : span / kids.length;
+        final mid = cursor + slice / 2;
+        cursor += slice;
+
+        final childCenter = Offset(ring * math.cos(mid), ring * math.sin(mid));
+        // Rotate the child's canonical cloud so its outward (+x) axis points
+        // along `mid` — i.e. radially outward from this node — then place it.
+        final cos = math.cos(mid), sin = math.sin(mid);
+        results[i].pos.forEach((id, off) {
+          final rx = off.dx * cos - off.dy * sin;
+          final ry = off.dx * sin + off.dy * cos;
+          pos[id] = Offset(rx, ry) + childCenter;
+        });
       }
 
-      // Apply (the chosen center stays fixed at the origin).
-      final cap = _maxStep * cooling;
-      for (final id in ids) {
-        if (id == center) continue;
-        var d = disp[id]!;
-        final mag = d.distance;
-        if (mag > cap && mag > 0) d = d / mag * cap;
-        positions[id] = positions[id]! + d;
+      var rmag = core;
+      for (var i = 0; i < kids.length; i++) {
+        rmag = math.max(rmag, ring + radii[i]);
       }
+      return (rmag: rmag, pos: pos);
     }
 
-    return positions;
+    return layout(center, isRoot: true).pos;
+  }
+
+  /// Ring radius for packing children with magnetic radii [radii] around a
+  /// parent of core radius [core], keeping [pad] clearance.
+  ///
+  /// The radius honors the preferred [wedge] (children fan within it), but is
+  /// capped at `edgeFactor × clearance` so edges don't blow up when a node has
+  /// many children — once the cap bites, the fan widens past [wedge] instead.
+  /// It never drops below the full-circle floor, so disks never overlap.
+  static double _ringRadius(
+    double core,
+    List<double> radii,
+    double pad,
+    double wedge,
+    double edgeFactor,
+  ) {
+    final maxChild = radii.fold(0.0, math.max);
+    final clearance = core + maxChild + pad;
+    if (radii.length <= 1) return clearance;
+
+    // Smallest ring whose children's slices sum to ≤ `limit` (half because
+    // each child's slice is 2·asin(...)). Lower-bounded by clearance.
+    double minRing(double limit) {
+      double half(double r) {
+        var s = 0.0;
+        for (final ri in radii) {
+          s += math.asin(math.min(1.0, (ri + pad) / r));
+        }
+        return s;
+      }
+
+      if (half(clearance) <= limit) return clearance;
+      var lo = clearance;
+      var hi = clearance * 2;
+      while (half(hi) > limit && hi < 1e9) {
+        hi *= 2;
+      }
+      for (var i = 0; i < 60; i++) {
+        final mid = (lo + hi) / 2;
+        if (half(mid) > limit) {
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      return hi;
+    }
+
+    final floor = minRing(math.pi); // full-circle, never overlaps
+    final preferred = minRing(wedge / 2); // honors the spread cap
+    final cap = math.max(clearance * edgeFactor, floor);
+    return preferred.clamp(floor, cap);
   }
 }
 
@@ -377,16 +431,23 @@ class _RootNode extends StatelessWidget {
 
 /// Admin-defined tag node – rounded rectangle pill.
 class _TagNode extends StatelessWidget {
-  const _TagNode({required this.node, this.scale = 1.0, this.onLongPress});
+  const _TagNode({
+    required this.node,
+    this.scale = 1.0,
+    this.onTap,
+    this.onLongPress,
+  });
 
   final HomeNode node;
   final double scale;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final accent = node.color;
     return GestureDetector(
+      onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -421,6 +482,32 @@ class _TagNode extends StatelessWidget {
             height: 1.2,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Small "+" badge overlaid on a node's corner to show it has hidden
+/// children that can be revealed by tapping the node.
+class _ExpandBadge extends StatelessWidget {
+  const _ExpandBadge({this.scale = 1.0});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final size = (16 * scale).clamp(12.0, 18.0);
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: scheme.primary,
+          border: Border.all(color: scheme.surface, width: 1.5),
+        ),
+        child: Icon(Icons.add, size: size * 0.7, color: scheme.onPrimary),
       ),
     );
   }
@@ -571,10 +658,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<HomeNode> _nodes = [];
   List<(int, int)> _edges = [];
+  List<HomeNode> _allDisplayNodes = [];
+  List<(int, int)> _allDisplayEdges = [];
   List<HomeNode> _displayNodes = [];
   List<(int, int)> _displayEdges = [];
   Map<int, Offset> _positions = {};
   Map<int, int> _globalDepth = {};
+  Map<int, List<int>> _childrenMap = {};
+  Set<int> _expandedIds = {};
   int _centerId = 0;
   NodeSizeConfig _nodeSizeConfig = NodeSizeConfig.fallback;
   bool _loading = false;
@@ -661,24 +752,21 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       final globalDepth = _computeGlobalDepths(data.nodes, data.edges);
       final display = _removeVirtualRoot(data.nodes, data.edges, data.centerId);
-      final viewportSize = MediaQuery.sizeOf(context);
-      final pos = _layout.compute(
-        display.nodes,
-        display.edges,
-        centerId: data.centerId,
-        viewportSize: viewportSize,
-        globalDepth: globalDepth,
-        sizeConfig: data.nodeSizeConfig,
-      );
+      final focusId = data.centerId == 0
+          ? _rootIdOf(data.nodes, data.edges)
+          : data.centerId;
+      final childrenMap = _rerootedChildren(display.nodes, display.edges, focusId);
       setState(() {
         _nodes = data.nodes;
         _edges = data.edges;
-        _displayNodes = display.nodes;
-        _displayEdges = display.edges;
+        _allDisplayNodes = display.nodes;
+        _allDisplayEdges = display.edges;
         _globalDepth = globalDepth;
-        _positions = pos;
         _centerId = data.centerId;
         _nodeSizeConfig = data.nodeSizeConfig;
+        _childrenMap = childrenMap;
+        _expandedIds = {focusId};
+        _recomputeVisible();
       });
       _centerOnFocus();
     } catch (e) {
@@ -686,6 +774,69 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  // ── collapse / expand ─────────────────────────────────────────────────────
+
+  /// Recomputes [_displayNodes]/[_displayEdges]/[_positions] from
+  /// [_allDisplayNodes]/[_allDisplayEdges] based on [_expandedIds]. The focus
+  /// node and its direct children are always shown; a node's children are
+  /// only shown once the node itself is expanded. Must be called inside
+  /// [setState].
+  void _recomputeVisible() {
+    final visible = <int>{_focusId};
+    void visit(int node) {
+      if (!_expandedIds.contains(node)) return;
+      for (final child in _childrenMap[node] ?? const <int>[]) {
+        visible.add(child);
+        visit(child);
+      }
+    }
+
+    visit(_focusId);
+
+    _displayNodes = [
+      for (final n in _allDisplayNodes)
+        if (visible.contains(n.id)) n,
+    ];
+    _displayEdges = [
+      for (final e in _allDisplayEdges)
+        if (visible.contains(e.$1) && visible.contains(e.$2)) e,
+    ];
+    _positions = _layout.compute(
+      _displayNodes,
+      _displayEdges,
+      centerId: _centerId,
+      globalDepth: _globalDepth,
+      sizeConfig: _nodeSizeConfig,
+    );
+  }
+
+  bool _hasChildren(int nodeId) =>
+      (_childrenMap[nodeId] ?? const <int>[]).isNotEmpty;
+
+  bool _isCollapsed(int nodeId) =>
+      _hasChildren(nodeId) && !_expandedIds.contains(nodeId);
+
+  /// Toggles whether [nodeId]'s children are shown. Collapsing a node also
+  /// collapses its descendants, so re-expanding it later starts fresh.
+  void _toggleExpand(int nodeId) {
+    setState(() {
+      if (_expandedIds.contains(nodeId)) {
+        _expandedIds.remove(nodeId);
+        void collapseDescendants(int node) {
+          for (final child in _childrenMap[node] ?? const <int>[]) {
+            _expandedIds.remove(child);
+            collapseDescendants(child);
+          }
+        }
+
+        collapseDescendants(nodeId);
+      } else {
+        _expandedIds.add(nodeId);
+      }
+      _recomputeVisible();
+    });
   }
 
   // ── centering ─────────────────────────────────────────────────────────────
@@ -1193,14 +1344,29 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    final hasChildren = _hasChildren(node.id);
+    final collapsed = _isCollapsed(node.id);
+
     if (node.isTag) {
       yield Positioned(
         left: pos.dx + co.dx - hw,
         top: pos.dy + co.dy - hh,
-        child: _TagNode(
-          node: node,
-          scale: scale,
-          onLongPress: isStaff ? () => _showTagOptions(node) : null,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _TagNode(
+              node: node,
+              scale: scale,
+              onTap: hasChildren ? () => _toggleExpand(node.id) : null,
+              onLongPress: isStaff ? () => _showTagOptions(node) : null,
+            ),
+            if (collapsed)
+              Positioned(
+                right: -4,
+                bottom: -4,
+                child: _ExpandBadge(scale: scale),
+              ),
+          ],
         ),
       );
       return;
@@ -1209,11 +1375,24 @@ class _HomeScreenState extends State<HomeScreen> {
     yield Positioned(
       left: pos.dx + co.dx - hw,
       top: pos.dy + co.dy - hh,
-      child: _BookmarkCircle(
-        node: node,
-        scale: scale,
-        onTap: () => _openTree(node.id),
-        onLongPress: isStaff ? () => _showBookmarkOptions(node) : null,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          _BookmarkCircle(
+            node: node,
+            scale: scale,
+            onTap: hasChildren
+                ? () => _toggleExpand(node.id)
+                : () => _openTree(node.id),
+            onLongPress: isStaff ? () => _showBookmarkOptions(node) : null,
+          ),
+          if (collapsed)
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: _ExpandBadge(scale: scale),
+            ),
+        ],
       ),
     );
 
@@ -1732,6 +1911,15 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
   late final TextEditingController _decayCtrl = TextEditingController(
     text: _formatNum(widget.initial.decay),
   );
+  late final TextEditingController _paddingCtrl = TextEditingController(
+    text: _formatNum(widget.initial.padding),
+  );
+  late final TextEditingController _spreadCtrl = TextEditingController(
+    text: _formatNum(widget.initial.spreadDegrees),
+  );
+  late final TextEditingController _edgeFactorCtrl = TextEditingController(
+    text: _formatNum(widget.initial.edgeFactor),
+  );
   String? _error;
 
   static String _formatNum(double v) {
@@ -1744,6 +1932,9 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
     _maxCtrl.dispose();
     _minCtrl.dispose();
     _decayCtrl.dispose();
+    _paddingCtrl.dispose();
+    _spreadCtrl.dispose();
+    _edgeFactorCtrl.dispose();
     super.dispose();
   }
 
@@ -1756,14 +1947,24 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
     final maxScale = _parseNum(_maxCtrl.text);
     final minScale = _parseNum(_minCtrl.text);
     final decay = _parseNum(_decayCtrl.text);
+    final padding = _parseNum(_paddingCtrl.text);
+    final spread = _parseNum(_spreadCtrl.text);
+    final edgeFactor = _parseNum(_edgeFactorCtrl.text);
     final t = AppStrings.of(context);
 
     if (maxScale == null ||
         minScale == null ||
         decay == null ||
+        padding == null ||
+        spread == null ||
+        edgeFactor == null ||
         maxScale <= 0 ||
         minScale <= 0 ||
         decay < 0 ||
+        padding < 0 ||
+        spread <= 0 ||
+        spread > 360 ||
+        edgeFactor < 1 ||
         minScale > maxScale) {
       setState(() => _error = t.nodeSizeSettingsInvalid);
       return;
@@ -1771,7 +1972,14 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
 
     Navigator.pop(
       context,
-      NodeSizeConfig(maxScale: maxScale, minScale: minScale, decay: decay),
+      NodeSizeConfig(
+        maxScale: maxScale,
+        minScale: minScale,
+        decay: decay,
+        padding: padding,
+        spreadDegrees: spread,
+        edgeFactor: edgeFactor,
+      ),
     );
   }
 
@@ -1824,6 +2032,42 @@ class _NodeSizeSettingsDialogState extends State<_NodeSizeSettingsDialog> {
             decoration: glassFieldDecoration(
               context,
               InputDecoration(labelText: t.nodeSizeDecayLabel),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _paddingCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            decoration: glassFieldDecoration(
+              context,
+              InputDecoration(labelText: t.nodePaddingLabel),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _spreadCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            decoration: glassFieldDecoration(
+              context,
+              InputDecoration(labelText: t.nodeSpreadLabel),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _edgeFactorCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            decoration: glassFieldDecoration(
+              context,
+              InputDecoration(labelText: t.nodeEdgeLengthLabel),
             ),
             onSubmitted: (_) => _submit(),
           ),

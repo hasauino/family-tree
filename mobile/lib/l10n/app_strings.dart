@@ -133,6 +133,9 @@ class AppStrings {
   String get nodeMaxScaleLabel => _t('nodeMaxScaleLabel');
   String get nodeMinScaleLabel => _t('nodeMinScaleLabel');
   String get nodeSizeDecayLabel => _t('nodeSizeDecayLabel');
+  String get nodePaddingLabel => _t('nodePaddingLabel');
+  String get nodeSpreadLabel => _t('nodeSpreadLabel');
+  String get nodeEdgeLengthLabel => _t('nodeEdgeLengthLabel');
   String get nodeSizeSettingsHelp => _t('nodeSizeSettingsHelp');
   String get nodeSizeSettingsInvalid => _t('nodeSizeSettingsInvalid');
   String get nodeSizeSettingsUpdated => _t('nodeSizeSettingsUpdated');
@@ -268,6 +271,9 @@ class AppStrings {
       'nodeMaxScaleLabel': 'Root node size',
       'nodeMinScaleLabel': 'Leaf node size',
       'nodeSizeDecayLabel': 'Shrink rate',
+      'nodePaddingLabel': 'Cluster spacing',
+      'nodeSpreadLabel': 'Spread angle (°)',
+      'nodeEdgeLengthLabel': 'Max edge length (×)',
       'nodeSizeSettingsHelp':
           'Controls how node size shrinks with distance from the tree root. '
           'Higher shrink rate makes the difference between root and leaf '
@@ -386,6 +392,9 @@ class AppStrings {
       'nodeMaxScaleLabel': 'حجم العقدة الجذرية',
       'nodeMinScaleLabel': 'حجم العقد الطرفية',
       'nodeSizeDecayLabel': 'معدل التصغير',
+      'nodePaddingLabel': 'تباعد المجموعات',
+      'nodeSpreadLabel': 'زاوية الانتشار (°)',
+      'nodeEdgeLengthLabel': 'أقصى طول للحافة (×)',
       'nodeSizeSettingsHelp':
           'يتحكم في كيفية تصغير حجم العقد كلما ابتعدنا عن جذر الشجرة. '
           'كلما زاد معدل التصغير، زاد الفرق بين حجم العقدة الجذرية والعقد الطرفية.',

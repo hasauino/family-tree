@@ -156,6 +156,9 @@ class NodeSizeConfig(graphene.ObjectType):
     max_scale = graphene.Float(description="Visual scale of nodes at the root.")
     min_scale = graphene.Float(description="Visual scale of the deepest (leaf) nodes.")
     decay = graphene.Float(description="How quickly node size shrinks per generation away from the root.")
+    padding = graphene.Float(description="Gap kept between a node disk and its parent/siblings when packing the tree.")
+    spread_degrees = graphene.Float(description="Preferred fan breadth (degrees) a node spreads its children over.")
+    edge_factor = graphene.Float(description="Cap on parent->child distance, as a multiple of the minimum spacing.")
 
 
 class HomeTree(graphene.ObjectType):
