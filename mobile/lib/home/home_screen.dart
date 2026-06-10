@@ -9,6 +9,7 @@ import '../auth/login_page.dart';
 import '../config.dart';
 import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
+import '../theme_controller.dart';
 import '../tree/search_overlay.dart';
 import '../tree/tree_page.dart';
 import '../widgets/color_wheel.dart';
@@ -724,9 +725,10 @@ class _BookmarkLabel extends StatelessWidget {
 // ─── Home screen ──────────────────────────────────────────────────────────────
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.auth});
+  const HomeScreen({super.key, required this.auth, required this.theme});
 
   final AuthService auth;
+  final ThemeController theme;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -1079,7 +1081,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _openTree(int personId) => Navigator.of(context).push(
     MaterialPageRoute(
-      builder: (_) => TreePage(auth: widget.auth, initialPersonId: personId),
+      builder: (_) => TreePage(
+        auth: widget.auth,
+        theme: widget.theme,
+        initialPersonId: personId,
+      ),
     ),
   );
 
@@ -1469,6 +1475,7 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: const Icon(Icons.fit_screen),
                   onPressed: _fitToWindow,
                 ),
+                ThemeToggleButton(theme: widget.theme, t: t),
                 if (widget.auth.isStaff)
                   IconButton(
                     tooltip: t.createTagTooltip,

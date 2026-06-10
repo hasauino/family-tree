@@ -35,6 +35,13 @@ class AppStrings {
   String get cancel => _t('cancel');
   String get fitTreeTooltip => _t('fitTreeTooltip');
   String get reloadTooltip => _t('reloadTooltip');
+
+  // Theme (light / dark / auto)
+  String get themeModeLight => _t('themeModeLight');
+  String get themeModeDark => _t('themeModeDark');
+  String get themeModeAuto => _t('themeModeAuto');
+  String themeToggleTooltip(String mode) =>
+      _t('themeToggleTooltip').replaceFirst('{mode}', mode);
   String get noData => _t('noData');
   String get noDetails => _t('noDetails');
   String get centerTreeHere => _t('centerTreeHere');
@@ -177,6 +184,10 @@ class AppStrings {
       'cancel': 'Cancel',
       'fitTreeTooltip': 'Fit tree to window',
       'reloadTooltip': 'Reload',
+      'themeModeLight': 'Light',
+      'themeModeDark': 'Dark',
+      'themeModeAuto': 'Auto',
+      'themeToggleTooltip': 'Theme: {mode} (tap to change)',
       'noData': 'No data.',
       'noDetails': 'No further details.',
       'centerTreeHere': 'Center tree here',
@@ -303,6 +314,10 @@ class AppStrings {
       'cancel': 'إلغاء',
       'fitTreeTooltip': 'ملاءمة الشجرة للنافذة',
       'reloadTooltip': 'إعادة التحميل',
+      'themeModeLight': 'فاتح',
+      'themeModeDark': 'داكن',
+      'themeModeAuto': 'تلقائي',
+      'themeToggleTooltip': 'المظهر: {mode} (اضغط للتغيير)',
       'noData': 'لا توجد بيانات.',
       'noDetails': 'لا توجد تفاصيل إضافية.',
       'centerTreeHere': 'اجعل الشجرة هنا',

@@ -5,6 +5,7 @@ import 'auth/auth_service.dart';
 import 'config.dart';
 import 'l10n/app_strings.dart';
 import 'splash_page.dart';
+import 'theme_controller.dart';
 import 'widgets/glass.dart';
 
 void main() {
@@ -13,36 +14,44 @@ void main() {
   // Restore any persisted login in the background; the UI updates via the
   // AuthService listenable once it resolves.
   auth.restore();
-  runApp(FamilyTreeApp(auth: auth));
+  final theme = ThemeController();
+  // Likewise restore the persisted light/dark/auto choice in the background;
+  // the MaterialApp rebuilds via the listenable once it resolves.
+  theme.restore();
+  runApp(FamilyTreeApp(auth: auth, theme: theme));
 }
 
 class FamilyTreeApp extends StatelessWidget {
-  const FamilyTreeApp({super.key, required this.auth});
+  const FamilyTreeApp({super.key, required this.auth, required this.theme});
 
   final AuthService auth;
+  final ThemeController theme;
 
   @override
   Widget build(BuildContext context) {
     const seed = Color(0xFF5B8FF9);
-    return MaterialApp(
-      onGenerateTitle: (context) => AppStrings.of(context).appTitle,
-      debugShowCheckedModeBanner: false,
-      // Language: forced by AppConfig.locale, or follows the device when null.
-      locale: AppConfig.locale,
-      supportedLocales: AppConfig.supportedLocales,
-      localizationsDelegates: const [
-        AppStrings.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      themeMode: ThemeMode.system,
-      theme: _buildTheme(ColorScheme.fromSeed(seedColor: seed)),
-      darkTheme: _buildTheme(
-        ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
+    return ListenableBuilder(
+      listenable: theme,
+      builder: (context, _) => MaterialApp(
+        onGenerateTitle: (context) => AppStrings.of(context).appTitle,
+        debugShowCheckedModeBanner: false,
+        // Language: forced by AppConfig.locale, or follows the device when null.
+        locale: AppConfig.locale,
+        supportedLocales: AppConfig.supportedLocales,
+        localizationsDelegates: const [
+          AppStrings.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        themeMode: theme.mode,
+        theme: _buildTheme(ColorScheme.fromSeed(seedColor: seed)),
+        darkTheme: _buildTheme(
+          ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
+        ),
+        builder: (context, child) => _GradientBackground(child: child),
+        home: SplashPage(auth: auth, theme: theme),
       ),
-      builder: (context, child) => _GradientBackground(child: child),
-      home: SplashPage(auth: auth),
     );
   }
 
@@ -108,13 +117,13 @@ class _GradientBackground extends StatelessWidget {
     _Pool(Alignment(0.15, -0.05), Color(0xFFE9F2FC)), // pale sky
   ];
 
-  static const _darkBase = Color(0xFF15171C);
+  static const _darkBase = Color(0xFF0E1117);
   static const _darkPools = [
-    _Pool(Alignment(-1.4, -1.2), Color(0xFF1C3A34)),
-    _Pool(Alignment(1.5, -1.0), Color(0xFF232A4A)),
-    _Pool(Alignment(1.3, 1.3), Color(0xFF362A4E)),
-    _Pool(Alignment(-1.3, 1.2), Color(0xFF452637)),
-    _Pool(Alignment(0.15, -0.05), Color(0xFF45301F)),
+    _Pool(Alignment(-1.4, -1.2), Color(0xFF163B3A)), // teal
+    _Pool(Alignment(1.5, -1.0), Color(0xFF1E2A52)), // indigo
+    _Pool(Alignment(1.3, 1.3), Color(0xFF2E2356)), // violet
+    _Pool(Alignment(-1.3, 1.2), Color(0xFF3A1F40)), // dim magenta
+    _Pool(Alignment(0.15, -0.05), Color(0xFF15294A)), // sky
   ];
 
   @override

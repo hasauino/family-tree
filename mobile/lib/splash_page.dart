@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'auth/auth_service.dart';
 import 'home/home_screen.dart';
+import 'theme_controller.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key, required this.auth});
+  const SplashPage({super.key, required this.auth, required this.theme});
 
   final AuthService auth;
+  final ThemeController theme;
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -41,7 +43,8 @@ class _SplashPageState extends State<SplashPage>
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, _) => HomeScreen(auth: widget.auth),
+        pageBuilder: (_, animation, _) =>
+            HomeScreen(auth: widget.auth, theme: widget.theme),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 500),

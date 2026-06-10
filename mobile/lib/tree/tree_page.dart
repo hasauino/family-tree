@@ -8,6 +8,7 @@ import '../auth/login_page.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
+import '../theme_controller.dart';
 import '../widgets/glass.dart';
 import 'node_widget.dart';
 import 'person_actions_sheet.dart';
@@ -17,9 +18,15 @@ import 'tree_path_dialog.dart';
 
 /// The interactive, pan/zoomable family-tree screen.
 class TreePage extends StatefulWidget {
-  const TreePage({super.key, required this.auth, this.initialPersonId});
+  const TreePage({
+    super.key,
+    required this.auth,
+    required this.theme,
+    this.initialPersonId,
+  });
 
   final AuthService auth;
+  final ThemeController theme;
 
   /// The person to center the tree on when the page first opens.
   /// Falls back to [AppConfig.rootPersonId] when null.
@@ -349,6 +356,7 @@ class _TreePageState extends State<TreePage>
                   icon: const Icon(Icons.fit_screen),
                   onPressed: _fitToWindow,
                 ),
+                ThemeToggleButton(theme: widget.theme, t: t),
                 IconButton(
                   tooltip: t.reloadTooltip,
                   icon: const Icon(Icons.refresh),

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:family_tree_mobile/config.dart';
 import 'package:family_tree_mobile/main.dart';
+import 'package:family_tree_mobile/theme_controller.dart';
 
 import 'support/fake_backend.dart';
 
@@ -29,7 +30,9 @@ void main() {
     final auth = backend.authAsStaff();
     await auth.restore();
 
-    await tester.pumpWidget(FamilyTreeApp(auth: auth));
+    await tester.pumpWidget(
+      FamilyTreeApp(auth: auth, theme: ThemeController()),
+    );
     await pumpUntilFound(tester, find.text('Root'));
     await settleTree(tester); // GraphView ignores taps until layout settles
 
