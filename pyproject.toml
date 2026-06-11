@@ -24,6 +24,9 @@ dependencies = [
     # Verifies Google/Apple OIDC identity tokens (social sign-in). The
     # [crypto] extra pulls in `cryptography` for the RS256 signature check.
     "pyjwt[crypto]>=2.8,<3.0",
+    # Firebase Cloud Messaging push delivery. Optional at runtime: push is a
+    # no-op unless FIREBASE_CREDENTIALS_FILE is configured (see main/push.py).
+    "firebase-admin>=6.5,<7.0",
 ]
 
 [tool.hatch.build.targets.wheel]

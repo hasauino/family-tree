@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 # Register your models here.
-from .models import Person, User
+from .models import DeviceToken, Notification, Person, User
 
 
 class UserAdmin(UserAdmin):
@@ -19,6 +19,22 @@ class UserAdmin(UserAdmin):
         "last_name",
         "email",
     )
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("recipient", "kind", "count", "is_read", "updated_at")
+    list_filter = ("kind", "read_at")
+    search_fields = ("recipient__username", "title", "body")
+    raw_id_fields = ("recipient", "actor", "person")
+
+
+@admin.register(DeviceToken)
+class DeviceTokenAdmin(admin.ModelAdmin):
+    list_display = ("user", "platform", "last_seen")
+    list_filter = ("platform",)
+    search_fields = ("user__username", "token")
+    raw_id_fields = ("user",)
 
 
 admin.site.register(Person)

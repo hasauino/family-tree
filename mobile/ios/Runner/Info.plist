@@ -123,5 +123,15 @@
 		   "Sign in with Apple" capability to the Runner target
 		   (Signing & Capabilities), which creates the entitlement.
 		     ============================================================ -->
+
+	<!-- Push notifications (Firebase Cloud Messaging): allow the app to be woken
+	     by remote notifications in the background. In addition, in Xcode add the
+	     "Push Notifications" capability to the Runner target and upload an APNs
+	     auth key to the Firebase console (needs a paid Apple Developer account). -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
 	</dict>
 </plist>

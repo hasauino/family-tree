@@ -1,11 +1,13 @@
 import logging
 
 import graphene
+from django.utils import timezone
 from home.home_tree_generator import generate_home_tree
 from home.models import Bookmark
 from home.types import BookmarkType
 
-from main.graphql import account, auth, types
+from main import notifications as notify_service
+from main.graphql import account, auth, notifications, types
 from main.graphql.decorators import authenticated_only, staff_only
 from main.management.commands.create_db_backup import backup_label, list_backups, restore_backup
 from main.models import Person
@@ -24,7 +26,7 @@ class MutationReply:
         return {"ok": False, "message": message}
 
 
-class Query(graphene.ObjectType):
+class Query(notifications.NotificationQueries, graphene.ObjectType):
     connected_nodes = graphene.Field(
         types.ConnectedNodes,
         description="Get all nodes connected to a node (parent and children)",
@@ -395,6 +397,8 @@ class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
             child.access = "public"
         child.editors.add(user)
         child.save()
+        if child.access == "private":
+            notify_service.notify_pending_addition(child, user)
         return {**MutationReply.success(), **child.as_node(user)}
 
 
@@ -416,15 +420,24 @@ class EditPerson(graphene.Mutation, MutationReply, types.NodeType):
         # Same rule as the web save view: staff or one of the person's editors.
         if not (user.is_staff or user in person.editors.all()):
             return MutationReply.fail(f"Person with ID ${id} cannot be edited by current user")
+        changed = []
         if name is not None:
             if len(name) < 1:
                 return MutationReply.fail("Invalid name, cannot be empty string")
+            if name != person.name:
+                changed.append("name")
             person.name = name
         if designation is not None:
+            if designation != person.designation:
+                changed.append("designation")
             person.designation = designation
         if history is not None:
+            if history != person.history:
+                changed.append("history")
             person.history = history
         person.save()
+        # Tell the node's original contributors what changed (aggregated).
+        notify_service.notify_node_changed(person, user, changed)
         return {**MutationReply.success(), **person.as_node(user)}
 
 
@@ -510,13 +523,20 @@ class PublishPerson(graphene.Mutation, MutationReply):
         person = found.first()
         if not user.is_staff:
             return MutationReply.fail("Current user is not a staff, cannot publish person")
+        now = timezone.now()
         person.access = "public"
-        person.editors.add(user)
+        person.verified_by = user
+        person.verified_at = now
+        person.editors.add(user)  # add the verifying admin without removing original editors
         person.save()
+        notify_service.notify_change_verified(person, user)
         for child in person.children.all():
             child.access = "public"
+            child.verified_by = user
+            child.verified_at = now
             child.editors.add(user)
             child.save()
+            notify_service.notify_change_verified(child, user)
         return MutationReply.success()
 
 
@@ -606,6 +626,8 @@ class AddParent(graphene.Mutation, MutationReply, types.NodeType):
         new_parent.save()
         person.parent = new_parent
         person.save()
+        if new_parent.access == "private":
+            notify_service.notify_pending_addition(new_parent, user)
         return {**MutationReply.success(), **new_parent.as_node(user)}
 
 
@@ -645,6 +667,8 @@ class AddChildren(graphene.Mutation):
                 child.access = "public"
             child.editors.add(user)
             child.save()
+            if child.access == "private":
+                notify_service.notify_pending_addition(child, user)
             nodes.append(child.as_node(user))
         return AddChildren(ok=True, nodes=nodes, warnings=warnings, message="")
 
@@ -675,6 +699,7 @@ class MovePerson(graphene.Mutation, MutationReply, types.NodeType):
             current = current.parent
         person.parent = new_parent
         person.save()
+        notify_service.notify_node_changed(person, user, ["parent"])
         return {**MutationReply.success(), **person.as_node(user)}
 
 
@@ -1035,6 +1060,12 @@ class Mutations(graphene.ObjectType):
     set_node_size_config = SetNodeSizeConfig.Field()
     set_root_style = SetRootStyle.Field()
     restore_backup = RestoreBackup.Field()
+    mark_notification_read = notifications.MarkNotificationRead.Field()
+    mark_all_notifications_read = notifications.MarkAllNotificationsRead.Field()
+    batch_publish = notifications.BatchPublish.Field()
+    broadcast_notification = notifications.BroadcastNotification.Field()
+    register_device_token = notifications.RegisterDeviceToken.Field()
+    unregister_device_token = notifications.UnregisterDeviceToken.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

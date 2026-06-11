@@ -254,12 +254,109 @@ class AppStrings {
   String errorPersonNotFound(int id) =>
       _t('errorPersonNotFound').replaceFirst('{id}', '$id');
 
+  // Notifications (bell + list)
+  String get notificationsTooltip => _t('notificationsTooltip');
+  String get notificationsTitle => _t('notificationsTitle');
+  String get notificationsEmpty => _t('notificationsEmpty');
+  String get markAllRead => _t('markAllRead');
+  String get notifKindPending => _t('notifKindPending');
+  String get notifKindVerified => _t('notifKindVerified');
+  String get notifKindChanged => _t('notifKindChanged');
+  String get notifKindBroadcast => _t('notifKindBroadcast');
+  String get timeJustNow => _t('timeJustNow');
+  String timeMinutesAgo(int n) => _t('timeMinutesAgo').replaceFirst('{n}', '$n');
+  String timeHoursAgo(int n) => _t('timeHoursAgo').replaceFirst('{n}', '$n');
+  String timeDaysAgo(int n) => _t('timeDaysAgo').replaceFirst('{n}', '$n');
+
+  // Admin verification screen
+  String get verificationTitle => _t('verificationTitle');
+  String get verificationEmpty => _t('verificationEmpty');
+  String get verificationNoMatch => _t('verificationNoMatch');
+  String get verifySearchHint => _t('verifySearchHint');
+  String get verifyAnyUser => _t('verifyAnyUser');
+  String get verifyDateFilter => _t('verifyDateFilter');
+  String get verifyClearFilters => _t('verifyClearFilters');
+  String get verifySelectAll => _t('verifySelectAll');
+  String get verifyDeselectAll => _t('verifyDeselectAll');
+  String get verifyOpen => _t('verifyOpen');
+  String get verifyAction => _t('verifyAction');
+  String get verifyConfirmTitle => _t('verifyConfirmTitle');
+  String verifyConfirmBody(int n) => _t('verifyConfirmBody').replaceFirst('{n}', '$n');
+  String verifyDone(int n) => _t('verifyDone').replaceFirst('{n}', '$n');
+  String verifyCount(int n) => _t('verifyCount').replaceFirst('{n}', '$n');
+  String verifyBy(String names) => _t('verifyBy').replaceFirst('{names}', names);
+  String verifyPublishSelected(int n) =>
+      _t('verifyPublishSelected').replaceFirst('{n}', '$n');
+  String verifyPublishAll(int n) => _t('verifyPublishAll').replaceFirst('{n}', '$n');
+
+  // Admin broadcast composer
+  String get broadcastTitle => _t('broadcastTitle');
+  String get broadcastIntro => _t('broadcastIntro');
+  String get broadcastTitleLabel => _t('broadcastTitleLabel');
+  String get broadcastBodyLabel => _t('broadcastBodyLabel');
+  String get broadcastTitleRequired => _t('broadcastTitleRequired');
+  String get broadcastBodyRequired => _t('broadcastBodyRequired');
+  String get broadcastSend => _t('broadcastSend');
+  String get broadcastConfirmTitle => _t('broadcastConfirmTitle');
+  String get broadcastConfirmBody => _t('broadcastConfirmBody');
+  String broadcastDone(int n) => _t('broadcastDone').replaceFirst('{n}', '$n');
+
+  // Account menu entries (admin)
+  String get menuVerifyAdditions => _t('menuVerifyAdditions');
+  String get menuBroadcast => _t('menuBroadcast');
+
   static const Map<String, Map<String, String>> _values = {
     'en': {
       'appTitle': 'Family Tree',
       'cancel': 'Cancel',
       'fitTreeTooltip': 'Fit tree to window',
       'reloadTooltip': 'Reload',
+      // Notifications
+      'notificationsTooltip': 'Notifications',
+      'notificationsTitle': 'Notifications',
+      'notificationsEmpty': 'No notifications yet',
+      'markAllRead': 'Mark all as read',
+      'notifKindPending': 'New additions to verify',
+      'notifKindVerified': 'Your additions were published',
+      'notifKindChanged': 'Your entry was updated',
+      'notifKindBroadcast': 'Announcement',
+      'timeJustNow': 'just now',
+      'timeMinutesAgo': '{n} min ago',
+      'timeHoursAgo': '{n} h ago',
+      'timeDaysAgo': '{n} d ago',
+      // Verification
+      'verificationTitle': 'Verify additions',
+      'verificationEmpty': 'Nothing to verify — all additions are published.',
+      'verificationNoMatch': 'No additions match your filters.',
+      'verifySearchHint': 'Search by name',
+      'verifyAnyUser': 'Any contributor',
+      'verifyDateFilter': 'Filter by date',
+      'verifyClearFilters': 'Clear filters',
+      'verifySelectAll': 'Select all',
+      'verifyDeselectAll': 'Deselect all',
+      'verifyOpen': 'Open in tree',
+      'verifyAction': 'Verify',
+      'verifyConfirmTitle': 'Verify additions?',
+      'verifyConfirmBody': 'Publish {n} addition(s)? They will become visible to everyone.',
+      'verifyDone': '{n} addition(s) published',
+      'verifyCount': '{n} shown',
+      'verifyBy': 'by {names}',
+      'verifyPublishSelected': 'Verify {n} selected',
+      'verifyPublishAll': 'Verify all {n}',
+      // Broadcast
+      'broadcastTitle': 'Send announcement',
+      'broadcastIntro': 'Send a notification to every user — for example a greeting or an important note.',
+      'broadcastTitleLabel': 'Title',
+      'broadcastBodyLabel': 'Message',
+      'broadcastTitleRequired': 'Enter a title',
+      'broadcastBodyRequired': 'Enter a message',
+      'broadcastSend': 'Send to all',
+      'broadcastConfirmTitle': 'Send to all users?',
+      'broadcastConfirmBody': 'This message will be sent to every user.',
+      'broadcastDone': 'Sent to {n} user(s)',
+      // Account menu
+      'menuVerifyAdditions': 'Verify additions',
+      'menuBroadcast': 'Send announcement',
       'themeModeLight': 'Light',
       'themeModeDark': 'Dark',
       'themeModeAuto': 'Auto',
@@ -458,6 +555,52 @@ class AppStrings {
       'appTitle': 'شجرة العائلة',
       'cancel': 'إلغاء',
       'fitTreeTooltip': 'ملاءمة الشجرة للنافذة',
+      // Notifications
+      'notificationsTooltip': 'الإشعارات',
+      'notificationsTitle': 'الإشعارات',
+      'notificationsEmpty': 'لا توجد إشعارات بعد',
+      'markAllRead': 'تعليم الكل كمقروء',
+      'notifKindPending': 'إضافات جديدة للمراجعة',
+      'notifKindVerified': 'تم نشر إضافاتك',
+      'notifKindChanged': 'تم تحديث مُدخلك',
+      'notifKindBroadcast': 'إعلان',
+      'timeJustNow': 'الآن',
+      'timeMinutesAgo': 'قبل {n} دقيقة',
+      'timeHoursAgo': 'قبل {n} ساعة',
+      'timeDaysAgo': 'قبل {n} يوم',
+      // Verification
+      'verificationTitle': 'مراجعة الإضافات',
+      'verificationEmpty': 'لا شيء للمراجعة — كل الإضافات منشورة.',
+      'verificationNoMatch': 'لا توجد إضافات تطابق عوامل التصفية.',
+      'verifySearchHint': 'البحث بالاسم',
+      'verifyAnyUser': 'أي مساهم',
+      'verifyDateFilter': 'تصفية حسب التاريخ',
+      'verifyClearFilters': 'مسح عوامل التصفية',
+      'verifySelectAll': 'تحديد الكل',
+      'verifyDeselectAll': 'إلغاء تحديد الكل',
+      'verifyOpen': 'فتح في الشجرة',
+      'verifyAction': 'اعتماد',
+      'verifyConfirmTitle': 'اعتماد الإضافات؟',
+      'verifyConfirmBody': 'نشر {n} إضافة؟ ستصبح ظاهرة للجميع.',
+      'verifyDone': 'تم نشر {n} إضافة',
+      'verifyCount': '{n} ظاهرة',
+      'verifyBy': 'بواسطة {names}',
+      'verifyPublishSelected': 'اعتماد {n} محددة',
+      'verifyPublishAll': 'اعتماد الكل ({n})',
+      // Broadcast
+      'broadcastTitle': 'إرسال إعلان',
+      'broadcastIntro': 'أرسل إشعارًا إلى كل المستخدمين — مثل تهنئة أو ملاحظة مهمة.',
+      'broadcastTitleLabel': 'العنوان',
+      'broadcastBodyLabel': 'الرسالة',
+      'broadcastTitleRequired': 'أدخل عنوانًا',
+      'broadcastBodyRequired': 'أدخل رسالة',
+      'broadcastSend': 'إرسال للجميع',
+      'broadcastConfirmTitle': 'إرسال لكل المستخدمين؟',
+      'broadcastConfirmBody': 'سترسل هذه الرسالة إلى كل مستخدم.',
+      'broadcastDone': 'أُرسلت إلى {n} مستخدم',
+      // Account menu
+      'menuVerifyAdditions': 'مراجعة الإضافات',
+      'menuBroadcast': 'إرسال إعلان',
       'reloadTooltip': 'إعادة التحميل',
       'themeModeLight': 'فاتح',
       'themeModeDark': 'داكن',

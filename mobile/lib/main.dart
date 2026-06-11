@@ -6,9 +6,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'auth/auth_service.dart';
 import 'config.dart';
 import 'l10n/app_strings.dart';
+import 'notifications/push_service.dart';
 import 'splash_page.dart';
 import 'theme_controller.dart';
 import 'widgets/glass.dart';
+
+/// Global navigator key so the push service can deep-link to a person's tree
+/// from a tapped notification, without a BuildContext.
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +31,9 @@ void main() {
   // Likewise restore the persisted light/dark/auto choice in the background;
   // the MaterialApp rebuilds via the listenable once it resolves.
   theme.restore();
+  // Initialise push notifications in the background. No-op if Firebase isn't
+  // configured for this platform (see PushService).
+  PushService(auth: auth, theme: theme, navigatorKey: navigatorKey).init();
   runApp(FamilyTreeApp(auth: auth, theme: theme));
 }
 
@@ -41,6 +49,7 @@ class FamilyTreeApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: theme,
       builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
         onGenerateTitle: (context) => AppStrings.of(context).appTitle,
         debugShowCheckedModeBanner: false,
         // Language: forced by AppConfig.locale, or follows the device when null.

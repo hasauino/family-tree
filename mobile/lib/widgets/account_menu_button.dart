@@ -5,13 +5,15 @@ import '../auth/auth_service.dart';
 import '../auth/login_page.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
+import '../theme_controller.dart';
 
 /// The login button (signed out) or an avatar that opens [AccountPage]
 /// (signed in) — shared by the home screen and tree screen action bars.
 class AccountMenuButton extends StatelessWidget {
-  const AccountMenuButton({super.key, required this.auth});
+  const AccountMenuButton({super.key, required this.auth, required this.theme});
 
   final AuthService auth;
+  final ThemeController theme;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class AccountMenuButton extends StatelessWidget {
     return IconButton(
       tooltip: auth.username ?? t.account,
       onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => AccountPage(auth: auth)),
+        MaterialPageRoute(builder: (_) => AccountPage(auth: auth, theme: theme)),
       ),
       icon: CircleAvatar(
         radius: 14,

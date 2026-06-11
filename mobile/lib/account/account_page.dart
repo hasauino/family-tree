@@ -8,6 +8,9 @@ import '../config.dart';
 import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
+import '../notifications/broadcast_page.dart';
+import '../notifications/verification_page.dart';
+import '../theme_controller.dart';
 import '../widgets/glass.dart';
 import '../widgets/top_toast.dart';
 import '../auth/auth_service.dart';
@@ -16,9 +19,10 @@ import '../auth/auth_service.dart';
 /// or delete their account — the frosted-glass replacement for the old
 /// "username + logout" popup menu.
 class AccountPage extends StatefulWidget {
-  const AccountPage({super.key, required this.auth});
+  const AccountPage({super.key, required this.auth, required this.theme});
 
   final AuthService auth;
+  final ThemeController theme;
 
   @override
   State<AccountPage> createState() => _AccountPageState();
@@ -204,6 +208,23 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _logout() async {
     await widget.auth.logout();
     if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  /// Admin-only: open the verification screen to review and publish the
+  /// additions made by regular users.
+  void _openVerification() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VerificationPage(auth: widget.auth, theme: widget.theme),
+      ),
+    );
+  }
+
+  /// Admin-only: open the composer to broadcast a custom notification to all users.
+  void _openBroadcast() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => BroadcastPage(auth: widget.auth)),
+    );
   }
 
   /// Admin-only: lists database restore points and, once one is picked and
@@ -522,6 +543,18 @@ class _AccountPageState extends State<AccountPage> {
                     label: Text(t.logout),
                   ),
                   if (widget.auth.isStaff) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _saving ? null : _openVerification,
+                      icon: const Icon(Icons.fact_check_outlined),
+                      label: Text(t.menuVerifyAdditions),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _saving ? null : _openBroadcast,
+                      icon: const Icon(Icons.campaign_outlined),
+                      label: Text(t.menuBroadcast),
+                    ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: _saving ? null : _restoreDatabase,

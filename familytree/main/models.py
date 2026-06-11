@@ -28,6 +28,18 @@ class Person(models.Model):
     access = models.CharField(max_length=200, choices=access_choices, default="public")
     creation_time = models.DateTimeField(auto_now_add=True, verbose_name=_("Date of creation"))
     last_modified = models.DateTimeField(auto_now=True, verbose_name=_("Date of last modification"))
+    # Audit of who approved/published this person and when (set on publish). The
+    # publishing admin is also added to ``editors`` (without removing the
+    # original editors), so this records *which* admin did it and *when*.
+    verified_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Verified by"),
+    )
+    verified_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Date of verification"))
 
     def is_visible_to(self, user: User):
         """
@@ -224,3 +236,93 @@ class EmailVerification(models.Model):
 
     def matches(self, code):
         return check_password(code or "", self.code_hash)
+
+
+class Notification(models.Model):
+    """An in-app (and optionally push) notification for a single recipient.
+
+    Notifications **aggregate** so the bell never spams: instead of one row per
+    event, an *unread* notification with the same ``(recipient, kind,
+    group_key)`` is updated in place — its ``count`` grows and ``data``
+    accumulates detail — so the recipient sees one entry that reads e.g. "Ali
+    added 5 people" or "Your entry for <name> had 3 changes". Marking it read
+    "closes" it; the next event then opens a fresh notification.
+
+    Kinds:
+      * ``pending_addition`` – admin-facing: a regular user added node(s) that
+        await verification. Grouped per actor (one entry per contributing user).
+      * ``change_verified``  – user-facing: additions of theirs were published.
+      * ``node_changed``     – user-facing: a node they added was edited by
+        someone else. Grouped per node.
+      * ``broadcast``        – admin-authored custom message sent to users.
+    """
+
+    PENDING_ADDITION = "pending_addition"
+    CHANGE_VERIFIED = "change_verified"
+    NODE_CHANGED = "node_changed"
+    BROADCAST = "broadcast"
+    KINDS = [
+        (PENDING_ADDITION, _("Pending addition")),
+        (CHANGE_VERIFIED, _("Change verified")),
+        (NODE_CHANGED, _("Node changed")),
+        (BROADCAST, _("Broadcast")),
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    kind = models.CharField(max_length=32, choices=KINDS)
+    actor = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name=_("Triggered by")
+    )
+    person = models.ForeignKey(Person, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    title = models.CharField(max_length=255, blank=True)
+    body = models.TextField(blank=True)
+    # Aggregation bucket. While an unread notification shares this key with a new
+    # event, that event folds into it instead of creating another row.
+    group_key = models.CharField(max_length=255, db_index=True)
+    count = models.PositiveIntegerField(default=1, help_text=_("Number of aggregated events"))
+    # Free-form detail used to render the aggregated body, e.g.
+    # {"person_ids": [..], "names": [..], "fields": ["name", "history"]}.
+    data = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    # When a push was last delivered for this (aggregated) notification, used to
+    # throttle repeat pushes while it keeps accumulating events.
+    last_pushed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["recipient", "read_at"]),
+            models.Index(fields=["recipient", "kind", "group_key"]),
+        ]
+
+    @property
+    def is_read(self):
+        return self.read_at is not None
+
+    def mark_read(self):
+        if self.read_at is None:
+            self.read_at = timezone.now()
+            self.save(update_fields=["read_at"])
+
+
+class DeviceToken(models.Model):
+    """An FCM registration token for one of a user's devices, used to deliver
+    push notifications. Tokens are globally unique; re-registering an existing
+    token just re-points it at the current user (e.g. after a device is handed
+    over or a different account signs in)."""
+
+    ANDROID = "android"
+    IOS = "ios"
+    WEB = "web"
+    PLATFORMS = [(ANDROID, "Android"), (IOS, "iOS"), (WEB, "Web")]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="device_tokens")
+    token = models.CharField(max_length=255, unique=True)
+    platform = models.CharField(max_length=16, choices=PLATFORMS, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} ({self.platform})"

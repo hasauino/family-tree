@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-11 12:32+0000\n"
+"POT-Creation-Date: 2026-06-11 22:55+0000\n"
 "PO-Revision-Date: 2023-10-02 17:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -194,37 +194,137 @@ msgstr "تاريخ الميلاد"
 msgid "Date of last modification"
 msgstr "تاريخ آخر تحديث"
 
-#: familytree/main/models.py:145
+#: familytree/main/models.py:40
+msgid "Verified by"
+msgstr ""
+
+#: familytree/main/models.py:42
+#, fuzzy
+#| msgid "Date of creation"
+msgid "Date of verification"
+msgstr "تاريخ الميلاد"
+
+#: familytree/main/models.py:157
 msgid "Enter a valid email address"
 msgstr "الرجاء إدخال أيميل صحيح"
 
-#: familytree/main/models.py:147
+#: familytree/main/models.py:159
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: familytree/main/models.py:149
+#: familytree/main/models.py:161
 msgid "First name"
 msgstr "الاسم الأول"
 
-#: familytree/main/models.py:150
+#: familytree/main/models.py:162
 msgid "Father's name"
 msgstr "اسم الأب"
 
-#: familytree/main/models.py:151
+#: familytree/main/models.py:163
 msgid "Grandfather's name"
 msgstr "اسم الجد"
 
-#: familytree/main/models.py:152
+#: familytree/main/models.py:164
 msgid "Last name"
 msgstr "اسم العائلة"
 
-#: familytree/main/models.py:154
+#: familytree/main/models.py:166
 msgid "Place of birth"
 msgstr "مكان الميلاد"
 
-#: familytree/main/models.py:157
+#: familytree/main/models.py:169
 msgid "Profile picture"
 msgstr "صورة الملف الشخصي"
+
+#: familytree/main/models.py:265
+msgid "Pending addition"
+msgstr ""
+
+#: familytree/main/models.py:266
+#, fuzzy
+#| msgid "Change Password"
+msgid "Change verified"
+msgstr "تغيير كلمة المرور"
+
+#: familytree/main/models.py:267
+msgid "Node changed"
+msgstr ""
+
+#: familytree/main/models.py:268
+msgid "Broadcast"
+msgstr ""
+
+#: familytree/main/models.py:274
+msgid "Triggered by"
+msgstr ""
+
+#: familytree/main/models.py:282
+msgid "Number of aggregated events"
+msgstr ""
+
+#: familytree/main/notifications.py:31
+#, fuzzy
+#| msgid "Username"
+msgid "name"
+msgstr "اسم المستخدم"
+
+#: familytree/main/notifications.py:32
+#, fuzzy
+#| msgid "Designation (optional)"
+msgid "designation"
+msgstr "وصف (اختياري)"
+
+#: familytree/main/notifications.py:33
+msgid "history"
+msgstr ""
+
+#: familytree/main/notifications.py:34
+#, fuzzy
+#| msgid "Parent"
+msgid "parent"
+msgstr "الأب"
+
+#: familytree/main/notifications.py:118 familytree/main/notifications.py:121
+msgid "New additions to verify"
+msgstr ""
+
+#: familytree/main/notifications.py:149 familytree/main/notifications.py:152
+msgid "Your entry was updated"
+msgstr ""
+
+#: familytree/main/notifications.py:178 familytree/main/notifications.py:181
+msgid "Your additions were published"
+msgstr ""
+
+#: familytree/main/notifications.py:224
+#, python-format
+msgid "and %(n)d more"
+msgstr ""
+
+#: familytree/main/notifications.py:237
+#, python-format
+msgid "%(user)s added %(name)s"
+msgstr ""
+
+#: familytree/main/notifications.py:238
+#, python-format
+msgid "%(user)s added %(count)d people: %(list)s"
+msgstr ""
+
+#: familytree/main/notifications.py:247
+#, python-format
+msgid "Your entry “%(name)s” was updated (%(fields)s)"
+msgstr ""
+
+#: familytree/main/notifications.py:255
+#, python-format
+msgid "“%(name)s” was published"
+msgstr ""
+
+#: familytree/main/notifications.py:256
+#, python-format
+msgid "%(count)d of your additions were published: %(list)s"
+msgstr ""
 
 #: familytree/main/templates/account/password_reset_email_body.txt:4
 #: familytree/main/templates/account/verification_email_body.txt:4
@@ -685,9 +785,6 @@ msgstr "إنجليزي"
 
 #~ msgid "Please fill-in below your data (all fields)"
 #~ msgstr "الرجاء تعبئة بياناتك (كافة الحقول)"
-
-#~ msgid "Username"
-#~ msgstr "اسم المستخدم"
 
 #~ msgid "Email"
 #~ msgstr "الإيميل"

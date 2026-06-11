@@ -8,6 +8,7 @@ import '../widgets/account_menu_button.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
+import '../notifications/notification_bell.dart';
 import '../theme_controller.dart';
 import '../widgets/glass.dart';
 import 'node_widget.dart';
@@ -415,7 +416,13 @@ class _TreePageState extends State<TreePage>
                 ),
                 ListenableBuilder(
                   listenable: widget.auth,
-                  builder: (context, _) => AccountMenuButton(auth: widget.auth),
+                  builder: (context, _) =>
+                      NotificationBell(auth: widget.auth, theme: widget.theme),
+                ),
+                ListenableBuilder(
+                  listenable: widget.auth,
+                  builder: (context, _) =>
+                      AccountMenuButton(auth: widget.auth, theme: widget.theme),
                 ),
               ],
             ),

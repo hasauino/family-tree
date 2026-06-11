@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/app_notification.dart';
 import '../models/family_node.dart';
 import 'graphql_client.dart';
 
@@ -1532,6 +1533,168 @@ class FamilyApi {
       ok: (r?['ok'] as bool?) ?? false,
       message: r?['message'] as String?,
     );
+  }
+
+  // --- Notifications -------------------------------------------------------
+
+  static const String _notificationsDoc = r'''
+    query Notifications($limit: Int, $offset: Int) {
+      notifications(limit: $limit, offset: $offset) {
+        unreadCount
+        total
+        notifications {
+          id kind title body count isRead createdAt updatedAt
+          actorName personId personIds
+        }
+      }
+    }
+  ''';
+
+  /// The signed-in user's notifications (newest first) plus the unread count.
+  Future<NotificationPage> notifications({int limit = 50, int offset = 0}) async {
+    final data = await _client.query(
+      _notificationsDoc,
+      variables: {'limit': limit, 'offset': offset},
+    );
+    final page = (data['notifications'] as Map<String, dynamic>?) ?? const {};
+    final list = (page['notifications'] as List?) ?? const [];
+    return NotificationPage(
+      notifications: list
+          .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      unreadCount: (page['unreadCount'] as int?) ?? 0,
+      total: (page['total'] as int?) ?? 0,
+    );
+  }
+
+  static const String _unreadCountDoc = r'''
+    query UnreadCount { unreadNotificationCount }
+  ''';
+
+  /// Just the unread badge count — cheap enough to poll periodically.
+  Future<int> unreadNotificationCount() async {
+    final data = await _client.query(_unreadCountDoc);
+    return (data['unreadNotificationCount'] as int?) ?? 0;
+  }
+
+  static const String _markReadDoc = r'''
+    mutation MarkRead($id: Int!) {
+      markNotificationRead(id: $id) { ok message }
+    }
+  ''';
+
+  /// Marks a single notification read.
+  Future<MutationResult> markNotificationRead(int id) async {
+    final data = await _client.query(_markReadDoc, variables: {'id': id});
+    final r = data['markNotificationRead'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  static const String _markAllReadDoc = r'''
+    mutation MarkAllRead {
+      markAllNotificationsRead { ok message }
+    }
+  ''';
+
+  /// Marks every unread notification read (the "mark all as read" action).
+  Future<MutationResult> markAllNotificationsRead() async {
+    final data = await _client.query(_markAllReadDoc);
+    final r = data['markAllNotificationsRead'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  // --- Admin: verification & broadcast ------------------------------------
+
+  static const String _pendingAdditionsDoc = r'''
+    query PendingAdditions {
+      pendingAdditions {
+        id name creationTime lastModified
+        editors { id name email userType }
+      }
+    }
+  ''';
+
+  /// All unpublished (private) persons awaiting verification (staff only).
+  Future<List<PendingAddition>> pendingAdditions() async {
+    final data = await _client.query(_pendingAdditionsDoc);
+    final list = (data['pendingAdditions'] as List?) ?? const [];
+    return list
+        .map((e) => PendingAddition.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static const String _batchPublishDoc = r'''
+    mutation BatchPublish($ids: [Int!]!) {
+      batchPublish(ids: $ids) { ok message published }
+    }
+  ''';
+
+  /// Publishes (verifies) the selected pending persons at once (staff only).
+  /// Returns how many were published.
+  Future<({bool ok, int published})> batchPublish(List<int> ids) async {
+    final data = await _client.query(_batchPublishDoc, variables: {'ids': ids});
+    final r = data['batchPublish'] as Map<String, dynamic>?;
+    return (
+      ok: (r?['ok'] as bool?) ?? false,
+      published: (r?['published'] as int?) ?? 0,
+    );
+  }
+
+  static const String _broadcastDoc = r'''
+    mutation Broadcast($title: String!, $body: String!) {
+      broadcastNotification(title: $title, body: $body) { ok message sent }
+    }
+  ''';
+
+  /// Sends a custom notification to all users (staff only). Returns how many
+  /// recipients it reached.
+  Future<({bool ok, int sent, String? message})> broadcastNotification(
+    String title,
+    String body,
+  ) async {
+    final data = await _client.query(
+      _broadcastDoc,
+      variables: {'title': title, 'body': body},
+    );
+    final r = data['broadcastNotification'] as Map<String, dynamic>?;
+    return (
+      ok: (r?['ok'] as bool?) ?? false,
+      sent: (r?['sent'] as int?) ?? 0,
+      message: r?['message'] as String?,
+    );
+  }
+
+  // --- Push device tokens --------------------------------------------------
+
+  static const String _registerTokenDoc = r'''
+    mutation RegisterToken($token: String!, $platform: String) {
+      registerDeviceToken(token: $token, platform: $platform) { ok message }
+    }
+  ''';
+
+  /// Registers this device's FCM token so it can receive push notifications.
+  Future<void> registerDeviceToken(String token, String platform) async {
+    await _client.query(
+      _registerTokenDoc,
+      variables: {'token': token, 'platform': platform},
+    );
+  }
+
+  static const String _unregisterTokenDoc = r'''
+    mutation UnregisterToken($token: String!) {
+      unregisterDeviceToken(token: $token) { ok message }
+    }
+  ''';
+
+  /// Drops this device's FCM token (e.g. on sign-out).
+  Future<void> unregisterDeviceToken(String token) async {
+    await _client.query(_unregisterTokenDoc, variables: {'token': token});
   }
 
   /// Runs a mutation shaped like `field(id: $id) { ok message }`.

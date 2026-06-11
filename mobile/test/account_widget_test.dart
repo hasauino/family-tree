@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:family_tree_mobile/account/account_page.dart';
 import 'package:family_tree_mobile/auth/auth_service.dart';
 import 'package:family_tree_mobile/l10n/app_strings.dart';
+import 'package:family_tree_mobile/theme_controller.dart';
 
 import '../integration_test/support/fake_backend.dart';
 
@@ -22,7 +23,7 @@ Future<void> _pumpAccount(WidgetTester tester, AuthService auth) async {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: AccountPage(auth: auth),
+      home: AccountPage(auth: auth, theme: ThemeController()),
     ),
   );
   await tester.pumpAndSettle();

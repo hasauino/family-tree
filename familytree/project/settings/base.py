@@ -204,3 +204,9 @@ GRAPHENE = {"SCHEMA": "main.graphql.schema"}
 # DB backup
 DB_BACKUP_DIR = PROJECT_DIR / "backups"
 NUMBER_OF_BACKUPS = 30
+
+# Push notifications (Firebase Cloud Messaging). Path to the service-account
+# JSON from the Firebase console (Project settings -> Service accounts ->
+# "Generate new private key"). Leave unset to disable push entirely — the app
+# falls back to in-app notifications only and the test suite needs no Firebase.
+FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE") or None

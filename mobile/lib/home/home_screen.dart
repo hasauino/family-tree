@@ -9,6 +9,7 @@ import '../widgets/account_menu_button.dart';
 import '../config.dart';
 import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
+import '../notifications/notification_bell.dart';
 import '../theme_controller.dart';
 import '../tree/search_overlay.dart';
 import '../tree/tree_page.dart';
@@ -1498,7 +1499,13 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 ListenableBuilder(
                   listenable: widget.auth,
-                  builder: (context, _) => AccountMenuButton(auth: widget.auth),
+                  builder: (context, _) =>
+                      NotificationBell(auth: widget.auth, theme: widget.theme),
+                ),
+                ListenableBuilder(
+                  listenable: widget.auth,
+                  builder: (context, _) =>
+                      AccountMenuButton(auth: widget.auth, theme: widget.theme),
                 ),
               ],
             ),
