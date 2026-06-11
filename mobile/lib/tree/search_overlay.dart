@@ -157,11 +157,11 @@ class _SearchOverlayState extends State<_SearchOverlay> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return _Hint(text: t.searchError);
+          return _Hint(scheme: scheme, text: t.searchError);
         }
         final results = snapshot.data ?? const [];
         if (results.isEmpty) {
-          return _Hint(text: t.searchNoResults);
+          return _Hint(scheme: scheme, text: t.searchNoResults);
         }
         return _ResultsPanel(
           scheme: scheme,
@@ -262,17 +262,23 @@ class _ResultsPanel extends StatelessWidget {
 }
 
 class _Hint extends StatelessWidget {
-  const _Hint({required this.text});
+  const _Hint({required this.scheme, required this.text});
+  final ColorScheme scheme;
   final String text;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.outline),
+  Widget build(BuildContext context) => _ResultsPanel(
+        scheme: scheme,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+            ),
           ),
         ),
       );
