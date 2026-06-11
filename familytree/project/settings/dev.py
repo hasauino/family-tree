@@ -12,6 +12,15 @@ EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.conso
 # Allow the Flutter web app (served from a different localhost port) to call the
 # GraphQL API in development. Restrict this with CORS_ALLOWED_ORIGINS in prod.
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# The Flutter web app runs on a different localhost port, so the session/CSRF
+# cookies must be sendable cross-site. Chrome/Firefox treat 127.0.0.1/localhost
+# as a secure context, so `Secure` cookies still work over plain http here.
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
 
 LOGGING = {
     "version": 1,

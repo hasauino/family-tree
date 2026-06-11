@@ -37,6 +37,8 @@ class PersonType(DjangoObjectType):
 
 
 class UserType(DjangoObjectType):
+    profile_image_url = graphene.String(description="URL of the user's profile picture, or null if unset")
+
     class Meta:
         model = User
         fields = [
@@ -50,16 +52,28 @@ class UserType(DjangoObjectType):
             "birth_place",
         ]
 
+    def resolve_profile_image_url(user, info):
+        return user.profile_image.url if user.profile_image else None
+
 
 class CurrentUserType(graphene.ObjectType):
     """
-    The currently signed-in user, used by clients to gate edit/staff actions.
+    The currently signed-in user, used by clients to gate edit/staff actions
+    and to populate the account/profile screen.
     """
 
     id = graphene.Int()
     username = graphene.String()
     is_staff = graphene.Boolean(description="Whether the user can publish/bookmark persons")
     is_authenticated = graphene.Boolean(description="Whether a user is signed in at all")
+    email = graphene.String()
+    first_name = graphene.String()
+    last_name = graphene.String()
+    father_name = graphene.String()
+    grandfather_name = graphene.String()
+    birth_date = graphene.Date()
+    birth_place = graphene.String()
+    profile_image_url = graphene.String(description="URL of the user's profile picture, or null if unset")
 
 
 class FontType(graphene.ObjectType):

@@ -52,6 +52,10 @@ dependencies:
   sign_in_with_apple: ^8.1.0
   flutter_facebook_auth: ^7.1.7
 
+  # Profile photo: pick from gallery/camera, then resize/encode client-side.
+  image_picker: ^1.1.2
+  image: ^4.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

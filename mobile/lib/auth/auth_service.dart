@@ -30,13 +30,16 @@ class AuthService extends ChangeNotifier {
   GraphQLClient get client => _client;
   FamilyApi get api => _api;
 
-  String? _username;
-  bool _isStaff = false;
+  CurrentUser? _profile;
   bool _ready = false;
 
-  String? get username => _username;
-  bool get isStaff => _isStaff;
-  bool get isAuthenticated => _username != null;
+  /// The full signed-in profile (name, email, profile picture, ...), or null
+  /// when signed out. Used by the account page.
+  CurrentUser? get profile => _profile;
+
+  String? get username => _profile?.username;
+  bool get isStaff => _profile?.isStaff ?? false;
+  bool get isAuthenticated => _profile != null;
 
   /// True once [restore] has finished, so the UI can avoid flashing the
   /// signed-out state on launch.
@@ -152,8 +155,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> logout() async {
     _client.clearSession();
-    _username = null;
-    _isStaff = false;
+    _profile = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_cookiesKey);
     notifyListeners();
@@ -164,17 +166,57 @@ class AuthService extends ChangeNotifier {
   Future<void> _refreshMe() async {
     try {
       final me = await _api.me();
-      if (me != null && me.isAuthenticated) {
-        _username = me.username;
-        _isStaff = me.isStaff;
-      } else {
-        _username = null;
-        _isStaff = false;
-      }
+      _profile = (me != null && me.isAuthenticated) ? me : null;
     } catch (_) {
-      _username = null;
-      _isStaff = false;
+      _profile = null;
     }
+  }
+
+  /// Updates the signed-in user's profile fields (pass `null` to leave a
+  /// field unchanged) and refreshes [profile]. Throws [AuthFailedException]
+  /// (e.g. duplicate email) on failure.
+  Future<void> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? fatherName,
+    String? grandfatherName,
+    String? birthDate,
+    String? birthPlace,
+    String? email,
+  }) async {
+    _profile = await _api.updateProfile(
+      firstName: firstName,
+      lastName: lastName,
+      fatherName: fatherName,
+      grandfatherName: grandfatherName,
+      birthDate: birthDate,
+      birthPlace: birthPlace,
+      email: email,
+    );
+    notifyListeners();
+  }
+
+  /// Uploads [jpegBytes] (already resized/encoded as JPEG) as the new profile
+  /// picture and refreshes [profile]. Throws [AuthFailedException] on failure.
+  Future<void> uploadProfileImage(Uint8List jpegBytes) async {
+    _profile = await _api.uploadProfileImage(base64Encode(jpegBytes));
+    notifyListeners();
+  }
+
+  /// Removes the user's profile picture, if any, and refreshes [profile].
+  Future<void> removeProfileImage() async {
+    _profile = await _api.removeProfileImage();
+    notifyListeners();
+  }
+
+  /// Permanently deletes the signed-in user's account and signs them out.
+  /// Throws [GraphQLException] with the backend message on failure.
+  Future<void> deleteAccount() async {
+    final result = await _api.deleteAccount();
+    if (!result.ok) {
+      throw GraphQLException(result.message ?? 'Could not delete account.');
+    }
+    await logout();
   }
 
   Future<void> _persistCookies() async {

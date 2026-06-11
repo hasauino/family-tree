@@ -25,13 +25,21 @@ User = get_user_model()
 MODEL_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 
-def _current_user_payload(user):
+def current_user_payload(user):
     """The CurrentUserType shape, matching Query.resolve_me."""
     return {
         "id": user.id,
         "username": user.get_username(),
         "is_staff": user.is_staff,
         "is_authenticated": True,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "father_name": user.father_name,
+        "grandfather_name": user.grandfather_name,
+        "birth_date": user.birth_date,
+        "birth_place": user.birth_place,
+        "profile_image_url": user.profile_image.url if user.profile_image else None,
     }
 
 
@@ -78,7 +86,7 @@ class AuthReply:
 
     @staticmethod
     def success(user, message=""):
-        return {"ok": True, "message": message, "user": _current_user_payload(user)}
+        return {"ok": True, "message": message, "user": current_user_payload(user)}
 
     @staticmethod
     def fail(message=""):

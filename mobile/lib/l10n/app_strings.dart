@@ -82,6 +82,22 @@ class AppStrings {
   String get login => _t('login');
   String get logout => _t('logout');
   String get account => _t('account');
+
+  // Account page (profile editing, photo, deletion)
+  String get fatherNameLabel => _t('fatherNameLabel');
+  String get grandfatherNameLabel => _t('grandfatherNameLabel');
+  String get birthPlaceLabel => _t('birthPlaceLabel');
+  String get birthDateLabel => _t('birthDateLabel');
+  String get changePhoto => _t('changePhoto');
+  String get chooseFromGallery => _t('chooseFromGallery');
+  String get takePhoto => _t('takePhoto');
+  String get removePhoto => _t('removePhoto');
+  String get profileUpdated => _t('profileUpdated');
+  String get imageUpdateError => _t('imageUpdateError');
+  String get deleteAccount => _t('deleteAccount');
+  String get deleteAccountTitle => _t('deleteAccountTitle');
+  String get deleteAccountConfirm => _t('deleteAccountConfirm');
+  String get accountDeleted => _t('accountDeleted');
   String get loginTitle => _t('loginTitle');
   String get loginInvalid => _t('loginInvalid');
   String get usernameLabel => _t('usernameLabel');
@@ -267,6 +283,22 @@ class AppStrings {
       'login': 'Login',
       'logout': 'Logout',
       'account': 'Account',
+      'fatherNameLabel': "Father's name",
+      'grandfatherNameLabel': "Grandfather's name",
+      'birthPlaceLabel': 'Place of birth',
+      'birthDateLabel': 'Date of birth',
+      'changePhoto': 'Change photo',
+      'chooseFromGallery': 'Choose from gallery',
+      'takePhoto': 'Take photo',
+      'removePhoto': 'Remove photo',
+      'profileUpdated': 'Profile updated.',
+      'imageUpdateError': 'Could not update the photo. Please try again.',
+      'deleteAccount': 'Delete account',
+      'deleteAccountTitle': 'Delete account',
+      'deleteAccountConfirm':
+          'This will permanently delete your account and sign you out. '
+          'This cannot be undone. Continue?',
+      'accountDeleted': 'Your account has been deleted.',
       'loginTitle': 'Sign in',
       'loginInvalid': 'Invalid username or password.',
       'usernameLabel': 'Username',
@@ -441,6 +473,22 @@ class AppStrings {
       'login': 'تسجيل الدخول',
       'logout': 'تسجيل الخروج',
       'account': 'الحساب',
+      'fatherNameLabel': 'اسم الأب',
+      'grandfatherNameLabel': 'اسم الجد',
+      'birthPlaceLabel': 'مكان الميلاد',
+      'birthDateLabel': 'تاريخ الميلاد',
+      'changePhoto': 'تغيير الصورة',
+      'chooseFromGallery': 'اختيار من المعرض',
+      'takePhoto': 'التقاط صورة',
+      'removePhoto': 'إزالة الصورة',
+      'profileUpdated': 'تم تحديث الملف الشخصي.',
+      'imageUpdateError': 'تعذّر تحديث الصورة. حاول مرة أخرى.',
+      'deleteAccount': 'حذف الحساب',
+      'deleteAccountTitle': 'حذف الحساب',
+      'deleteAccountConfirm':
+          'سيؤدي هذا إلى حذف حسابك نهائيًا وتسجيل خروجك. لا يمكن التراجع عن '
+          'هذا الإجراء. هل تريد المتابعة؟',
+      'accountDeleted': 'تم حذف حسابك.',
       'loginTitle': 'تسجيل الدخول',
       'loginInvalid': 'اسم المستخدم أو كلمة المرور غير صحيحة.',
       'usernameLabel': 'اسم المستخدم',

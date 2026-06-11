@@ -5,7 +5,7 @@ import 'package:flutter/services.dart'
     show FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
 
 import '../auth/auth_service.dart';
-import '../auth/login_page.dart';
+import '../widgets/account_menu_button.dart';
 import '../config.dart';
 import '../graphql/family_api.dart';
 import '../l10n/app_strings.dart';
@@ -1441,44 +1441,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   // ── auth bar ──────────────────────────────────────────────────────────────
 
-  Widget _accountMenu(AppStrings t) {
-    if (!widget.auth.isAuthenticated) {
-      return IconButton(
-        tooltip: t.login,
-        icon: const Icon(Icons.login),
-        onPressed: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => LoginPage(auth: widget.auth))),
-      );
-    }
-    return PopupMenuButton<String>(
-      tooltip: widget.auth.username ?? t.account,
-      icon: Icon(
-        widget.auth.isStaff ? Icons.shield_outlined : Icons.account_circle,
-      ),
-      onSelected: (v) {
-        if (v == 'logout') widget.auth.logout();
-      },
-      itemBuilder: (_) => [
-        PopupMenuItem<String>(
-          enabled: false,
-          child: Text(widget.auth.username ?? t.account),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'logout',
-          child: Row(
-            children: [
-              const Icon(Icons.logout, size: 20),
-              const SizedBox(width: 12),
-              Text(t.logout),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _actionBar(AppStrings t) {
     final scheme = Theme.of(context).colorScheme;
     return GlassPanel(
@@ -1527,7 +1489,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 ListenableBuilder(
                   listenable: widget.auth,
-                  builder: (context, _) => _accountMenu(t),
+                  builder: (context, _) => AccountMenuButton(auth: widget.auth),
                 ),
               ],
             ),

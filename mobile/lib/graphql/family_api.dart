@@ -66,16 +66,39 @@ class AddChildrenResult {
   final List<String> warnings;
 }
 
-/// The currently signed-in user, as reported by the `me` query.
+/// The currently signed-in user, as reported by the `me` query. Includes the
+/// editable profile fields and profile picture used by the account page.
 class CurrentUser {
   CurrentUser({
     required this.username,
     required this.isStaff,
     required this.isAuthenticated,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.fatherName,
+    this.grandfatherName,
+    this.birthDate,
+    this.birthPlace,
+    this.profileImageUrl,
   });
   final String? username;
   final bool isStaff;
   final bool isAuthenticated;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? fatherName;
+  final String? grandfatherName;
+
+  /// ISO `yyyy-MM-dd`, or null if unset.
+  final String? birthDate;
+  final String? birthPlace;
+
+  /// Server-relative path (e.g. `/media/profile_images/user_1.jpg`), or null
+  /// if the user has no profile picture. Combine with [AppConfig.baseUrl] to
+  /// load it.
+  final String? profileImageUrl;
 }
 
 /// Which sign-in/sign-up methods the backend has enabled and configured, from
@@ -497,7 +520,11 @@ class FamilyApi {
 
   static const String _meDoc = r'''
     query Me {
-      me { username isStaff isAuthenticated }
+      me {
+        username isStaff isAuthenticated
+        email firstName lastName fatherName grandfatherName birthDate birthPlace
+        profileImageUrl
+      }
     }
   ''';
 
@@ -506,10 +533,103 @@ class FamilyApi {
     final data = await _client.query(_meDoc);
     final me = data['me'] as Map<String, dynamic>?;
     if (me == null) return null;
-    return CurrentUser(
-      username: me['username'] as String?,
-      isStaff: (me['isStaff'] as bool?) ?? false,
-      isAuthenticated: (me['isAuthenticated'] as bool?) ?? false,
+    return _user(me);
+  }
+
+  static const String _profileFragment = r'''
+    ok message
+    user {
+      username isStaff isAuthenticated
+      email firstName lastName fatherName grandfatherName birthDate birthPlace
+      profileImageUrl
+    }
+  ''';
+
+  static const String _updateProfileDoc = '''
+    mutation UpdateProfile(
+      \$firstName: String, \$lastName: String, \$fatherName: String,
+      \$grandfatherName: String, \$birthDate: Date, \$birthPlace: String, \$email: String
+    ) {
+      updateProfile(
+        firstName: \$firstName, lastName: \$lastName, fatherName: \$fatherName,
+        grandfatherName: \$grandfatherName, birthDate: \$birthDate, birthPlace: \$birthPlace, email: \$email
+      ) { $_profileFragment }
+    }
+  ''';
+
+  /// Updates the signed-in user's profile fields. Pass `null` to leave a
+  /// field unchanged. [birthDate] must be ISO `yyyy-MM-dd`. Throws
+  /// [AuthFailedException] (e.g. duplicate email) on failure.
+  Future<CurrentUser> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? fatherName,
+    String? grandfatherName,
+    String? birthDate,
+    String? birthPlace,
+    String? email,
+  }) async {
+    final data = await _client.query(
+      _updateProfileDoc,
+      variables: {
+        'firstName': firstName,
+        'lastName': lastName,
+        'fatherName': fatherName,
+        'grandfatherName': grandfatherName,
+        'birthDate': birthDate,
+        'birthPlace': birthPlace,
+        'email': email,
+      },
+    );
+    return _userFromAuthReply(data['updateProfile'] as Map<String, dynamic>?);
+  }
+
+  static const String _uploadProfileImageDoc = '''
+    mutation UploadProfileImage(\$imageBase64: String!) {
+      uploadProfileImage(imageBase64: \$imageBase64) { $_profileFragment }
+    }
+  ''';
+
+  /// Uploads [imageBase64] (a base64-encoded JPEG) as the user's new profile
+  /// picture. Throws [AuthFailedException] on failure (e.g. invalid image).
+  Future<CurrentUser> uploadProfileImage(String imageBase64) async {
+    final data = await _client.query(
+      _uploadProfileImageDoc,
+      variables: {'imageBase64': imageBase64},
+    );
+    return _userFromAuthReply(
+      data['uploadProfileImage'] as Map<String, dynamic>?,
+    );
+  }
+
+  static const String _removeProfileImageDoc = '''
+    mutation RemoveProfileImage {
+      removeProfileImage { $_profileFragment }
+    }
+  ''';
+
+  /// Removes the user's profile picture, if any.
+  Future<CurrentUser> removeProfileImage() async {
+    final data = await _client.query(_removeProfileImageDoc);
+    return _userFromAuthReply(
+      data['removeProfileImage'] as Map<String, dynamic>?,
+    );
+  }
+
+  static const String _deleteAccountDoc = r'''
+    mutation DeleteAccount {
+      deleteAccount { ok message }
+    }
+  ''';
+
+  /// Permanently deletes the signed-in user's account (and signs them out
+  /// server-side).
+  Future<MutationResult> deleteAccount() async {
+    final data = await _client.query(_deleteAccountDoc);
+    final r = data['deleteAccount'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
     );
   }
 
@@ -727,6 +847,14 @@ class FamilyApi {
     username: user['username'] as String?,
     isStaff: (user['isStaff'] as bool?) ?? false,
     isAuthenticated: (user['isAuthenticated'] as bool?) ?? true,
+    email: user['email'] as String?,
+    firstName: user['firstName'] as String?,
+    lastName: user['lastName'] as String?,
+    fatherName: user['fatherName'] as String?,
+    grandfatherName: user['grandfatherName'] as String?,
+    birthDate: user['birthDate'] as String?,
+    birthPlace: user['birthPlace'] as String?,
+    profileImageUrl: user['profileImageUrl'] as String?,
   );
 
   // --- Search -------------------------------------------------------------

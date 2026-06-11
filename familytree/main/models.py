@@ -153,6 +153,10 @@ class User(AbstractUser):
 
     birth_place = models.CharField(max_length=150, null=True, blank=False, verbose_name=_("Place of birth"))
 
+    profile_image = models.ImageField(
+        upload_to="profile_images/", null=True, blank=True, verbose_name=_("Profile picture")
+    )
+
     @property
     def user_type(self):
         if self.is_superuser:

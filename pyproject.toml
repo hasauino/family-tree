@@ -12,6 +12,8 @@ dependencies = [
     "django>=6.0,<7.0",
     "wagtail>=7.0,<8.0",
     "wand==0.6",
+    # Required by Django's ImageField (profile photo upload).
+    "pillow>=11.0,<12.0",
     "graphene-django>=3.1,<4.0",
     "django-cors-headers>=4.0,<5.0",
     "gunicorn>=26.0,<27.0",

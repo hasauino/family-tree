@@ -12,6 +12,11 @@
 			<key>NSAllowsLocalNetworking</key>
 			<true/>
 		</dict>
+		<!-- Profile photo picker (image_picker). -->
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Used to choose a profile picture.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Used to take a profile picture.</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>

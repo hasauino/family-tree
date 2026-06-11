@@ -4,6 +4,8 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:http/http.dart' as http;
 
 import '../config.dart';
+import 'http_client/http_client_io.dart'
+    if (dart.library.html) 'http_client/http_client_web.dart' as platform;
 
 /// Thrown when the GraphQL server responds with an `errors` array or a
 /// non-200 status. The message is the first error returned by the backend
@@ -58,7 +60,7 @@ class SocialSignInCancelled implements Exception {
 /// cookie the mutations authenticate purely from it.
 class GraphQLClient {
   GraphQLClient({http.Client? httpClient})
-      : _http = httpClient ?? http.Client();
+      : _http = httpClient ?? platform.createPlatformClient();
 
   final http.Client _http;
 

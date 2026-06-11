@@ -89,6 +89,18 @@ class FakeFamilyBackend {
   bool facebookEnabled = false;
   bool requireActivation = true;
 
+  // --- the signed-in "me" user's profile, mutated by the account mutations
+  // (updateProfile / uploadProfileImage / removeProfileImage / deleteAccount).
+  String email = 'tester@example.com';
+  String firstName = '';
+  String lastName = '';
+  String fatherName = '';
+  String grandfatherName = '';
+  String birthDate = '';
+  String birthPlace = '';
+  String? profileImageUrl;
+  bool accountDeleted = false;
+
   /// Adds a person named [name] (optionally under [parentId]) and returns
   /// their id.
   int _seed(String name, {int? parentId}) {
@@ -123,9 +135,16 @@ class FakeFamilyBackend {
     final vars = ((body['variables'] as Map?) ?? const {}).cast<String, dynamic>();
 
     if (doc.contains('me {')) {
-      return _ok({
-        'me': {'username': 'tester', 'isStaff': true, 'isAuthenticated': true},
-      });
+      if (accountDeleted) {
+        return _ok({
+          'me': {
+            'username': null,
+            'isStaff': false,
+            'isAuthenticated': false,
+          },
+        });
+      }
+      return _ok({'me': _meUser()});
     }
 
     // --- auth: config query + sign-in/up mutations ------------------------
@@ -175,6 +194,38 @@ class FakeFamilyBackend {
         'requestPasswordReset': {'ok': true, 'message': 'code_sent', 'user': null},
       });
     }
+    // --- account: profile / photo / deletion mutations --------------------
+    if (doc.contains('updateProfile(')) {
+      if (vars['email'] != null) email = vars['email'] as String;
+      if (vars['firstName'] != null) firstName = vars['firstName'] as String;
+      if (vars['lastName'] != null) lastName = vars['lastName'] as String;
+      if (vars['fatherName'] != null) {
+        fatherName = vars['fatherName'] as String;
+      }
+      if (vars['grandfatherName'] != null) {
+        grandfatherName = vars['grandfatherName'] as String;
+      }
+      if (vars['birthPlace'] != null) {
+        birthPlace = vars['birthPlace'] as String;
+      }
+      if (vars['birthDate'] != null) birthDate = vars['birthDate'] as String;
+      return _ok({'updateProfile': _profileReply()});
+    }
+    if (doc.contains('uploadProfileImage(')) {
+      profileImageUrl = '/media/profile_images/user_1.jpg';
+      return _ok({'uploadProfileImage': _profileReply()});
+    }
+    if (doc.contains('removeProfileImage')) {
+      profileImageUrl = null;
+      return _ok({'removeProfileImage': _profileReply()});
+    }
+    if (doc.contains('deleteAccount')) {
+      accountDeleted = true;
+      return _ok({
+        'deleteAccount': {'ok': true, 'message': null},
+      });
+    }
+
     if (doc.contains('resetPassword(')) {
       // Accept the canned code "123456" (resets + signs in); reject the rest.
       if (vars['code'] == '123456') {
@@ -289,6 +340,30 @@ class FakeFamilyBackend {
 
   Map<String, dynamic> _authReplyFail(String message) =>
       {'ok': false, 'message': message, 'user': null};
+
+  /// The `me`-shaped json for the signed-in user, including the editable
+  /// profile fields and profile picture used by the account page.
+  Map<String, dynamic> _meUser() => {
+        'username': 'tester',
+        'isStaff': true,
+        'isAuthenticated': true,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'fatherName': fatherName,
+        'grandfatherName': grandfatherName,
+        'birthDate': birthDate.isEmpty ? null : birthDate,
+        'birthPlace': birthPlace,
+        'profileImageUrl': profileImageUrl,
+      };
+
+  /// An `{ok, message, user}` reply for the account mutations, carrying the
+  /// updated profile.
+  Map<String, dynamic> _profileReply() => {
+        'ok': true,
+        'message': null,
+        'user': _meUser(),
+      };
 
   /// A `connectedNodes`-shaped node (also used as the base of mutation results).
   Map<String, dynamic> _node(FakePerson p) => {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 
 import '../auth/auth_service.dart';
-import '../auth/login_page.dart';
+import '../widgets/account_menu_button.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
@@ -357,53 +357,6 @@ class _TreePageState extends State<TreePage>
     );
   }
 
-  Future<void> _handleLogin() async {
-    await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => LoginPage(auth: widget.auth)),
-    );
-  }
-
-  Future<void> _handleLogout() async {
-    await widget.auth.logout();
-  }
-
-  /// The login button (signed out) or an account menu with logout (signed in).
-  Widget _buildAccountMenu(AppStrings t) {
-    if (!widget.auth.isAuthenticated) {
-      return IconButton(
-        tooltip: t.login,
-        icon: const Icon(Icons.login),
-        onPressed: _handleLogin,
-      );
-    }
-    return PopupMenuButton<String>(
-      tooltip: widget.auth.username ?? t.account,
-      icon: Icon(
-        widget.auth.isStaff ? Icons.shield_outlined : Icons.account_circle,
-      ),
-      onSelected: (value) {
-        if (value == 'logout') _handleLogout();
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          enabled: false,
-          child: Text(widget.auth.username ?? t.account),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'logout',
-          child: Row(
-            children: [
-              const Icon(Icons.logout, size: 20),
-              const SizedBox(width: 12),
-              Text(t.logout),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Groups the page actions into a single frosted-glass, pill-shaped
   /// floating bar — the same [GlassPanel] surface used for the search
   /// overlay and person-actions sheet, so every floating panel matches.
@@ -461,7 +414,7 @@ class _TreePageState extends State<TreePage>
                 ),
                 ListenableBuilder(
                   listenable: widget.auth,
-                  builder: (context, _) => _buildAccountMenu(t),
+                  builder: (context, _) => AccountMenuButton(auth: widget.auth),
                 ),
               ],
             ),

@@ -4,28 +4,9 @@ import graphene
 from home.models import Bookmark
 from home.types import BookmarkType
 
-from main.graphql import auth, types
+from main.graphql import account, auth, types
+from main.graphql.decorators import authenticated_only, staff_only
 from main.models import Person
-
-
-def authenticated_only(function):
-
-    def wrapper(root, info, **args):
-        if not info.context.user.is_authenticated:
-            raise Exception("Access Denied! you must be a logged in user to access this API")
-        return function(root, info, **args)
-
-    return wrapper
-
-
-def staff_only(function):
-
-    def wrapper(root, info, **args):
-        if not info.context.user.is_staff:
-            raise Exception("Access Denied! you must be a logged in user to access this API")
-        return function(root, info, **args)
-
-    return wrapper
 
 
 class MutationReply:
@@ -183,12 +164,14 @@ class Query(graphene.ObjectType):
 
     def resolve_me(parent, info):
         user = info.context.user
-        return {
-            "id": user.id if user.is_authenticated else None,
-            "username": user.get_username() if user.is_authenticated else None,
-            "is_staff": user.is_staff,
-            "is_authenticated": user.is_authenticated,
-        }
+        if not user.is_authenticated:
+            return {
+                "id": None,
+                "username": None,
+                "is_staff": False,
+                "is_authenticated": False,
+            }
+        return auth.current_user_payload(user)
 
     def resolve_auth_config(parent, info):
         return auth.resolve_auth_config(parent, info)
@@ -998,6 +981,10 @@ class Mutations(graphene.ObjectType):
     resend_code = auth.ResendCode.Field()
     request_password_reset = auth.RequestPasswordReset.Field()
     reset_password = auth.ResetPassword.Field()
+    update_profile = account.UpdateProfile.Field()
+    upload_profile_image = account.UploadProfileImage.Field()
+    remove_profile_image = account.RemoveProfileImage.Field()
+    delete_account = account.DeleteAccount.Field()
     add_person = AddPerson.Field()
     add_parent = AddParent.Field()
     add_children = AddChildren.Field()
