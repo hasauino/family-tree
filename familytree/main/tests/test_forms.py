@@ -1,64 +1,6 @@
 import pytest
 
-from main.forms import PersonForm, SettingsForm, UserForm
-
-VALID_PASSWORD = "Xk7$pLm92qRt!"
-
-
-def valid_user_form_data(**overrides):
-    data = {
-        "username": "newuser",
-        "email": "newuser@example.com",
-        "first_name": "New",
-        "last_name": "User",
-        "birth_date": "1990-01-01",
-        "father_name": "Father",
-        "grandfather_name": "Grandfather",
-        "birth_place": "City",
-        "password1": VALID_PASSWORD,
-        "password2": VALID_PASSWORD,
-        "tos": True,
-    }
-    data.update(overrides)
-    return data
-
-
-# ---------------------------------------------------------------------------
-# UserForm
-# ---------------------------------------------------------------------------
-
-
-def test_user_form_valid_with_complete_data(db):
-    form = UserForm(data=valid_user_form_data())
-    assert form.is_valid(), form.errors
-
-
-def test_user_form_creates_user_on_save(db):
-    form = UserForm(data=valid_user_form_data())
-    assert form.is_valid(), form.errors
-    user = form.save()
-    assert user.pk is not None
-    assert user.username == "newuser"
-    assert user.check_password(VALID_PASSWORD)
-
-
-def test_user_form_requires_terms_of_service_agreement(db):
-    form = UserForm(data=valid_user_form_data(tos=False))
-    assert not form.is_valid()
-    assert "tos" in form.errors
-
-
-def test_user_form_rejects_mismatched_passwords(db):
-    form = UserForm(data=valid_user_form_data(password2="SomethingDifferent99!"))
-    assert not form.is_valid()
-    assert "password2" in form.errors
-
-
-def test_user_form_rejects_duplicate_email(db, normal_user):
-    form = UserForm(data=valid_user_form_data(email=normal_user.email, username="anotherusername"))
-    assert not form.is_valid()
-    assert "email" in form.errors
-
+from main.forms import PersonForm, SettingsForm
 
 # ---------------------------------------------------------------------------
 # SettingsForm

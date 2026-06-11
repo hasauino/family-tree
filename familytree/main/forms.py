@@ -1,24 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from django_registration.forms import RegistrationFormTermsOfService, RegistrationFormUniqueEmail
 
 from main.models import Person, User
-
-
-class UserForm(RegistrationFormUniqueEmail, RegistrationFormTermsOfService):
-    class Meta(RegistrationFormUniqueEmail.Meta):
-        model = User
-        fields = [
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "birth_date",
-            "father_name",
-            "grandfather_name",
-            "birth_place",
-        ]
-        widgets = {"birth_date": forms.TextInput(attrs={"autocomplete": "off"})}
 
 
 class SettingsForm(forms.ModelForm):

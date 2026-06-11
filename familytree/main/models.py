@@ -1,9 +1,13 @@
+import secrets
 from collections import deque
+from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import EmailValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 User = settings.AUTH_USER_MODEL
@@ -158,3 +162,61 @@ class User(AbstractUser):
         if self.is_authenticated:
             return "normal"
         return "Anonymous"
+
+
+class EmailVerification(models.Model):
+    """A short-lived numeric code emailed to confirm an action by its owner.
+
+    Backs both sign-up email verification and password reset, told apart by
+    ``purpose``. One row per (user, purpose), replaced on each (re)send; the code
+    is stored hashed and verification is expiry- and attempt-limited so it can't
+    be brute-forced.
+    """
+
+    ACTIVATION = "activation"
+    PASSWORD_RESET = "password_reset"
+    PURPOSES = [(ACTIVATION, "Email verification"), (PASSWORD_RESET, "Password reset")]
+
+    CODE_LENGTH = 6
+    TTL = timedelta(seconds=getattr(settings, "EMAIL_CODE_TTL_SECONDS", 600))
+    RESEND_COOLDOWN = timedelta(seconds=getattr(settings, "EMAIL_CODE_RESEND_COOLDOWN_SECONDS", 60))
+    MAX_ATTEMPTS = getattr(settings, "EMAIL_CODE_MAX_ATTEMPTS", 5)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_verifications")
+    purpose = models.CharField(max_length=32, choices=PURPOSES, default=ACTIVATION)
+    code_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField(default=timezone.now)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "purpose"], name="unique_user_purpose_code"),
+        ]
+
+    @classmethod
+    def issue_for(cls, user, purpose):
+        """Generate, store (hashed), and return a fresh plaintext code."""
+        code = f"{secrets.randbelow(10**cls.CODE_LENGTH):0{cls.CODE_LENGTH}d}"
+        cls.objects.update_or_create(
+            user=user,
+            purpose=purpose,
+            defaults={"code_hash": make_password(code), "created_at": timezone.now(), "attempts": 0},
+        )
+        return code
+
+    @classmethod
+    def active_for(cls, user, purpose):
+        """The pending code row for (user, purpose), or None."""
+        return cls.objects.filter(user=user, purpose=purpose).first()
+
+    @property
+    def is_expired(self):
+        return timezone.now() >= self.created_at + self.TTL
+
+    @property
+    def seconds_until_resend(self):
+        remaining = (self.created_at + self.RESEND_COOLDOWN) - timezone.now()
+        return max(0, int(remaining.total_seconds()))
+
+    def matches(self, code):
+        return check_password(code or "", self.code_hash)

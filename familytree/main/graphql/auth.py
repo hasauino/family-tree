@@ -12,19 +12,16 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.password_validation import validate_password
-from django.core import signing
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 
 from main.auth import SocialAuthError, get_or_create_social_user, verify_social_token
+from main.models import EmailVerification
 
 from . import types
 
 User = get_user_model()
 
-# Matches django-registration's HMAC workflow so accounts registered in-app
-# activate through the very same /accounts/activate/ endpoint as the web form.
-REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 MODEL_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 
@@ -147,28 +144,157 @@ class SocialLogin(graphene.Mutation, AuthReply):
         return AuthReply.success(user)
 
 
-def _send_activation_email(request, user):
-    """Email an HMAC activation link, mirroring django-registration's workflow."""
-    activation_key = signing.dumps(obj=user.get_username(), salt=REGISTRATION_SALT)
-    context = {
-        "scheme": "https" if request.is_secure() else "http",
-        "activation_key": activation_key,
-        "expiration_days": settings.ACCOUNT_ACTIVATION_DAYS,
-        "user": user,
-    }
-    subject = "".join(
-        render_to_string("django_registration/activation_email_subject.txt", context, request=request).splitlines()
-    )
-    body = render_to_string("django_registration/activation_email_body.txt", context, request=request)
+def _email_code(request, user, code, template):
+    """Email a 6-digit ``code`` using the ``account/<template>_{subject,body}.txt`` pair."""
+    context = {"code": code, "user": user, "minutes": EmailVerification.TTL.seconds // 60}
+    subject = "".join(render_to_string(f"account/{template}_subject.txt", context, request=request).splitlines())
+    body = render_to_string(f"account/{template}_body.txt", context, request=request)
     user.email_user(subject, body, settings.DEFAULT_FROM_EMAIL)
+
+
+def _user_for_email(email, *, is_active):
+    """The account for ``email`` in the given active state, or None."""
+    email = (email or "").strip()
+    if not email:
+        return None
+    return User.objects.filter(email__iexact=email, is_active=is_active).first()
+
+
+def _check_code(verification, code):
+    """Validate ``code`` against a verification row, counting a failed attempt.
+
+    Returns None on success, else an error message: ``code_expired`` /
+    ``too_many_attempts`` / ``code_invalid``.
+    """
+    if verification.is_expired:
+        return "code_expired"
+    if verification.attempts >= EmailVerification.MAX_ATTEMPTS:
+        return "too_many_attempts"
+    if not verification.matches(code):
+        verification.attempts += 1
+        verification.save(update_fields=["attempts"])
+        return "too_many_attempts" if verification.attempts >= EmailVerification.MAX_ATTEMPTS else "code_invalid"
+    return None
+
+
+class VerifyEmailCode(graphene.Mutation, AuthReply):
+    """Confirm a new account with the emailed 6-digit code and sign the user in.
+
+    Failure messages: ``code_expired``, ``too_many_attempts``, ``code_invalid``.
+    """
+
+    class Arguments:
+        email = graphene.String(required=True)
+        code = graphene.String(required=True)
+
+    def mutate(root, info, email, code):
+        if not settings.AUTH_EMAIL_ENABLED:
+            return AuthReply.fail("Email sign-up is disabled")
+        user = _user_for_email(email, is_active=False)
+        verification = EmailVerification.active_for(user, EmailVerification.ACTIVATION) if user else None
+        if verification is None:
+            return AuthReply.fail("code_invalid")
+        error = _check_code(verification, code)
+        if error:
+            return AuthReply.fail(error)
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        verification.delete()
+        auth_login(info.context, user, backend=MODEL_BACKEND)
+        return AuthReply.success(user)
+
+
+class ResendCode(graphene.Mutation, AuthReply):
+    """Re-issue and email a fresh verification code, honouring a resend cooldown.
+
+    To avoid leaking which emails are registered, an unknown/active email also
+    reports ``ok`` (without sending). ``resend_too_soon`` is returned while the
+    cooldown is still active.
+    """
+
+    class Arguments:
+        email = graphene.String(required=True)
+
+    def mutate(root, info, email):
+        if not settings.AUTH_EMAIL_ENABLED:
+            return AuthReply.fail("Email sign-up is disabled")
+        user = _user_for_email(email, is_active=False)
+        if user is None:
+            return {"ok": True, "message": "code_sent", "user": None}
+        existing = EmailVerification.active_for(user, EmailVerification.ACTIVATION)
+        if existing is not None and existing.seconds_until_resend > 0:
+            return AuthReply.fail("resend_too_soon")
+        code = EmailVerification.issue_for(user, EmailVerification.ACTIVATION)
+        _email_code(info.context, user, code, "verification_email")
+        return {"ok": True, "message": "code_sent", "user": None}
+
+
+class RequestPasswordReset(graphene.Mutation, AuthReply):
+    """Email a password-reset code (this is both the initial request and resend).
+
+    Always reports ``ok`` for an unknown/inactive email so it can't be used to
+    probe which addresses are registered. ``resend_too_soon`` while the cooldown
+    is still active.
+    """
+
+    class Arguments:
+        email = graphene.String(required=True)
+
+    def mutate(root, info, email):
+        if not settings.AUTH_EMAIL_ENABLED:
+            return AuthReply.fail("Email sign-in is disabled")
+        user = _user_for_email(email, is_active=True)
+        if user is None:
+            return {"ok": True, "message": "code_sent", "user": None}
+        existing = EmailVerification.active_for(user, EmailVerification.PASSWORD_RESET)
+        if existing is not None and existing.seconds_until_resend > 0:
+            return AuthReply.fail("resend_too_soon")
+        code = EmailVerification.issue_for(user, EmailVerification.PASSWORD_RESET)
+        _email_code(info.context, user, code, "password_reset_email")
+        return {"ok": True, "message": "code_sent", "user": None}
+
+
+class ResetPassword(graphene.Mutation, AuthReply):
+    """Verify the emailed code, set a new password, and sign the user in.
+
+    A weak new password is rejected *without* consuming the code, so the user
+    can retry with the same code. Failure messages: ``code_expired`` /
+    ``too_many_attempts`` / ``code_invalid``, or the password-validation reason.
+    """
+
+    class Arguments:
+        email = graphene.String(required=True)
+        code = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+
+    def mutate(root, info, email, code, new_password):
+        if not settings.AUTH_EMAIL_ENABLED:
+            return AuthReply.fail("Email sign-in is disabled")
+        user = _user_for_email(email, is_active=True)
+        verification = EmailVerification.active_for(user, EmailVerification.PASSWORD_RESET) if user else None
+        if verification is None:
+            return AuthReply.fail("code_invalid")
+        error = _check_code(verification, code)
+        if error:
+            return AuthReply.fail(error)
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            return AuthReply.fail(" ".join(exc.messages))
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        verification.delete()
+        auth_login(info.context, user, backend=MODEL_BACKEND)
+        return AuthReply.success(user)
 
 
 class RegisterEmail(graphene.Mutation, AuthReply):
     """Create an account from email + password.
 
-    With ``AUTH_EMAIL_REQUIRE_ACTIVATION`` the account is created inactive and an
-    activation link is emailed (``user`` comes back null, ``ok`` true); otherwise
-    it is activated and signed in immediately.
+    With ``AUTH_EMAIL_REQUIRE_ACTIVATION`` the account is created inactive and a
+    6-digit verification code is emailed (``user`` comes back null, ``ok`` true,
+    ``message`` ``code_sent``); the client then calls ``verifyEmailCode``.
+    Otherwise the account is active and signed in immediately.
     """
 
     class Arguments:
@@ -202,8 +328,9 @@ class RegisterEmail(graphene.Mutation, AuthReply):
         user.save()
 
         if require_activation:
-            _send_activation_email(info.context, user)
-            return {"ok": True, "message": "activation_sent", "user": None}
+            code = EmailVerification.issue_for(user, EmailVerification.ACTIVATION)
+            _email_code(info.context, user, code, "verification_email")
+            return {"ok": True, "message": "code_sent", "user": None}
 
         auth_login(info.context, user, backend=MODEL_BACKEND)
         return AuthReply.success(user)

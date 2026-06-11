@@ -103,6 +103,32 @@ class AuthService extends ChangeNotifier {
     return result;
   }
 
+  /// Confirms a freshly-registered account with the 6-digit [code] emailed to
+  /// [email] and signs the user straight in. Throws [AuthFailedException]
+  /// carrying the backend message (`code_invalid` / `code_expired` /
+  /// `too_many_attempts`) on failure.
+  Future<void> verifyEmailCode(String email, String code) async {
+    await _api.verifyEmailCode(email, code);
+    await _afterSignIn();
+  }
+
+  /// Asks the backend to email a fresh verification code to [email]. Throws
+  /// [AuthFailedException] (`resend_too_soon`) while the cooldown is active.
+  Future<void> resendCode(String email) => _api.resendCode(email);
+
+  /// Asks the backend to email a password-reset code to [email] (also used to
+  /// resend). Throws [AuthFailedException] (`resend_too_soon`) during cooldown.
+  Future<void> requestPasswordReset(String email) =>
+      _api.requestPasswordReset(email);
+
+  /// Verifies the reset [code] and sets [newPassword], then signs the user in.
+  /// Throws [AuthFailedException] (`code_invalid` / `code_expired` /
+  /// `too_many_attempts`, or a password-policy message) on failure.
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    await _api.resetPassword(email, code, newPassword);
+    await _afterSignIn();
+  }
+
   /// Runs the native flow for [provider], exchanges the token for a session, and
   /// signs in. Throws [SocialSignInCancelled] if the user backs out.
   Future<void> loginWithProvider(SocialProvider provider) async {

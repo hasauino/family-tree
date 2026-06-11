@@ -1,0 +1,4 @@
+{% load i18n %}
+{% load read_settings %}
+
+{% blocktranslate with code=code %}{{ code }} is your verification code{% endblocktranslate %}

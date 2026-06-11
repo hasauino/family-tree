@@ -623,6 +623,94 @@ class FamilyApi {
     return RegisterResult(RegisterOutcome.signedIn, _user(user));
   }
 
+  static const String _verifyEmailCodeDoc = r'''
+    mutation VerifyEmailCode($email: String!, $code: String!) {
+      verifyEmailCode(email: $email, code: $code) {
+        ok message user { username isStaff isAuthenticated }
+      }
+    }
+  ''';
+
+  /// Confirms a new account with the 6-digit [code] emailed to [email] and signs
+  /// the user in (the session cookie is set on success). Throws
+  /// [AuthFailedException] carrying the backend message (`code_invalid` /
+  /// `code_expired` / `too_many_attempts`) on failure.
+  Future<CurrentUser> verifyEmailCode(String email, String code) async {
+    final data = await _client.query(
+      _verifyEmailCodeDoc,
+      variables: {'email': email, 'code': code},
+    );
+    return _userFromAuthReply(data['verifyEmailCode'] as Map<String, dynamic>?);
+  }
+
+  static const String _resendCodeDoc = r'''
+    mutation ResendCode($email: String!) {
+      resendCode(email: $email) { ok message }
+    }
+  ''';
+
+  /// Asks the backend to email a fresh verification code to [email]. Throws
+  /// [AuthFailedException] (`resend_too_soon`) while the resend cooldown is
+  /// still active.
+  Future<void> resendCode(String email) async {
+    final data = await _client.query(
+      _resendCodeDoc,
+      variables: {'email': email},
+    );
+    final reply = data['resendCode'] as Map<String, dynamic>?;
+    if (reply == null || reply['ok'] != true) {
+      throw AuthFailedException(
+        (reply?['message'] as String?) ?? 'Could not resend the code.',
+      );
+    }
+  }
+
+  static const String _requestPasswordResetDoc = r'''
+    mutation RequestPasswordReset($email: String!) {
+      requestPasswordReset(email: $email) { ok message }
+    }
+  ''';
+
+  /// Asks the backend to email a password-reset code to [email] (also used to
+  /// resend). Reports success even for unknown emails (no account enumeration);
+  /// throws [AuthFailedException] (`resend_too_soon`) during the cooldown.
+  Future<void> requestPasswordReset(String email) async {
+    final data = await _client.query(
+      _requestPasswordResetDoc,
+      variables: {'email': email},
+    );
+    final reply = data['requestPasswordReset'] as Map<String, dynamic>?;
+    if (reply == null || reply['ok'] != true) {
+      throw AuthFailedException(
+        (reply?['message'] as String?) ?? 'Could not send the reset code.',
+      );
+    }
+  }
+
+  static const String _resetPasswordDoc = r'''
+    mutation ResetPassword($email: String!, $code: String!, $newPassword: String!) {
+      resetPassword(email: $email, code: $code, newPassword: $newPassword) {
+        ok message user { username isStaff isAuthenticated }
+      }
+    }
+  ''';
+
+  /// Verifies the emailed reset [code] and sets [newPassword], signing the user
+  /// in on success (the session cookie is set). Throws [AuthFailedException]
+  /// carrying the backend message (`code_invalid` / `code_expired` /
+  /// `too_many_attempts`, or a password-validation reason) on failure.
+  Future<CurrentUser> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    final data = await _client.query(
+      _resetPasswordDoc,
+      variables: {'email': email, 'code': code, 'newPassword': newPassword},
+    );
+    return _userFromAuthReply(data['resetPassword'] as Map<String, dynamic>?);
+  }
+
   /// Unwraps an `{ok, message, user}` auth reply into a [CurrentUser], throwing
   /// [AuthFailedException] when the backend reports failure.
   CurrentUser _userFromAuthReply(Map<String, dynamic>? reply) {

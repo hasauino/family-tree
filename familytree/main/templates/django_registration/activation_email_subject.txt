@@ -1,4 +1,0 @@
-{% load i18n %}
-{% load read_settings %}
-
-{% translate "Account Activation for" %} {% read_settings "SITE_NAME" %}

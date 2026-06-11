@@ -4,7 +4,10 @@ import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/glass.dart';
+import '../widgets/top_toast.dart';
+import 'auth_errors.dart';
 import 'auth_service.dart';
+import 'forgot_password_page.dart';
 import 'social_buttons.dart';
 import 'social_sign_in.dart';
 
@@ -34,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   final _lastName = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  final _code = TextEditingController(); // 6-digit email verification code
 
   _AuthMode _mode = _AuthMode.signIn;
   bool _submitting = false;
@@ -41,9 +45,9 @@ class _LoginPageState extends State<LoginPage> {
   SocialProvider? _busyProvider;
   String? _error;
 
-  /// The email an activation link was just sent to, or null when not in that
-  /// confirmation state.
-  String? _activationSentTo;
+  /// The email a verification code was just sent to, or null when not in the
+  /// code-entry state.
+  String? _verifyEmail;
 
   /// The backend's enabled-methods config; null until [loadAuthConfig] resolves.
   AuthConfig? _config;
@@ -64,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     _lastName.dispose();
     _password.dispose();
     _confirm.dispose();
+    _code.dispose();
     super.dispose();
   }
 
@@ -78,11 +83,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /// Maps any thrown error to a user-facing message for the inline banner.
-  String _messageFor(Object error, AppStrings t) => switch (error) {
-    AuthFailedException e => e.message,
-    GraphQLException e => e.message,
-    _ => t.authGenericError,
-  };
+  String _messageFor(Object error, AppStrings t) => authErrorMessage(error, t);
+
+  Future<void> _openForgotPassword() async {
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ForgotPasswordPage(auth: widget.auth)),
+    );
+    // The reset flow signs the user in on success; close the login page too.
+    if (ok == true && mounted) Navigator.pop(context, true);
+  }
 
   Future<void> _submitEmail() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -113,11 +122,48 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (!mounted) return;
         if (result.outcome == RegisterOutcome.activationSent) {
-          setState(() => _activationSentTo = email);
+          setState(() => _verifyEmail = email);
         } else {
           Navigator.pop(context, true);
         }
       }
+    } catch (e) {
+      if (mounted) setState(() => _error = _messageFor(e, t));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  /// Verifies the typed code and, on success, signs the user in and pops.
+  Future<void> _submitCode() async {
+    final code = _code.text.trim();
+    if (code.isEmpty) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    final t = AppStrings.of(context);
+    try {
+      await widget.auth.verifyEmailCode(_verifyEmail!, code);
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) setState(() => _error = _messageFor(e, t));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  /// Asks the backend to email a fresh code, surfacing success/cooldown.
+  Future<void> _resend() async {
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    final t = AppStrings.of(context);
+    try {
+      await widget.auth.resendCode(_verifyEmail!);
+      if (mounted) showTopToast(context, t.codeResent);
     } catch (e) {
       if (mounted) setState(() => _error = _messageFor(e, t));
     } finally {
@@ -162,8 +208,8 @@ class _LoginPageState extends State<LoginPage> {
               opacity: 0.5,
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: _activationSentTo != null
-                    ? _buildActivationSent(t)
+                child: _verifyEmail != null
+                    ? _buildVerifyCode(t)
                     : _buildForm(t),
               ),
             ),
@@ -173,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildActivationSent(AppStrings t) {
+  Widget _buildVerifyCode(AppStrings t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -185,23 +231,59 @@ class _LoginPageState extends State<LoginPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          t.activationSentTitle,
+          t.verifyCodeTitle,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 12),
-        Text(
-          t.activationSentBody(_activationSentTo!),
+        Text(t.verifyCodeBody(_verifyEmail!), textAlign: TextAlign.center),
+        const SizedBox(height: 20),
+        TextField(
+          controller: _code,
+          keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
+          maxLength: 6,
+          autofocus: true,
+          enabled: !_busy,
+          style: const TextStyle(fontSize: 28, letterSpacing: 12),
+          decoration: const InputDecoration(counterText: '', hintText: '••••••'),
+          onSubmitted: (_) => _submitCode(),
         ),
-        const SizedBox(height: 24),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
+        const SizedBox(height: 20),
         FilledButton(
-          onPressed: () => setState(() {
-            _activationSentTo = null;
-            _mode = _AuthMode.signIn;
-            _password.clear();
-            _confirm.clear();
-          }),
+          onPressed: _busy ? null : _submitCode,
+          child: _submitting
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(t.verifyCodeButton),
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: _busy ? null : _resend,
+          child: Text(t.codeResend),
+        ),
+        TextButton(
+          onPressed: _busy
+              ? null
+              : () => setState(() {
+                  _verifyEmail = null;
+                  _mode = _AuthMode.signIn;
+                  _password.clear();
+                  _confirm.clear();
+                  _code.clear();
+                  _error = null;
+                }),
           child: Text(t.backToSignIn),
         ),
       ],
@@ -245,6 +327,14 @@ class _LoginPageState extends State<LoginPage> {
                     )
                   : Text(isSignUp ? t.createAccount : t.signIn),
             ),
+            if (!isSignUp)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton(
+                  onPressed: _busy ? null : _openForgotPassword,
+                  child: Text(t.forgotPassword),
+                ),
+              ),
           ],
           if (config.emailEnabled && config.anySocial) ...[
             const SizedBox(height: 20),

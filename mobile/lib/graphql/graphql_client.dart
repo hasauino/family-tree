@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:http/http.dart' as http;
 
@@ -76,9 +77,27 @@ class GraphQLClient {
 
   bool get hasSession => _cookies.containsKey('sessionid');
 
-  String? get _cookieHeader => _cookies.isEmpty
-      ? null
-      : _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+  /// The app's active language code, sent to Django so server-rendered content
+  /// (e.g. the verification email) matches the UI language. Mirrors the
+  /// resolution in [AppConfig]: a forced locale wins, otherwise the device
+  /// language when supported, else the first supported locale.
+  static String get _languageCode {
+    final forced = AppConfig.locale?.languageCode;
+    if (forced != null) return forced;
+    final device = PlatformDispatcher.instance.locale.languageCode;
+    final supported = AppConfig.supportedLocales.map((l) => l.languageCode);
+    return supported.contains(device)
+        ? device
+        : AppConfig.supportedLocales.first.languageCode;
+  }
+
+  /// Cookies echoed to the server. We always include `language` (which Django's
+  /// `force_language_cookie`/`LocaleMiddleware` reads to pick the language)
+  /// alongside the session cookies.
+  String get _cookieHeader {
+    final all = {..._cookies, 'language': _languageCode};
+    return all.entries.map((e) => '${e.key}=${e.value}').join('; ');
+  }
 
   /// Captures `sessionid` / `csrftoken` from a response's `Set-Cookie` header.
   /// Django emits each cookie in its own directive but Dart's http client folds
@@ -104,7 +123,8 @@ class GraphQLClient {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Cookie': ?_cookieHeader,
+          'Accept-Language': _languageCode,
+          'Cookie': _cookieHeader,
         },
         body: jsonEncode({'query': document, 'variables': variables}),
       );
@@ -159,7 +179,7 @@ class GraphQLClient {
       ..followRedirects = false
       ..headers.addAll({
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': _cookieHeader!,
+        'Cookie': _cookieHeader,
         'Referer': loginUrl.toString(),
       })
       ..bodyFields = {

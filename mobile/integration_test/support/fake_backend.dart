@@ -158,6 +158,30 @@ class FakeFamilyBackend {
       }
       return _ok({'registerEmail': _authReplyUser('newbie')});
     }
+    if (doc.contains('verifyEmailCode(')) {
+      // Accept the canned code "123456" (verifies + signs in); reject the rest.
+      if (vars['code'] == '123456') {
+        return _ok({'verifyEmailCode': _authReplyUser('newbie')});
+      }
+      return _ok({'verifyEmailCode': _authReplyFail('code_invalid')});
+    }
+    if (doc.contains('resendCode(')) {
+      return _ok({
+        'resendCode': {'ok': true, 'message': 'code_sent', 'user': null},
+      });
+    }
+    if (doc.contains('requestPasswordReset(')) {
+      return _ok({
+        'requestPasswordReset': {'ok': true, 'message': 'code_sent', 'user': null},
+      });
+    }
+    if (doc.contains('resetPassword(')) {
+      // Accept the canned code "123456" (resets + signs in); reject the rest.
+      if (vars['code'] == '123456') {
+        return _ok({'resetPassword': _authReplyUser('tester')});
+      }
+      return _ok({'resetPassword': _authReplyFail('code_invalid')});
+    }
 
     // Mutations (checked before the matching read fields to avoid substring
     // collisions like publish/publishStatus and bookmark/unbookmark).

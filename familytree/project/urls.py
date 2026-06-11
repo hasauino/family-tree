@@ -18,19 +18,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
-from django_registration.backends.activation.views import RegistrationView
-from main.forms import UserForm
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 urlpatterns = [
-    path(
-        "accounts/register/",
-        RegistrationView.as_view(form_class=UserForm),
-        name="django_registration_register",
-    ),
-    path("accounts/", include("django_registration.backends.activation.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("", include("main.urls")),
     path("", include("home.urls")),

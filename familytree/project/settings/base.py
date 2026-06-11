@@ -143,10 +143,6 @@ STATIC_URL = "/static/"
 STATIC_ROOT = PROJECT_DIR / "static"
 MEDIA_ROOT = PROJECT_DIR / "media"
 MEDIA_URL = "/media/"
-
-# django registration
-ACCOUNT_ACTIVATION_DAYS = 2
-REGISTRATION_OPEN = True
 AUTH_USER_MODEL = "main.User"
 LOGIN_REDIRECT_URL = "/"
 
@@ -190,11 +186,9 @@ APPLE_CLIENT_IDS = _env_list("APPLE_CLIENT_IDS")
 AUTH_FACEBOOK_ENABLED = _env_bool("AUTH_FACEBOOK_ENABLED", False)
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID", "")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET", "")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.gmx.net")
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+# Outgoing mail goes through Resend's HTTP API (see main.email_backend).
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "main.email_backend.ResendEmailBackend")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 
 DOMAIN = os.environ.get("DOMAIN_NAME", "family-tree.com")
 
@@ -202,7 +196,7 @@ DOMAIN = os.environ.get("DOMAIN_NAME", "family-tree.com")
 SITE_NAME = os.environ.get("SITE_NAME", "Family Tree")
 WAGTAIL_SITE_NAME = SITE_NAME
 WAGTAILADMIN_BASE_URL = DOMAIN
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@omaritree.com")
 
 # GraphQL
 GRAPHENE = {"SCHEMA": "main.graphql.schema"}

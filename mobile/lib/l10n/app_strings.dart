@@ -105,10 +105,25 @@ class AppStrings {
   String get continueWithGoogle => _t('continueWithGoogle');
   String get continueWithApple => _t('continueWithApple');
   String get continueWithFacebook => _t('continueWithFacebook');
-  String get activationSentTitle => _t('activationSentTitle');
-  String activationSentBody(String email) =>
-      _t('activationSentBody').replaceFirst('{email}', email);
+  String get verifyCodeTitle => _t('verifyCodeTitle');
+  String verifyCodeBody(String email) =>
+      _t('verifyCodeBody').replaceFirst('{email}', email);
+  String get verifyCodeButton => _t('verifyCodeButton');
+  String get codeResend => _t('codeResend');
+  String get codeResent => _t('codeResent');
+  String get codeInvalid => _t('codeInvalid');
+  String get codeExpired => _t('codeExpired');
+  String get codeTooManyAttempts => _t('codeTooManyAttempts');
+  String get codeResendTooSoon => _t('codeResendTooSoon');
   String get backToSignIn => _t('backToSignIn');
+  String get forgotPassword => _t('forgotPassword');
+  String get forgotPasswordTitle => _t('forgotPasswordTitle');
+  String get resetEmailPrompt => _t('resetEmailPrompt');
+  String get sendResetCode => _t('sendResetCode');
+  String resetCodeSentBody(String email) =>
+      _t('resetCodeSentBody').replaceFirst('{email}', email);
+  String get newPasswordLabel => _t('newPasswordLabel');
+  String get resetPasswordButton => _t('resetPasswordButton');
   String get authGenericError => _t('authGenericError');
 
   // Person actions
@@ -275,11 +290,27 @@ class AppStrings {
       'continueWithGoogle': 'Continue with Google',
       'continueWithApple': 'Continue with Apple',
       'continueWithFacebook': 'Continue with Facebook',
-      'activationSentTitle': 'Check your email',
-      'activationSentBody':
-          'We sent an activation link to {email}. Tap it to activate your '
-          'account, then sign in.',
+      'verifyCodeTitle': 'Enter the code',
+      'verifyCodeBody':
+          'We sent a 6-digit code to {email}. Enter it below to verify your '
+          'account.',
+      'verifyCodeButton': 'Verify',
+      'codeResend': 'Resend code',
+      'codeResent': 'A new code has been sent.',
+      'codeInvalid': "That code isn't right. Please try again.",
+      'codeExpired': 'This code has expired. Tap Resend to get a new one.',
+      'codeTooManyAttempts': 'Too many attempts. Tap Resend to get a new code.',
+      'codeResendTooSoon': 'Please wait a moment before requesting another code.',
       'backToSignIn': 'Back to sign in',
+      'forgotPassword': 'Forgot password?',
+      'forgotPasswordTitle': 'Reset password',
+      'resetEmailPrompt':
+          "Enter your account email and we'll send you a reset code.",
+      'sendResetCode': 'Send code',
+      'resetCodeSentBody':
+          'We sent a code to {email}. Enter it with your new password.',
+      'newPasswordLabel': 'New password',
+      'resetPasswordButton': 'Reset password',
       'authGenericError': 'Something went wrong. Please try again.',
       'add': 'Add',
       'addChildren': 'Add children',
@@ -433,10 +464,24 @@ class AppStrings {
       'continueWithGoogle': 'المتابعة باستخدام Google',
       'continueWithApple': 'المتابعة باستخدام Apple',
       'continueWithFacebook': 'المتابعة باستخدام Facebook',
-      'activationSentTitle': 'تحقق من بريدك الإلكتروني',
-      'activationSentBody':
-          'أرسلنا رابط تفعيل إلى {email}. اضغط عليه لتفعيل حسابك ثم سجّل الدخول.',
+      'verifyCodeTitle': 'أدخل الرمز',
+      'verifyCodeBody':
+          'أرسلنا رمزًا مكوّنًا من 6 أرقام إلى {email}. أدخله أدناه للتحقّق من حسابك.',
+      'verifyCodeButton': 'تحقّق',
+      'codeResend': 'إعادة إرسال الرمز',
+      'codeResent': 'تم إرسال رمز جديد.',
+      'codeInvalid': 'الرمز غير صحيح. يرجى المحاولة مرة أخرى.',
+      'codeExpired': 'انتهت صلاحية الرمز. اضغط "إعادة الإرسال" للحصول على رمز جديد.',
+      'codeTooManyAttempts': 'محاولات كثيرة جدًا. اضغط "إعادة الإرسال" للحصول على رمز جديد.',
+      'codeResendTooSoon': 'يرجى الانتظار قليلًا قبل طلب رمز آخر.',
       'backToSignIn': 'العودة إلى تسجيل الدخول',
+      'forgotPassword': 'هل نسيت كلمة المرور؟',
+      'forgotPasswordTitle': 'إعادة تعيين كلمة المرور',
+      'resetEmailPrompt': 'أدخل بريدك الإلكتروني وسنرسل لك رمز إعادة التعيين.',
+      'sendResetCode': 'إرسال الرمز',
+      'resetCodeSentBody': 'أرسلنا رمزًا إلى {email}. أدخله مع كلمة المرور الجديدة.',
+      'newPasswordLabel': 'كلمة المرور الجديدة',
+      'resetPasswordButton': 'إعادة تعيين كلمة المرور',
       'authGenericError': 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
       'add': 'إضافة',
       'addChildren': 'إضافة أبناء',

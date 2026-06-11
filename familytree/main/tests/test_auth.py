@@ -1,15 +1,18 @@
 """Tests for the GraphQL sign-in / sign-up flows (main/graphql/auth.py)."""
 
+import re
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.core import signing
 from django.test import RequestFactory
+from django.utils import timezone
 
 from main.auth.users import get_or_create_social_user
 from main.auth.verifiers import SocialAuthError, SocialProfile
 from main.graphql import auth
-from main.models import User
+from main.models import EmailVerification, User
 
 
 def make_request():
@@ -24,6 +27,11 @@ def info_for(request):
     from types import SimpleNamespace
 
     return SimpleNamespace(context=request)
+
+
+def _code_from_email(body):
+    """Pull the 6-digit verification code out of the emailed message body."""
+    return re.search(r"\b(\d{6})\b", body).group(1)
 
 
 # ---------------------------------------------------------------------------
@@ -89,19 +97,19 @@ def test_password_login_disabled(settings, normal_user):
 # ---------------------------------------------------------------------------
 
 
-def test_register_email_sends_activation(settings, db, mailoutbox):
+def test_register_email_sends_code(settings, db, mailoutbox):
     settings.AUTH_EMAIL_REQUIRE_ACTIVATION = True
     request = make_request()
     result = auth.RegisterEmail.mutate(None, info_for(request), email="newbie@example.com", password="s3curePass!42")
     assert result["ok"] is True
-    assert result["user"] is None  # not signed in until activated
+    assert result["message"] == "code_sent"
+    assert result["user"] is None  # not signed in until verified
     user = User.objects.get(email="newbie@example.com")
     assert user.is_active is False
+    # A verification code exists for the new account and was emailed.
+    assert EmailVerification.objects.filter(user=user).exists()
     assert len(mailoutbox) == 1
-    # The emailed key must decode to the username through the same salt the
-    # existing /accounts/activate/ endpoint uses, so activation works end-to-end.
-    key = mailoutbox[0].body.split("/accounts/activate/", 1)[1].split()[0]
-    assert signing.loads(key, salt=auth.REGISTRATION_SALT) == user.get_username()
+    assert re.search(r"\b\d{6}\b", mailoutbox[0].body)
 
 
 def test_register_email_instant_signin(settings, db):
@@ -125,6 +133,184 @@ def test_register_email_rejects_weak_password(settings, db):
     result = auth.RegisterEmail.mutate(None, info_for(request), email="weak@example.com", password="123")
     assert result["ok"] is False
     assert not User.objects.filter(email="weak@example.com").exists()
+
+
+# ---------------------------------------------------------------------------
+# verify_email_code / resend_code
+# ---------------------------------------------------------------------------
+
+
+def _register_and_get_code(mailoutbox, settings, email="verify-me@example.com"):
+    settings.AUTH_EMAIL_REQUIRE_ACTIVATION = True
+    auth.RegisterEmail.mutate(None, info_for(make_request()), email=email, password="s3curePass!42")
+    return email, _code_from_email(mailoutbox[0].body)
+
+
+def _activation_row(user):
+    return EmailVerification.active_for(user, EmailVerification.ACTIVATION)
+
+
+def test_verify_email_code_activates_and_signs_in(settings, db, mailoutbox):
+    email, code = _register_and_get_code(mailoutbox, settings)
+    user = User.objects.get(email=email)
+    assert user.is_active is False
+
+    request = make_request()
+    result = auth.VerifyEmailCode.mutate(None, info_for(request), email=email, code=code)
+    assert result["ok"] is True
+    assert result["user"]["username"] == user.get_username()
+    user.refresh_from_db()
+    assert user.is_active is True
+    assert request.session.session_key is not None  # signed in
+    # The code is single-use: it's gone once consumed.
+    assert not EmailVerification.objects.filter(user=user).exists()
+
+
+def test_verify_email_code_rejects_wrong_code_and_counts_attempts(settings, db, mailoutbox):
+    email, code = _register_and_get_code(mailoutbox, settings)
+    wrong = "000000" if code != "000000" else "111111"
+
+    result = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email=email, code=wrong)
+    assert result["ok"] is False
+    assert result["message"] == "code_invalid"
+    user = User.objects.get(email=email)
+    assert user.is_active is False
+    assert _activation_row(user).attempts == 1
+
+
+def test_verify_email_code_locks_out_after_max_attempts(settings, db, mailoutbox):
+    email, code = _register_and_get_code(mailoutbox, settings)
+    user = User.objects.get(email=email)
+    # Burn all but one attempt, then the final wrong try trips the lock-out.
+    row = _activation_row(user)
+    row.attempts = EmailVerification.MAX_ATTEMPTS - 1
+    row.save(update_fields=["attempts"])
+
+    result = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email=email, code="999999")
+    assert result["message"] == "too_many_attempts"
+    # Even the correct code is now refused until a new one is issued.
+    blocked = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email=email, code=code)
+    assert blocked["message"] == "too_many_attempts"
+
+
+def test_verify_email_code_rejects_expired(settings, db, mailoutbox):
+    email, code = _register_and_get_code(mailoutbox, settings)
+    user = User.objects.get(email=email)
+    ev = _activation_row(user)
+    ev.created_at = timezone.now() - EmailVerification.TTL - timedelta(seconds=1)
+    ev.save(update_fields=["created_at"])
+
+    result = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email=email, code=code)
+    assert result["message"] == "code_expired"
+
+
+def test_verify_email_code_unknown_email(db):
+    result = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email="ghost@example.com", code="123456")
+    assert result["ok"] is False
+    assert result["message"] == "code_invalid"
+
+
+def test_resend_code_issues_a_fresh_code(settings, db, mailoutbox):
+    email, first_code = _register_and_get_code(mailoutbox, settings)
+    user = User.objects.get(email=email)
+    # Move past the resend cooldown.
+    ev = _activation_row(user)
+    ev.created_at = timezone.now() - EmailVerification.RESEND_COOLDOWN - timedelta(seconds=1)
+    ev.save(update_fields=["created_at"])
+
+    result = auth.ResendCode.mutate(None, info_for(make_request()), email=email)
+    assert result["ok"] is True
+    assert len(mailoutbox) == 2
+    new_code = _code_from_email(mailoutbox[1].body)
+    # The new code verifies; attempts were reset.
+    verified = auth.VerifyEmailCode.mutate(None, info_for(make_request()), email=email, code=new_code)
+    assert verified["ok"] is True
+
+
+def test_resend_code_honors_cooldown(settings, db, mailoutbox):
+    email, _ = _register_and_get_code(mailoutbox, settings)
+    # The just-registered code is within the cooldown window.
+    result = auth.ResendCode.mutate(None, info_for(make_request()), email=email)
+    assert result["ok"] is False
+    assert result["message"] == "resend_too_soon"
+    assert len(mailoutbox) == 1  # no second email
+
+
+def test_resend_code_unknown_email_reports_ok_without_sending(db, mailoutbox):
+    # Don't leak which emails are registered: unknown email still reports ok.
+    result = auth.ResendCode.mutate(None, info_for(make_request()), email="ghost@example.com")
+    assert result["ok"] is True
+    assert len(mailoutbox) == 0
+
+
+# ---------------------------------------------------------------------------
+# request_password_reset / reset_password
+# ---------------------------------------------------------------------------
+
+
+def _request_reset_code(mailoutbox, user):
+    auth.RequestPasswordReset.mutate(None, info_for(make_request()), email=user.email)
+    return _code_from_email(mailoutbox[-1].body)
+
+
+def test_request_password_reset_emails_a_code(normal_user, mailoutbox):
+    result = auth.RequestPasswordReset.mutate(None, info_for(make_request()), email=normal_user.email)
+    assert result["ok"] is True
+    assert len(mailoutbox) == 1
+    assert re.search(r"\b\d{6}\b", mailoutbox[0].body)
+    assert EmailVerification.active_for(normal_user, EmailVerification.PASSWORD_RESET) is not None
+
+
+def test_request_password_reset_unknown_email_reports_ok_without_sending(db, mailoutbox):
+    result = auth.RequestPasswordReset.mutate(None, info_for(make_request()), email="ghost@example.com")
+    assert result["ok"] is True
+    assert len(mailoutbox) == 0
+
+
+def test_request_password_reset_honors_cooldown(normal_user, mailoutbox):
+    auth.RequestPasswordReset.mutate(None, info_for(make_request()), email=normal_user.email)
+    again = auth.RequestPasswordReset.mutate(None, info_for(make_request()), email=normal_user.email)
+    assert again["message"] == "resend_too_soon"
+    assert len(mailoutbox) == 1
+
+
+def test_reset_password_sets_new_password_and_signs_in(normal_user, mailoutbox):
+    code = _request_reset_code(mailoutbox, normal_user)
+    request = make_request()
+    result = auth.ResetPassword.mutate(
+        None, info_for(request), email=normal_user.email, code=code, new_password="BrandNew!pass77"
+    )
+    assert result["ok"] is True
+    assert request.session.session_key is not None  # signed in
+    normal_user.refresh_from_db()
+    assert normal_user.check_password("BrandNew!pass77")
+    # The reset code is single-use.
+    assert EmailVerification.active_for(normal_user, EmailVerification.PASSWORD_RESET) is None
+
+
+def test_reset_password_rejects_wrong_code(normal_user, mailoutbox):
+    code = _request_reset_code(mailoutbox, normal_user)
+    wrong = "000000" if code != "000000" else "111111"
+    result = auth.ResetPassword.mutate(
+        None, info_for(make_request()), email=normal_user.email, code=wrong, new_password="BrandNew!pass77"
+    )
+    assert result["message"] == "code_invalid"
+    normal_user.refresh_from_db()
+    assert not normal_user.check_password("BrandNew!pass77")
+
+
+def test_reset_password_rejects_weak_password_without_consuming_code(normal_user, mailoutbox):
+    code = _request_reset_code(mailoutbox, normal_user)
+    result = auth.ResetPassword.mutate(
+        None, info_for(make_request()), email=normal_user.email, code=code, new_password="123"
+    )
+    assert result["ok"] is False
+    # The code survives so the user can retry with a stronger password.
+    assert EmailVerification.active_for(normal_user, EmailVerification.PASSWORD_RESET) is not None
+    retry = auth.ResetPassword.mutate(
+        None, info_for(make_request()), email=normal_user.email, code=code, new_password="BrandNew!pass77"
+    )
+    assert retry["ok"] is True
 
 
 # ---------------------------------------------------------------------------

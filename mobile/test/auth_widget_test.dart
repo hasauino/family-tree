@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:family_tree_mobile/auth/auth_service.dart';
 import 'package:family_tree_mobile/auth/login_page.dart';
 import 'package:family_tree_mobile/auth/social_sign_in.dart';
+import 'package:family_tree_mobile/graphql/graphql_client.dart';
 import 'package:family_tree_mobile/l10n/app_strings.dart';
 
 import '../integration_test/support/fake_backend.dart';
@@ -120,7 +121,7 @@ void main() {
     expect(auth.isAuthenticated, isFalse);
   });
 
-  testWidgets('sign-up that needs activation shows the check-email screen',
+  testWidgets('sign-up that needs verification shows the code-entry screen',
       (tester) async {
     final backend = FakeFamilyBackend()..requireActivation = true;
     final auth = backend.authWith();
@@ -136,7 +137,77 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Check your email'), findsOneWidget);
+    expect(find.text('Enter the code'), findsOneWidget);
+    expect(auth.isAuthenticated, isFalse);
+
+    // Typing the right code verifies and pops the page (signed in).
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.tap(find.widgetWithText(FilledButton, 'Verify'));
+    await tester.pumpAndSettle();
+    expect(auth.isAuthenticated, isTrue);
+  });
+
+  test('verifyEmailCode with the right code signs the user in', () async {
+    final auth = FakeFamilyBackend().authWith();
+    expect(auth.isAuthenticated, isFalse);
+    await auth.verifyEmailCode('new@example.com', '123456');
+    expect(auth.isAuthenticated, isTrue);
+  });
+
+  test('verifyEmailCode with a wrong code throws and stays signed out',
+      () async {
+    final auth = FakeFamilyBackend().authWith();
+    await expectLater(
+      auth.verifyEmailCode('new@example.com', '000000'),
+      throwsA(
+        isA<AuthFailedException>().having(
+          (e) => e.message,
+          'message',
+          'code_invalid',
+        ),
+      ),
+    );
+    expect(auth.isAuthenticated, isFalse);
+  });
+
+  testWidgets('forgot-password resets and signs in via the emailed code',
+      (tester) async {
+    final auth = FakeFamilyBackend().authWith();
+    await _pumpLogin(tester, auth);
+
+    // Open the reset flow from the sign-in form.
+    await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+    expect(find.text('Reset password'), findsWidgets);
+
+    // Step 1: enter the account email and request a code.
+    await tester.enterText(find.byType(TextFormField), 'me@example.com');
+    await tester.tap(find.widgetWithText(FilledButton, 'Send code'));
+    await tester.pumpAndSettle();
+
+    // Step 2: enter the code + a new password and submit.
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), '123456'); // code
+    await tester.enterText(fields.at(1), 'BrandNew!pass77'); // new password
+    await tester.enterText(fields.at(2), 'BrandNew!pass77'); // confirm
+    await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+    await tester.pumpAndSettle();
+
+    expect(auth.isAuthenticated, isTrue);
+  });
+
+  test('resetPassword with a wrong code throws and stays signed out', () async {
+    final auth = FakeFamilyBackend().authWith();
+    await expectLater(
+      auth.resetPassword('me@example.com', '000000', 'BrandNew!pass77'),
+      throwsA(
+        isA<AuthFailedException>().having(
+          (e) => e.message,
+          'message',
+          'code_invalid',
+        ),
+      ),
+    );
     expect(auth.isAuthenticated, isFalse);
   });
 }
