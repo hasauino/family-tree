@@ -27,7 +27,7 @@ class AppConfig {
   /// device, use the host's LAN IP.
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
-    return 'http://192.168.1.23:8000';
+    return 'http://127.0.0.1:8000';
   }
 
   /// Full URL of the GraphQL endpoint (see `main/urls.py`).
