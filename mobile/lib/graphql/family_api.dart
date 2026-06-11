@@ -324,18 +324,21 @@ class FamilyApi {
         designation
         history
         published
+        childCount
         parent {
           id
           name
           designation
           history
           published
+          childCount
           parent {
             id
             name
             designation
             history
             published
+            childCount
             parent { id }
           }
         }
@@ -345,12 +348,14 @@ class FamilyApi {
           designation
           history
           published
+          childCount
           children {
             id
             name
             designation
             history
             published
+            childCount
           }
         }
       }
@@ -360,8 +365,8 @@ class FamilyApi {
   static const String _connectedDoc = r'''
     query Connected($id: Int!) {
       connectedNodes(id: $id) {
-        parent { id label group opacity title font { strokeWidth } }
-        children { id label group opacity title font { strokeWidth } }
+        parent { id label group opacity title childCount hasParent font { strokeWidth } }
+        children { id label group opacity title childCount hasParent font { strokeWidth } }
       }
     }
   ''';
@@ -405,6 +410,7 @@ class FamilyApi {
             grandfather,
             parentId: ggfId,
             isStaff: isStaff,
+            hasParent: ggf != null,
           ),
         );
         addNode(
@@ -412,12 +418,18 @@ class FamilyApi {
             father,
             parentId: grandfatherId,
             isStaff: isStaff,
+            hasParent: true,
           ),
         );
         edges.add((grandfatherId, fatherId));
       } else {
         addNode(
-          FamilyNode.fromPersonJson(father, parentId: null, isStaff: isStaff),
+          FamilyNode.fromPersonJson(
+            father,
+            parentId: null,
+            isStaff: isStaff,
+            hasParent: false,
+          ),
         );
       }
       edges.add((fatherId, personId0));
@@ -425,7 +437,12 @@ class FamilyApi {
 
     // --- the focused person ---
     addNode(
-      FamilyNode.fromPersonJson(person, parentId: fatherId, isStaff: isStaff),
+      FamilyNode.fromPersonJson(
+        person,
+        parentId: fatherId,
+        isStaff: isStaff,
+        hasParent: father != null,
+      ),
     );
 
     // --- descendants: sons, then grandsons ---
@@ -433,14 +450,24 @@ class FamilyApi {
       final child = c as Map<String, dynamic>;
       final childId = int.parse(child['id'].toString());
       addNode(
-        FamilyNode.fromPersonJson(child, parentId: personId0, isStaff: isStaff),
+        FamilyNode.fromPersonJson(
+          child,
+          parentId: personId0,
+          isStaff: isStaff,
+          hasParent: true,
+        ),
       );
       edges.add((personId0, childId));
       for (final g in (child['children'] as List<dynamic>? ?? const [])) {
         final grand = g as Map<String, dynamic>;
         final grandId = int.parse(grand['id'].toString());
         addNode(
-          FamilyNode.fromPersonJson(grand, parentId: childId, isStaff: isStaff),
+          FamilyNode.fromPersonJson(
+            grand,
+            parentId: childId,
+            isStaff: isStaff,
+            hasParent: true,
+          ),
         );
         edges.add((childId, grandId));
       }
@@ -484,7 +511,7 @@ class FamilyApi {
   static const String _treePathDoc = r'''
     query TreePath($fromId: Int!, $toId: Int!) {
       treePath(fromId: $fromId, toId: $toId) {
-        nodes { id label group opacity title font { strokeWidth } }
+        nodes { id label group opacity title childCount hasParent font { strokeWidth } }
         edges { fromId toId }
         pathIds
         meetingId
@@ -1019,7 +1046,7 @@ class FamilyApi {
       editPerson(
         id: $id, name: $name, designation: $designation, history: $history
       ) {
-        id label group opacity title font { strokeWidth }
+        id label group opacity title childCount hasParent font { strokeWidth }
         ok message
       }
     }
@@ -1054,7 +1081,7 @@ class FamilyApi {
   static const String _addPersonDoc = r'''
     mutation AddPerson($id: Int!, $childName: String!) {
       addPerson(id: $id, childName: $childName) {
-        id label group opacity title font { strokeWidth }
+        id label group opacity title childCount hasParent font { strokeWidth }
         ok message
       }
     }
@@ -1079,7 +1106,7 @@ class FamilyApi {
   static const String _addParentDoc = r'''
     mutation AddParent($id: Int!, $parentName: String!) {
       addParent(id: $id, parentName: $parentName) {
-        id label group opacity title font { strokeWidth }
+        id label group opacity title childCount hasParent font { strokeWidth }
         ok message
       }
     }
@@ -1104,7 +1131,7 @@ class FamilyApi {
   static const String _addChildrenDoc = r'''
     mutation AddChildren($id: Int!, $childNames: [String!]!) {
       addChildren(id: $id, childNames: $childNames) {
-        nodes { id label group opacity title font { strokeWidth } }
+        nodes { id label group opacity title childCount hasParent font { strokeWidth } }
         warnings
         ok message
       }

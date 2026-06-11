@@ -60,6 +60,15 @@ class TreeController extends ChangeNotifier {
   final Set<int> _expanded = {};
   final Set<int> _expanding = {};
 
+  /// How many of each person's children are currently loaded into the tree,
+  /// keyed by parent id. Compared against [FamilyNode.childCount] to tell
+  /// whether a node still has hidden descendants.
+  final Map<int, int> _loadedChildren = {};
+
+  /// Ids whose parent edge is already loaded, so we don't flag a hidden
+  /// ancestor for a node whose parent is already on screen.
+  final Set<int> _parentLoaded = {};
+
   int? rootId;
   bool loading = false;
   TreeError? error;
@@ -76,6 +85,29 @@ class TreeController extends ChangeNotifier {
 
   bool isExpanding(int id) => _expanding.contains(id);
   bool isExpanded(int id) => _expanded.contains(id);
+
+  /// Whether tapping [id] would reveal relatives that aren't on screen yet —
+  /// i.e. it has children the backend reports but we haven't loaded, or a
+  /// visible parent that isn't loaded. Used to show an "expandable" affordance
+  /// so an un-expanded node isn't mistaken for a dead end. Returns false while
+  /// the node is mid-expand (the spinner already signals activity).
+  bool isExpandable(int id) {
+    if (_expanding.contains(id)) return false;
+    final node = nodeData[id];
+    if (node == null) return false;
+    final hasHiddenChildren = (_loadedChildren[id] ?? 0) < node.childCount;
+    final hasHiddenParent = node.hasParent && !_parentLoaded.contains(id);
+    return hasHiddenChildren || hasHiddenParent;
+  }
+
+  /// Records a parent→child edge, keeping [_edgeKeys] and the loaded-relative
+  /// bookkeeping in sync. Returns true if the edge was new.
+  bool _registerEdge(int from, int to) {
+    if (!_edgeKeys.add('$from->$to')) return false;
+    _loadedChildren[from] = (_loadedChildren[from] ?? 0) + 1;
+    _parentLoaded.add(to);
+    return true;
+  }
 
   /// Resets the tree and loads the initial view centered on [personId]
   /// (grandfather → father → person → sons → grandsons).
@@ -199,8 +231,9 @@ class TreeController extends ChangeNotifier {
     nodeData[child.id] = child;
     final childNode = Node.Id(child.id);
     if (!graph.nodes.contains(childNode)) graph.addNode(childNode);
-    final key = '$parentId->${child.id}';
-    if (_edgeKeys.add(key)) graph.addEdge(Node.Id(parentId), childNode);
+    if (_registerEdge(parentId, child.id)) {
+      graph.addEdge(Node.Id(parentId), childNode);
+    }
     notifyListeners();
   }
 
@@ -212,8 +245,9 @@ class TreeController extends ChangeNotifier {
     nodeData[parent.id] = parent;
     final parentNode = Node.Id(parent.id);
     if (!graph.nodes.contains(parentNode)) graph.addNode(parentNode);
-    final key = '${parent.id}->$personId';
-    if (_edgeKeys.add(key)) graph.addEdge(parentNode, Node.Id(personId));
+    if (_registerEdge(parent.id, personId)) {
+      graph.addEdge(parentNode, Node.Id(personId));
+    }
     notifyListeners();
   }
 
@@ -228,8 +262,9 @@ class TreeController extends ChangeNotifier {
       nodeData[child.id] = child;
       final childNode = Node.Id(child.id);
       if (!graph.nodes.contains(childNode)) graph.addNode(childNode);
-      final key = '$parentId->${child.id}';
-      if (_edgeKeys.add(key)) graph.addEdge(Node.Id(parentId), childNode);
+      if (_registerEdge(parentId, child.id)) {
+        graph.addEdge(Node.Id(parentId), childNode);
+      }
     }
     notifyListeners();
     return result;
@@ -253,9 +288,27 @@ class TreeController extends ChangeNotifier {
     nodeData.remove(personId);
     _expanded.remove(personId);
     _expanding.remove(personId);
-    _edgeKeys.removeWhere(
-      (k) => k.startsWith('$personId->') || k.endsWith('->$personId'),
-    );
+    _loadedChildren.remove(personId);
+    _parentLoaded.remove(personId);
+    _edgeKeys.removeWhere((k) {
+      if (k.startsWith('$personId->')) {
+        // A child of the deleted person: its parent edge is gone.
+        _parentLoaded.remove(int.parse(k.substring(k.indexOf('>') + 1)));
+        return true;
+      }
+      if (k.endsWith('->$personId')) {
+        // The deleted person as someone's child: that parent has one fewer.
+        final parent = int.parse(k.substring(0, k.indexOf('-')));
+        final remaining = (_loadedChildren[parent] ?? 1) - 1;
+        if (remaining > 0) {
+          _loadedChildren[parent] = remaining;
+        } else {
+          _loadedChildren.remove(parent);
+        }
+        return true;
+      }
+      return false;
+    });
     graph.removeNode(Node.Id(personId));
     notifyListeners();
   }
@@ -301,6 +354,8 @@ class TreeController extends ChangeNotifier {
   void _reset() {
     nodeData.clear();
     _edgeKeys.clear();
+    _loadedChildren.clear();
+    _parentLoaded.clear();
     _expanded.clear();
     _expanding.clear();
     pathIds.clear();
@@ -318,8 +373,7 @@ class TreeController extends ChangeNotifier {
       }
     }
     for (final (from, to) in fragment.edges) {
-      final key = '$from->$to';
-      if (_edgeKeys.add(key)) {
+      if (_registerEdge(from, to)) {
         graph.addEdge(Node.Id(from), Node.Id(to));
       }
     }

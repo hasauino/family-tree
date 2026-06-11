@@ -32,6 +32,8 @@ class FamilyNode {
     required this.group,
     this.title,
     this.opacity = 1.0,
+    this.childCount = 0,
+    this.hasParent = false,
   });
 
   /// Person primary key.
@@ -48,6 +50,16 @@ class FamilyNode {
 
   /// 0.0..1.0. Staff see private (unpublished) persons dimmed, like the web.
   final double opacity;
+
+  /// Number of this person's children visible to the current user, as reported
+  /// by the backend. Compared against how many children are actually loaded in
+  /// the tree to decide whether the node still has hidden descendants.
+  final int childCount;
+
+  /// Whether this person has a parent visible to the current user. Used (with
+  /// whether that parent is loaded) to decide whether the node has a hidden
+  /// ancestor above it.
+  final bool hasParent;
 
   Color get color {
     final n = int.tryParse(group.replaceFirst('g', '')) ?? 0;
@@ -75,6 +87,8 @@ class FamilyNode {
         group: group,
         title: title,
         opacity: opacity ?? this.opacity,
+        childCount: childCount,
+        hasParent: hasParent,
       );
 
   /// Build from a `connectedNodes` node payload (parent / child).
@@ -85,6 +99,8 @@ class FamilyNode {
       group: (json['group'] as String?) ?? 'g0',
       title: _cleanTitle(json['title'] as String?),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
+      childCount: (json['childCount'] as int?) ?? 0,
+      hasParent: (json['hasParent'] as bool?) ?? false,
     );
   }
 
@@ -96,6 +112,7 @@ class FamilyNode {
     Map<String, dynamic> json, {
     int? parentId,
     bool isStaff = false,
+    bool hasParent = false,
   }) {
     final designation = (json['designation'] as String?) ?? '';
     final history = (json['history'] as String?) ?? '';
@@ -107,6 +124,8 @@ class FamilyNode {
       group: 'g${(parentId ?? 0) % kColorCount}',
       title: _cleanTitle(title),
       opacity: (!published && isStaff) ? 0.3 : 1.0,
+      childCount: (json['childCount'] as int?) ?? 0,
+      hasParent: hasParent,
     );
   }
 

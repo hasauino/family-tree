@@ -118,11 +118,15 @@ class Person(models.Model):
         else:
             group_code = f"g{forced_group}"
         title = f"{self.designation}\n{self.history}"
+        visible_children = sum(1 for c in self.children.all() if c.is_visible_to(user))
+        has_parent = self.parent is not None and self.parent.is_visible_to(user)
         data = {
             "id": self.pk,
             "label": self.name,
             "group": group_code,
             "opacity": opacity,
+            "child_count": visible_children,
+            "has_parent": has_parent,
         }
         if len(title) > 1:
             data["title"] = title

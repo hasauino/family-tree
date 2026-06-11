@@ -390,6 +390,8 @@ class FakeFamilyBackend {
         'group': 'g${(p.parentId ?? 0) % 11}',
         'opacity': p.published ? 1.0 : 0.3,
         'title': _title(p),
+        'childCount': _childrenOf(p.id).length,
+        'hasParent': p.parentId != null && _people.containsKey(p.parentId),
         'font': {'strokeWidth': 0},
       };
 
@@ -406,6 +408,7 @@ class FakeFamilyBackend {
         'name': p.name,
         'designation': p.designation,
         'history': p.history,
+        'childCount': _childrenOf(p.id).length,
       };
 
   /// The nested person used by the bootstrap query: ancestors up two levels and

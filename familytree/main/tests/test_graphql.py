@@ -103,6 +103,34 @@ def test_resolve_connected_nodes_filters_invisible_children(make_person, normal_
     assert {child["id"] for child in result["children"]} == {visible_child.pk}
 
 
+def test_connected_nodes_report_child_count_and_has_parent(make_person, normal_user, other_user):
+    grandparent = make_person(name="Grandparent")
+    parent = make_person(name="Parent", parent=grandparent)
+    make_person(name="VisibleChild", parent=parent, access="private", editors=[normal_user])
+    make_person(name="HiddenChild", parent=parent, access="private", editors=[other_user])
+
+    result = Query.resolve_connected_nodes(None, info_for(normal_user), id=parent.pk)
+
+    # The returned parent is the grandparent: it has one visible child (`parent`)
+    # and no parent of its own.
+    assert result["parent"]["child_count"] == 1
+    assert result["parent"]["has_parent"] is False
+
+    # The visible child reports a visible parent and (hidden) no children.
+    visible_child = next(c for c in result["children"] if c["label"] == "VisibleChild")
+    assert visible_child["child_count"] == 0
+    assert visible_child["has_parent"] is True
+
+
+def test_node_has_parent_false_when_parent_hidden(make_person):
+    hidden_parent = make_person(name="Hidden", access="private")
+    person = make_person(name="Person", parent=hidden_parent)
+
+    node = person.as_node(AnonymousUser())
+
+    assert node["has_parent"] is False
+
+
 # ---------------------------------------------------------------------------
 # Query.resolve_person
 # ---------------------------------------------------------------------------

@@ -9,6 +9,7 @@ class PersonType(DjangoObjectType):
     bookmarked = graphene.Boolean(
         description="It shows whether the person has been bookmarked (shown on home page) by a staff user"
     )
+    child_count = graphene.Int(description="Number of children visible to the requesting user")
 
     class Meta:
         model = Person
@@ -28,6 +29,10 @@ class PersonType(DjangoObjectType):
     def resolve_children(person, info):
         user = info.context.user
         return [c for c in person.children.all() if c.is_visible_to(user)]
+
+    def resolve_child_count(person, info):
+        user = info.context.user
+        return sum(1 for c in person.children.all() if c.is_visible_to(user))
 
     def resolve_published(person, info):
         return person.is_public()
@@ -114,6 +119,8 @@ class NodeType(graphene.ObjectType):
     title = graphene.String(description="node title, which is the string appearing as a tooltip")
     font = graphene.Field(FontType, description="Font settings")
     opacity = graphene.Float(description="0.0 (fully transparent) to 1.0")
+    child_count = graphene.Int(description="Number of children visible to the requesting user")
+    has_parent = graphene.Boolean(description="Whether this node has a parent visible to the requesting user")
 
 
 class ConnectedNodes(graphene.ObjectType):

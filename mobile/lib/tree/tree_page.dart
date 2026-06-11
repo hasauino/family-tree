@@ -541,6 +541,7 @@ class _TreePageState extends State<TreePage>
                       node: data,
                       isRoot: id == _controller.rootId,
                       isExpanding: _controller.isExpanding(id),
+                      canExpand: _controller.isExpandable(id),
                       isOnPath: pathActive && onPath,
                       dimmed: pathActive && !onPath,
                       onTap: () {

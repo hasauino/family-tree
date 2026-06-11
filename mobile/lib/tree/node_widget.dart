@@ -13,6 +13,7 @@ class NodeWidget extends StatelessWidget {
     required this.node,
     required this.isRoot,
     required this.isExpanding,
+    this.canExpand = false,
     this.isOnPath = false,
     this.dimmed = false,
     this.onTap,
@@ -24,6 +25,11 @@ class NodeWidget extends StatelessWidget {
   final FamilyNode node;
   final bool isRoot;
   final bool isExpanding;
+
+  /// Whether tapping this node would reveal relatives that aren't on screen
+  /// yet. When true a small chevron is shown so an un-expanded node isn't
+  /// mistaken for a dead end.
+  final bool canExpand;
 
   /// Whether this node sits on the highlighted "connect two people" route.
   final bool isOnPath;
@@ -82,7 +88,11 @@ class NodeWidget extends StatelessWidget {
           ),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.only(right: 14, top: 8, bottom: 8),
+              padding: EdgeInsets.only(
+                right: canExpand ? 4 : 14,
+                top: 8,
+                bottom: 8,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,6 +125,15 @@ class NodeWidget extends StatelessWidget {
               ),
             ),
           ),
+          if (canExpand)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                Icons.more_horiz,
+                size: 18,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+            ),
         ],
       ),
     );
