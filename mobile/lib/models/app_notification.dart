@@ -44,10 +44,16 @@ class AppNotification {
     this.actorName,
     this.personId,
     this.personIds = const [],
+    this.personName,
+    this.names = const [],
+    this.fieldKeys = const [],
   });
 
   final int id;
   final AppNotificationKind kind;
+
+  /// Server-stored title/body. Used as a fallback (and for admin broadcasts);
+  /// for the system kinds the UI renders localized text from the fields below.
   final String title;
   final String body;
   final int count;
@@ -61,7 +67,18 @@ class AppNotification {
   /// All related person ids (for aggregated entries).
   final List<int> personIds;
 
+  /// Display name of the primary related person (for node_changed).
+  final String? personName;
+
+  /// Names of the related persons (for aggregated pending/verified entries).
+  final List<String> names;
+
+  /// Changed field keys for node_changed: name|designation|history|parent.
+  final List<String> fieldKeys;
+
   factory AppNotification.fromJson(Map<String, dynamic> json) {
+    List<String> strList(String key) =>
+        ((json[key] as List?) ?? const []).map((e) => e as String).toList();
     return AppNotification(
       id: json['id'] as int,
       kind: AppNotificationKind.parse(json['kind'] as String?),
@@ -76,6 +93,9 @@ class AppNotification {
       personId: json['personId'] as int?,
       personIds:
           ((json['personIds'] as List?) ?? const []).map((e) => e as int).toList(),
+      personName: json['personName'] as String?,
+      names: strList('names'),
+      fieldKeys: strList('fieldKeys'),
     );
   }
 }

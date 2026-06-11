@@ -127,6 +127,7 @@ class _NotificationTile extends StatelessWidget {
     final t = AppStrings.of(context);
     final scheme = Theme.of(context).colorScheme;
     final n = notification;
+    final body = _localizedBody(t, n);
     return GlassPanel(
       borderRadius: const BorderRadius.all(Radius.circular(18)),
       child: ListTile(
@@ -136,7 +137,7 @@ class _NotificationTile extends StatelessWidget {
           child: Icon(_iconFor(n.kind), color: scheme.primary, size: 20),
         ),
         title: Text(
-          n.title.isNotEmpty ? n.title : _defaultTitle(t, n.kind),
+          _localizedTitle(t, n),
           style: TextStyle(
             fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700,
           ),
@@ -144,7 +145,7 @@ class _NotificationTile extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (n.body.isNotEmpty) Text(n.body),
+            if (body.isNotEmpty) Text(body),
             const SizedBox(height: 4),
             Text(
               _relativeTime(t, n.createdAt),
@@ -152,7 +153,7 @@ class _NotificationTile extends StatelessWidget {
             ),
           ],
         ),
-        isThreeLine: n.body.isNotEmpty,
+        isThreeLine: body.isNotEmpty,
         trailing: n.isRead
             ? null
             : Container(
@@ -179,8 +180,10 @@ class _NotificationTile extends StatelessWidget {
     }
   }
 
-  String _defaultTitle(AppStrings t, AppNotificationKind kind) {
-    switch (kind) {
+  /// The title shown for [n], localized to the reader's language. Only the
+  /// admin-authored broadcast keeps its server-stored title.
+  String _localizedTitle(AppStrings t, AppNotification n) {
+    switch (n.kind) {
       case AppNotificationKind.pendingAddition:
         return t.notifKindPending;
       case AppNotificationKind.changeVerified:
@@ -188,9 +191,64 @@ class _NotificationTile extends StatelessWidget {
       case AppNotificationKind.nodeChanged:
         return t.notifKindChanged;
       case AppNotificationKind.broadcast:
-        return t.notifKindBroadcast;
+        return n.title.isNotEmpty ? n.title : t.notifKindBroadcast;
       case AppNotificationKind.unknown:
-        return t.notificationsTitle;
+        return n.title.isNotEmpty ? n.title : t.notificationsTitle;
+    }
+  }
+
+  /// The body shown for [n], built in the reader's language from the structured
+  /// fields. The broadcast (admin free-text) and unknown kinds fall back to the
+  /// server-stored body.
+  String _localizedBody(AppStrings t, AppNotification n) {
+    switch (n.kind) {
+      case AppNotificationKind.pendingAddition:
+        if (n.names.length <= 1) {
+          return t.notifBodyAddedOne(
+            n.actorName ?? '',
+            n.names.isNotEmpty ? n.names.first : '',
+          );
+        }
+        return t.notifBodyAddedMany(n.actorName ?? '', n.count, _joinItems(t, n.names));
+      case AppNotificationKind.changeVerified:
+        if (n.names.length <= 1) {
+          return t.notifBodyVerifiedOne(
+            n.names.isNotEmpty ? n.names.first : (n.personName ?? ''),
+          );
+        }
+        return t.notifBodyVerifiedMany(n.count, _joinItems(t, n.names));
+      case AppNotificationKind.nodeChanged:
+        final labels = n.fieldKeys.map((f) => _fieldLabel(t, f)).toList();
+        return t.notifBodyChanged(n.personName ?? '', _joinItems(t, labels));
+      case AppNotificationKind.broadcast:
+      case AppNotificationKind.unknown:
+        return n.body;
+    }
+  }
+
+  /// Joins names/labels with the locale's separator, capping the inline list at
+  /// five and appending "and N more" beyond that (mirrors the server format).
+  String _joinItems(AppStrings t, List<String> items) {
+    const max = 5;
+    final shown = items.take(max).toList();
+    var text = shown.join(t.listSeparator);
+    final extra = items.length - shown.length;
+    if (extra > 0) text += ' ${t.notifAndMore(extra)}';
+    return text;
+  }
+
+  String _fieldLabel(AppStrings t, String key) {
+    switch (key) {
+      case 'name':
+        return t.notifFieldName;
+      case 'designation':
+        return t.notifFieldDesignation;
+      case 'history':
+        return t.notifFieldHistory;
+      case 'parent':
+        return t.notifFieldParent;
+      default:
+        return key;
     }
   }
 

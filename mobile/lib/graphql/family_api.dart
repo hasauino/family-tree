@@ -1544,7 +1544,7 @@ class FamilyApi {
         total
         notifications {
           id kind title body count isRead createdAt updatedAt
-          actorName personId personIds
+          actorName personId personIds personName names fieldKeys
         }
       }
     }

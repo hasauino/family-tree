@@ -49,6 +49,14 @@ class NotificationType(graphene.ObjectType):
     actor_name = graphene.String(description="Display name of who triggered it, if any")
     person_id = graphene.Int(description="Primary related person to navigate to, if any")
     person_ids = graphene.List(graphene.Int, description="All related person ids (for aggregated entries)")
+    # Structured pieces so the client can render the title/body in the *reader's*
+    # language (the server-stored title/body are only a fallback, e.g. for the
+    # admin-authored broadcast text which isn't translated).
+    person_name = graphene.String(description="Display name of the primary related person, if any")
+    names = graphene.List(graphene.String, description="Names of the related persons (aggregated entries)")
+    field_keys = graphene.List(
+        graphene.String, description="Changed field keys for node_changed: name|designation|history|parent"
+    )
 
     @staticmethod
     def from_model(n: Notification):
@@ -67,6 +75,9 @@ class NotificationType(graphene.ObjectType):
             actor_name=actor_name,
             person_id=n.person_id,
             person_ids=n.data.get("person_ids", []),
+            person_name=str(n.person) if n.person else None,
+            names=n.data.get("names", []),
+            field_keys=n.data.get("fields", []),
         )
 
 

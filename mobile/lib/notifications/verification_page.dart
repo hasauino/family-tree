@@ -188,6 +188,13 @@ class _VerificationPageState extends State<VerificationPage> {
               ),
             );
           }
+          // Drop a contributor filter that no longer exists (e.g. all of that
+          // user's additions were just published), so the dropdown's value
+          // always matches one of its items.
+          if (_contributorId != null &&
+              !_contributors.any((e) => e.id == _contributorId)) {
+            _contributorId = null;
+          }
           final filtered = _filtered;
           return Column(
             children: [
@@ -239,17 +246,26 @@ class _VerificationPageState extends State<VerificationPage> {
           Row(
             children: [
               Expanded(
-                child: DropdownButtonFormField<int?>(
-                  initialValue: _contributorId,
-                  isExpanded: true,
+                child: InputDecorator(
                   decoration: const InputDecoration(isDense: true),
-                  items: [
-                    DropdownMenuItem<int?>(value: null, child: Text(t.verifyAnyUser)),
-                    ...contributors.map(
-                      (e) => DropdownMenuItem<int?>(value: e.id, child: Text(e.name)),
+                  // A directly value-controlled DropdownButton (not a
+                  // DropdownButtonFormField) so its displayed value always
+                  // tracks _contributorId — including being reset to null when a
+                  // contributor disappears after their additions are published.
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int?>(
+                      value: _contributorId,
+                      isExpanded: true,
+                      isDense: true,
+                      items: [
+                        DropdownMenuItem<int?>(value: null, child: Text(t.verifyAnyUser)),
+                        ...contributors.map(
+                          (e) => DropdownMenuItem<int?>(value: e.id, child: Text(e.name)),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _contributorId = v),
                     ),
-                  ],
-                  onChanged: (v) => setState(() => _contributorId = v),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),

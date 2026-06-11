@@ -268,6 +268,31 @@ class AppStrings {
   String timeHoursAgo(int n) => _t('timeHoursAgo').replaceFirst('{n}', '$n');
   String timeDaysAgo(int n) => _t('timeDaysAgo').replaceFirst('{n}', '$n');
 
+  // Notification bodies (built client-side so they're in the reader's language)
+  String get listSeparator => _t('listSeparator');
+  String notifAndMore(int n) => _t('notifAndMore').replaceFirst('{n}', '$n');
+  String notifBodyAddedOne(String user, String name) => _t('notifBodyAddedOne')
+      .replaceFirst('{user}', user)
+      .replaceFirst('{name}', name);
+  String notifBodyAddedMany(String user, int count, String list) =>
+      _t('notifBodyAddedMany')
+          .replaceFirst('{user}', user)
+          .replaceFirst('{count}', '$count')
+          .replaceFirst('{list}', list);
+  String notifBodyVerifiedOne(String name) =>
+      _t('notifBodyVerifiedOne').replaceFirst('{name}', name);
+  String notifBodyVerifiedMany(int count, String list) =>
+      _t('notifBodyVerifiedMany')
+          .replaceFirst('{count}', '$count')
+          .replaceFirst('{list}', list);
+  String notifBodyChanged(String name, String fields) => _t('notifBodyChanged')
+      .replaceFirst('{name}', name)
+      .replaceFirst('{fields}', fields);
+  String get notifFieldName => _t('notifFieldName');
+  String get notifFieldDesignation => _t('notifFieldDesignation');
+  String get notifFieldHistory => _t('notifFieldHistory');
+  String get notifFieldParent => _t('notifFieldParent');
+
   // Admin verification screen
   String get verificationTitle => _t('verificationTitle');
   String get verificationEmpty => _t('verificationEmpty');
@@ -324,6 +349,17 @@ class AppStrings {
       'timeMinutesAgo': '{n} min ago',
       'timeHoursAgo': '{n} h ago',
       'timeDaysAgo': '{n} d ago',
+      'listSeparator': ', ',
+      'notifAndMore': 'and {n} more',
+      'notifBodyAddedOne': '{user} added {name}',
+      'notifBodyAddedMany': '{user} added {count} people: {list}',
+      'notifBodyVerifiedOne': '“{name}” was published',
+      'notifBodyVerifiedMany': '{count} of your additions were published: {list}',
+      'notifBodyChanged': 'Your entry “{name}” was updated ({fields})',
+      'notifFieldName': 'name',
+      'notifFieldDesignation': 'designation',
+      'notifFieldHistory': 'history',
+      'notifFieldParent': 'parent',
       // Verification
       'verificationTitle': 'Verify additions',
       'verificationEmpty': 'Nothing to verify — all additions are published.',
@@ -568,6 +604,17 @@ class AppStrings {
       'timeMinutesAgo': 'قبل {n} دقيقة',
       'timeHoursAgo': 'قبل {n} ساعة',
       'timeDaysAgo': 'قبل {n} يوم',
+      'listSeparator': '، ',
+      'notifAndMore': 'و{n} غيرها',
+      'notifBodyAddedOne': 'أضاف {user} {name}',
+      'notifBodyAddedMany': 'أضاف {user} {count} أشخاص: {list}',
+      'notifBodyVerifiedOne': 'تم نشر «{name}»',
+      'notifBodyVerifiedMany': 'تم نشر {count} من إضافاتك: {list}',
+      'notifBodyChanged': 'تم تحديث مُدخلك «{name}» ({fields})',
+      'notifFieldName': 'الاسم',
+      'notifFieldDesignation': 'اللقب',
+      'notifFieldHistory': 'النبذة التاريخية',
+      'notifFieldParent': 'الأب',
       // Verification
       'verificationTitle': 'مراجعة الإضافات',
       'verificationEmpty': 'لا شيء للمراجعة — كل الإضافات منشورة.',
