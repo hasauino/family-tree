@@ -93,6 +93,16 @@ class PersonSearchResult(graphene.ObjectType):
     name = graphene.String(description="Person's name, including ancestors' names")
 
 
+class BackupType(graphene.ObjectType):
+    """
+    A database restore point: a timestamped automatic backup of the sqlite DB
+    that a staff user can roll the database back to.
+    """
+
+    id = graphene.Int(description="Index of the backup (newest first); pass to restoreBackup")
+    label = graphene.String(description="Human-readable timestamp, e.g. '2024/01/02 - 15:14:13'")
+
+
 class NodeType(graphene.ObjectType):
     """
     Holds data used in visualizing person node in the tree

@@ -101,6 +101,10 @@ class FakeFamilyBackend {
   String? profileImageUrl;
   bool accountDeleted = false;
 
+  // --- database restore points (admin "Restore database"), newest first.
+  List<String> backups = ['2024/01/02 - 15:14:13', '2023/06/01 - 09:30:00'];
+  int restoredBackupId = -1;
+
   /// Adds a person named [name] (optionally under [parentId]) and returns
   /// their id.
   int _seed(String name, {int? parentId}) {
@@ -223,6 +227,20 @@ class FakeFamilyBackend {
       accountDeleted = true;
       return _ok({
         'deleteAccount': {'ok': true, 'message': null},
+      });
+    }
+
+    if (doc.contains('listBackups')) {
+      return _ok({
+        'listBackups': [
+          for (var i = 0; i < backups.length; i++) {'id': i, 'label': backups[i]},
+        ],
+      });
+    }
+    if (doc.contains('restoreBackup(')) {
+      restoredBackupId = vars['id'] as int;
+      return _ok({
+        'restoreBackup': {'ok': true, 'message': null},
       });
     }
 

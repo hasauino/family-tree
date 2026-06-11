@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 from datetime import datetime
 
@@ -7,6 +8,27 @@ from django.core.management.base import BaseCommand
 
 def list_backups():
     return list(sorted(settings.DB_BACKUP_DIR.glob("*.sqlite3"), reverse=True))
+
+
+def backup_label(path):
+    """Human-readable timestamp parsed from a backup filename such as
+    ``db-20240102151413.sqlite3`` -> ``2024/01/02 - 15:14:13``."""
+    name = path.name
+    year = name[-22:-18]
+    month = name[-18:-16]
+    day = name[-16:-14]
+    hour = name[-14:-12]
+    minutes = name[-12:-10]
+    seconds = name[-10:-8]
+    return f"{year}/{month}/{day} - {hour}:{minutes}:{seconds}"
+
+
+def restore_backup(backup_file):
+    """Copy a backup sqlite file over the live database file (overwriting it)."""
+    current_db_path_rel = pathlib.Path(settings.DATABASES["default"]["NAME"])
+    root_dir = pathlib.Path(settings.BASE_DIR).parent
+    current_db_path = root_dir / current_db_path_rel
+    subprocess.call(f"cp {backup_file} {current_db_path}", shell=True)
 
 
 class Command(BaseCommand):

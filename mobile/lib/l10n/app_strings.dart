@@ -98,6 +98,16 @@ class AppStrings {
   String get deleteAccountTitle => _t('deleteAccountTitle');
   String get deleteAccountConfirm => _t('deleteAccountConfirm');
   String get accountDeleted => _t('accountDeleted');
+
+  // Admin: database restore
+  String get restoreDatabase => _t('restoreDatabase');
+  String get restorePointPrompt => _t('restorePointPrompt');
+  String get noRestorePoints => _t('noRestorePoints');
+  String get restore => _t('restore');
+  String restoreConfirm(String label) =>
+      _t('restoreConfirm').replaceFirst('{label}', label);
+  String get restoreSuccess => _t('restoreSuccess');
+  String get restoreError => _t('restoreError');
   String get loginTitle => _t('loginTitle');
   String get loginInvalid => _t('loginInvalid');
   String get usernameLabel => _t('usernameLabel');
@@ -299,6 +309,15 @@ class AppStrings {
           'This will permanently delete your account and sign you out. '
           'This cannot be undone. Continue?',
       'accountDeleted': 'Your account has been deleted.',
+      'restoreDatabase': 'Restore database',
+      'restorePointPrompt': 'Pick a restore point of the database:',
+      'noRestorePoints': 'No restore points are available yet.',
+      'restore': 'Restore',
+      'restoreConfirm':
+          'This will replace the entire database with the backup from '
+          '{label}. Any changes made since then will be lost. Continue?',
+      'restoreSuccess': 'Database restored.',
+      'restoreError': 'Could not restore the database. Please try again.',
       'loginTitle': 'Sign in',
       'loginInvalid': 'Invalid username or password.',
       'usernameLabel': 'Username',
@@ -489,6 +508,15 @@ class AppStrings {
           'سيؤدي هذا إلى حذف حسابك نهائيًا وتسجيل خروجك. لا يمكن التراجع عن '
           'هذا الإجراء. هل تريد المتابعة؟',
       'accountDeleted': 'تم حذف حسابك.',
+      'restoreDatabase': 'استعادة قاعدة البيانات',
+      'restorePointPrompt': 'اختر نقطة استعادة لقاعدة البيانات:',
+      'noRestorePoints': 'لا توجد نقاط استعادة متاحة بعد.',
+      'restore': 'استعادة',
+      'restoreConfirm':
+          'سيؤدي هذا إلى استبدال قاعدة البيانات بالكامل بالنسخة الاحتياطية من '
+          '{label}. ستُفقد أي تغييرات أُجريت بعد ذلك. هل تريد المتابعة؟',
+      'restoreSuccess': 'تمت استعادة قاعدة البيانات.',
+      'restoreError': 'تعذّرت استعادة قاعدة البيانات. حاول مرة أخرى.',
       'loginTitle': 'تسجيل الدخول',
       'loginInvalid': 'اسم المستخدم أو كلمة المرور غير صحيحة.',
       'usernameLabel': 'اسم المستخدم',

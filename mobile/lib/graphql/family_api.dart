@@ -293,6 +293,18 @@ class MutationResult {
   final String? message;
 }
 
+/// A database restore point (a timestamped automatic backup) the admin can roll
+/// the database back to. Mirrors the old web "database restore" screen.
+class BackupEntry {
+  BackupEntry({required this.id, required this.label});
+
+  /// Index of the backup, newest first; pass to [FamilyApi.restoreBackup].
+  final int id;
+
+  /// Human-readable timestamp, e.g. `2024/01/02 - 15:14:13`.
+  final String label;
+}
+
 /// Wraps the GraphQL queries used by the tree view.
 ///
 /// * [bootstrap] mirrors the Django `person_tree` view: grandfather → father →
@@ -627,6 +639,43 @@ class FamilyApi {
   Future<MutationResult> deleteAccount() async {
     final data = await _client.query(_deleteAccountDoc);
     final r = data['deleteAccount'] as Map<String, dynamic>?;
+    return MutationResult(
+      ok: (r?['ok'] as bool?) ?? false,
+      message: r?['message'] as String?,
+    );
+  }
+
+  // --- Admin: database restore --------------------------------------------
+
+  static const String _listBackupsDoc = r'''
+    query ListBackups {
+      listBackups { id label }
+    }
+  ''';
+
+  /// Lists the available database restore points (staff only), newest first.
+  Future<List<BackupEntry>> listBackups() async {
+    final data = await _client.query(_listBackupsDoc);
+    final list = (data['listBackups'] as List?) ?? const [];
+    return list
+        .map((e) => BackupEntry(
+              id: (e as Map<String, dynamic>)['id'] as int,
+              label: e['label'] as String,
+            ))
+        .toList();
+  }
+
+  static const String _restoreBackupDoc = r'''
+    mutation RestoreBackup($id: Int!) {
+      restoreBackup(id: $id) { ok message }
+    }
+  ''';
+
+  /// Rolls the database back to the restore point with the given [id] (staff
+  /// only). Returns whether it succeeded.
+  Future<MutationResult> restoreBackup(int id) async {
+    final data = await _client.query(_restoreBackupDoc, variables: {'id': id});
+    final r = data['restoreBackup'] as Map<String, dynamic>?;
     return MutationResult(
       ok: (r?['ok'] as bool?) ?? false,
       message: r?['message'] as String?,

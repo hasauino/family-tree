@@ -5,6 +5,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
 import '../config.dart';
+import '../graphql/family_api.dart';
 import '../graphql/graphql_client.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/glass.dart';
@@ -203,6 +204,103 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _logout() async {
     await widget.auth.logout();
     if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  /// Admin-only: lists database restore points and, once one is picked and
+  /// confirmed, rolls the database back to it — the new-GUI equivalent of the
+  /// old web "database restore" screen.
+  Future<void> _restoreDatabase() async {
+    final t = AppStrings.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
+
+    List<BackupEntry> backups;
+    try {
+      backups = await widget.auth.api.listBackups();
+    } catch (_) {
+      if (mounted) showTopToastOn(overlay, t.errorConnection);
+      return;
+    }
+    if (!mounted) return;
+    if (backups.isEmpty) {
+      showTopToastOn(overlay, t.noRestorePoints);
+      return;
+    }
+
+    final chosen = await showModalBottomSheet<BackupEntry>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: GlassPanel(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          opacity: 0.6,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  t.restorePointPrompt,
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: backups.length,
+                  itemBuilder: (c, i) => ListTile(
+                    leading: const Icon(Icons.history),
+                    title: Text(backups[i].label),
+                    onTap: () => Navigator.pop(ctx, backups[i]),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (chosen == null || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
+      builder: (ctx) => GlassDialog(
+        title: t.restoreDatabase,
+        content: Text(t.restoreConfirm(chosen.label)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            style: glassButtonStyle(Theme.of(ctx).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.restore),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _saving = true);
+    try {
+      final result = await widget.auth.api.restoreBackup(chosen.id);
+      if (!mounted) return;
+      if (result.ok) {
+        showTopToastOn(overlay, t.restoreSuccess);
+      } else {
+        showTopToastOn(overlay, result.message ?? t.restoreError);
+      }
+    } catch (_) {
+      if (mounted) showTopToastOn(overlay, t.restoreError);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -423,6 +521,14 @@ class _AccountPageState extends State<AccountPage> {
                     icon: const Icon(Icons.logout),
                     label: Text(t.logout),
                   ),
+                  if (widget.auth.isStaff) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _saving ? null : _restoreDatabase,
+                      icon: const Icon(Icons.restore),
+                      label: Text(t.restoreDatabase),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   FilledButton.icon(
                     style: glassButtonStyle(Theme.of(context).colorScheme.error),

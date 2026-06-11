@@ -1,8 +1,9 @@
+import pathlib
 from io import StringIO
 
 import pytest
 
-from main.management.commands.create_db_backup import Command, list_backups
+from main.management.commands.create_db_backup import Command, backup_label, list_backups, restore_backup
 
 
 @pytest.fixture
@@ -39,6 +40,32 @@ def test_list_backups_empty_when_dir_has_no_backups(backup_env):
     backup_dir.mkdir()
 
     assert list_backups() == []
+
+
+# ---------------------------------------------------------------------------
+# backup_label
+# ---------------------------------------------------------------------------
+
+
+def test_backup_label_parses_timestamp_from_filename():
+    assert backup_label(pathlib.Path("/tmp/db-20240102151413.sqlite3")) == "2024/01/02 - 15:14:13"
+
+
+# ---------------------------------------------------------------------------
+# restore_backup
+# ---------------------------------------------------------------------------
+
+
+def test_restore_backup_overwrites_live_db_with_chosen_backup(backup_env):
+    db_path, backup_dir = backup_env
+    backup_dir.mkdir()
+    backup = backup_dir / "db-20240102151413.sqlite3"
+    backup.write_text("restored content")
+    # NAME is the absolute db_path, so BASE_DIR.parent / NAME resolves back to it.
+
+    restore_backup(backup)
+
+    assert db_path.read_text() == "restored content"
 
 
 # ---------------------------------------------------------------------------

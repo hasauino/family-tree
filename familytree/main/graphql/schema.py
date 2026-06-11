@@ -1,11 +1,13 @@
 import logging
 
 import graphene
+from home.home_tree_generator import generate_home_tree
 from home.models import Bookmark
 from home.types import BookmarkType
 
 from main.graphql import account, auth, types
 from main.graphql.decorators import authenticated_only, staff_only
+from main.management.commands.create_db_backup import backup_label, list_backups, restore_backup
 from main.models import Person
 
 
@@ -60,6 +62,9 @@ class Query(graphene.ObjectType):
     list_bookmarks = graphene.List(BookmarkType, description="Get list of all bookmarks")
     home_tree = graphene.Field(types.HomeTree, description="Radial home tree: virtual root + tags + bookmarks")
     list_tags = graphene.List(types.TagType, description="All admin-defined tags")
+    list_backups = graphene.List(
+        types.BackupType, description="Database restore points (timestamped backups), newest first. Staff only."
+    )
 
     def resolve_connected_nodes(parent, info, id):
         user = info.context.user
@@ -358,6 +363,10 @@ class Query(graphene.ObjectType):
         from home.models import Tag
 
         return [types.TagType(id=t.id, name=t.name, parent_id=t.parent_id) for t in Tag.objects.all()]
+
+    @staff_only
+    def resolve_list_backups(parent, info):
+        return [types.BackupType(id=i, label=backup_label(f)) for i, f in enumerate(list_backups())]
 
 
 class AddPerson(graphene.Mutation, MutationReply, types.NodeType):
@@ -973,6 +982,26 @@ class SetRootStyle(graphene.Mutation, MutationReply):
         return MutationReply.success()
 
 
+class RestoreBackup(graphene.Mutation, MutationReply):
+    """Roll the database back to a previous restore point (staff only).
+
+    Mirrors the old web "database restore": overwrites the live sqlite file with
+    the chosen timestamped backup and regenerates the cached home tree."""
+
+    class Arguments:
+        id = graphene.Int(required=True, description="Index of the backup to restore (from listBackups)")
+
+    @staff_only
+    def mutate(root, info, id):
+        logging.debug(f"Called restore backup mutation with id: {id}")
+        backups = list_backups()
+        if id < 0 or id >= len(backups):
+            return MutationReply.fail("Selected restore point does not exist")
+        restore_backup(backups[id])
+        generate_home_tree()
+        return MutationReply.success()
+
+
 class Mutations(graphene.ObjectType):
     password_login = auth.PasswordLogin.Field()
     social_login = auth.SocialLogin.Field()
@@ -1005,6 +1034,7 @@ class Mutations(graphene.ObjectType):
     set_home_center = SetHomeCenter.Field()
     set_node_size_config = SetNodeSizeConfig.Field()
     set_root_style = SetRootStyle.Field()
+    restore_backup = RestoreBackup.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

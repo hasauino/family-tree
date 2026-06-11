@@ -13,6 +13,7 @@ from main.graphql.schema import (
     MutationReply,
     PublishPerson,
     Query,
+    RestoreBackup,
     UnBookmarkPerson,
     UnPublishPerson,
     authenticated_only,
@@ -623,3 +624,69 @@ def test_person_type_resolve_bookmarked(make_person):
     Bookmark.objects.create(person=person)
     refreshed = Person.objects.get(pk=person.pk)
     assert PersonType.resolve_bookmarked(refreshed, None) is True
+
+
+# ---------------------------------------------------------------------------
+# Database restore (listBackups / RestoreBackup)
+# ---------------------------------------------------------------------------
+
+import pathlib  # noqa: E402
+import sys  # noqa: E402
+
+# The `main.graphql.schema` *attribute* resolves to the graphene Schema object
+# (the module's `schema = graphene.Schema(...)` shadows the submodule on the
+# package), so fetch the real module from sys.modules to patch its globals.
+schema_module = sys.modules["main.graphql.schema"]
+
+
+def test_resolve_list_backups_blocks_non_staff(normal_user):
+    with pytest.raises(Exception, match="Access Denied"):
+        Query.resolve_list_backups(None, info_for(normal_user))
+
+
+def test_resolve_list_backups_labels_each_backup_for_staff(staff_user, monkeypatch):
+    fake_files = [
+        pathlib.Path("/tmp/db-20240102151413.sqlite3"),
+        pathlib.Path("/tmp/db-20230101000000.sqlite3"),
+    ]
+    monkeypatch.setattr(schema_module, "list_backups", lambda: fake_files)
+
+    result = Query.resolve_list_backups(None, info_for(staff_user))
+
+    assert [(b.id, b.label) for b in result] == [
+        (0, "2024/01/02 - 15:14:13"),
+        (1, "2023/01/01 - 00:00:00"),
+    ]
+
+
+def test_restore_backup_blocks_non_staff(normal_user):
+    with pytest.raises(Exception, match="Access Denied"):
+        RestoreBackup.mutate(None, info_for(normal_user), id=0)
+
+
+def test_restore_backup_copies_chosen_file_and_regenerates_home_tree(staff_user, monkeypatch):
+    fake_files = [pathlib.Path("/tmp/db-20240102151413.sqlite3")]
+    restored = []
+    generated = []
+    monkeypatch.setattr(schema_module, "list_backups", lambda: fake_files)
+    monkeypatch.setattr(schema_module, "restore_backup", lambda f: restored.append(f))
+    monkeypatch.setattr(schema_module, "generate_home_tree", lambda: generated.append(True))
+
+    result = RestoreBackup.mutate(None, info_for(staff_user), id=0)
+
+    assert result["ok"] is True
+    assert restored == [fake_files[0]]
+    assert generated == [True]
+
+
+def test_restore_backup_rejects_out_of_range_id(staff_user, monkeypatch):
+    monkeypatch.setattr(schema_module, "list_backups", lambda: [])
+    monkeypatch.setattr(
+        schema_module,
+        "restore_backup",
+        lambda f: (_ for _ in ()).throw(AssertionError("should not be called")),
+    )
+
+    result = RestoreBackup.mutate(None, info_for(staff_user), id=0)
+
+    assert result["ok"] is False
