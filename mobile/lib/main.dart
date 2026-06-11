@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'auth/auth_service.dart';
 import 'config.dart';
@@ -81,6 +82,11 @@ class FamilyTreeApp extends StatelessWidget {
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
+      // Cairo covers both Latin and Arabic glyphs, giving the app a single
+      // consistent typeface (and proper Arabic shaping) across locales.
+      textTheme: GoogleFonts.cairoTextTheme(ThemeData(
+        brightness: scheme.brightness,
+      ).textTheme),
       splashFactory: InkSparkle.splashFactory,
       scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: AppBarTheme(
