@@ -113,6 +113,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
     final overlay = Overlay.of(context, rootOverlay: true);
     final names = await showDialog<List<String>>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => const _AddChildrenDialog(),
     );
     if (names == null || names.isEmpty) return;
@@ -177,6 +178,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
   Future<String?> _promptText(String title, String label) {
     return showDialog<String>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => _TextPromptDialog(title: title, label: label),
     );
   }
@@ -199,6 +201,7 @@ class _PersonActionsSheetState extends State<PersonActionsSheet> {
 
     final confirmed = await showDialog<bool>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => GlassDialog(
         title: t.deleteTitle,
         content: Text(confirmMessage),

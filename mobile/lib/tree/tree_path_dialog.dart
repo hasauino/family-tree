@@ -14,6 +14,7 @@ Future<({int from, int to})?> showTreePathDialog(
 ) {
   return showDialog<({int from, int to})>(
     context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.15),
     builder: (ctx) => _TreePathDialog(api: api),
   );
 }

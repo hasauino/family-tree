@@ -1136,6 +1136,7 @@ class _HomeScreenState extends State<HomeScreen>
     final t = AppStrings.of(context);
     final result = await showDialog<NodeSizeConfig>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => _NodeSizeSettingsDialog(initial: _nodeSizeConfig),
     );
     if (result == null || !mounted) return;
@@ -1160,6 +1161,7 @@ class _HomeScreenState extends State<HomeScreen>
     final t = AppStrings.of(context);
     final result = await showDialog<StyleSettingsResult>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => _StyleSettingsDialog(
         showLabel: true,
         initialLabel: root.label,
@@ -1290,6 +1292,7 @@ class _HomeScreenState extends State<HomeScreen>
           Navigator.pop(ctx);
           final result = await showDialog<StyleSettingsResult>(
             context: context,
+            barrierColor: Colors.black.withValues(alpha: 0.15),
             builder: (ctx2) => _StyleSettingsDialog(
               initialColor: tag.colorOverride,
               initialFontColor: tag.fontColorOverride,
@@ -1375,6 +1378,7 @@ class _HomeScreenState extends State<HomeScreen>
           final isCenter = _centerId == bookmark.id;
           final result = await showDialog<StyleSettingsResult>(
             context: context,
+            barrierColor: Colors.black.withValues(alpha: 0.15),
             builder: (ctx2) => _StyleSettingsDialog(
               showLabel: isCenter,
               labelIsRoot: false,
@@ -1408,6 +1412,7 @@ class _HomeScreenState extends State<HomeScreen>
     final t = AppStrings.of(context);
     return await showDialog<bool>(
           context: context,
+          barrierColor: Colors.black.withValues(alpha: 0.15),
           builder: (ctx) => GlassDialog(
             title: t.deleteTagTitle,
             content: Text(t.deleteTagConfirm(name)),
@@ -1434,6 +1439,7 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     return showDialog<String>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) =>
           _TextPromptDialog(title: title, label: label, initial: initial),
     );
@@ -2451,6 +2457,7 @@ class _StyleSettingsDialogState extends State<_StyleSettingsDialog> {
         _hexToColor(ctrl.text) ?? Theme.of(context).colorScheme.primary;
     final result = await showDialog<Color>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) {
         var temp = seed;
         return GlassDialog(

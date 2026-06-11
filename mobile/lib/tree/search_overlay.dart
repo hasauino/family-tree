@@ -225,6 +225,7 @@ class _SearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: hint,
                 border: InputBorder.none,
+                filled: false,
               ),
             ),
           ),

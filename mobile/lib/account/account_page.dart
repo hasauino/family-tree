@@ -152,6 +152,7 @@ class _AccountPageState extends State<AccountPage> {
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => SafeArea(
         child: GlassPanel(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -208,6 +209,7 @@ class _AccountPageState extends State<AccountPage> {
     final t = AppStrings.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => GlassDialog(
         title: t.deleteAccountTitle,
         content: Text(t.deleteAccountConfirm),

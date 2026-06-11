@@ -318,6 +318,7 @@ class _TreePageState extends State<TreePage>
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.15),
       builder: (ctx) => GlassPanel(
         borderRadius:
             const BorderRadius.vertical(top: Radius.circular(24)),

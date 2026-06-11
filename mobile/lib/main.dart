@@ -89,8 +89,14 @@ class FamilyTreeApp extends StatelessWidget {
       ),
       // Borderless text fields everywhere — the look the search field always
       // had: text sitting directly on whatever glass surface it's on, with
-      // no outline stroke or extra fill layered on top of it.
+      // no outline stroke. Filled with a solid (non-translucent) surface so
+      // the field itself doesn't pick up the dim/blur of the glass panel
+      // behind it.
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.brightness == Brightness.light
+            ? Colors.white
+            : scheme.surfaceContainerHighest,
         border: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
