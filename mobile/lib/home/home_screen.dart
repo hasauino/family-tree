@@ -451,6 +451,7 @@ class _RootNode extends StatelessWidget {
 
     return GestureDetector(
       onLongPress: onLongPress,
+      onSecondaryTap: onLongPress,
       child: Container(
         width: 76,
         height: 76,
@@ -506,6 +507,7 @@ class _TagNode extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
+      onSecondaryTap: onLongPress,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: 14 * scale,
@@ -607,6 +609,7 @@ class _BookmarkCircle extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
+      onSecondaryTap: onLongPress,
       child: Container(
         width: r * 2,
         height: r * 2,

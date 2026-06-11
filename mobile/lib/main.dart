@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,6 +12,12 @@ import 'widgets/glass.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // On the web, the browser shows its own context menu on right-click, which
+  // swallows the gesture before Flutter's onSecondaryTap can fire. Disable it
+  // so right-click behaves like a long-press everywhere in the app.
+  if (kIsWeb) {
+    BrowserContextMenu.disableContextMenu();
+  }
   final auth = AuthService();
   // Restore any persisted login in the background; the UI updates via the
   // AuthService listenable once it resolves.

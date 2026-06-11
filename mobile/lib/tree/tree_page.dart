@@ -544,6 +544,7 @@ class _TreePageState extends State<TreePage>
                       },
                       onDoubleTap: () => _loadRootCentered(id),
                       onLongPress: () => _showDetails(data),
+                      onSecondaryTap: () => _showDetails(data),
                     );
                   },
                 ),

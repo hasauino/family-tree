@@ -18,6 +18,7 @@ class NodeWidget extends StatelessWidget {
     this.onTap,
     this.onDoubleTap,
     this.onLongPress,
+    this.onSecondaryTap,
   });
 
   final FamilyNode node;
@@ -34,6 +35,7 @@ class NodeWidget extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onSecondaryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +131,7 @@ class NodeWidget extends StatelessWidget {
         onTap: onTap,
         onDoubleTap: onDoubleTap,
         onLongPress: onLongPress,
+        onSecondaryTap: onSecondaryTap ?? onLongPress,
         child: content,
       ),
     );
