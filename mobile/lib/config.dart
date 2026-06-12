@@ -78,6 +78,7 @@ class AppConfig {
   ///                       first [supportedLocales] entry when unsupported.
   ///   * `Locale('ar')` -> force Arabic (RTL) regardless of the device.
   ///   * `Locale('en')` -> force English regardless of the device.
+  // ignore: unnecessary_nullable_for_final_variable_declarations
   static const Locale? locale = Locale('ar');
 
   // --- Authentication ----------------------------------------------------
@@ -99,4 +100,17 @@ class AppConfig {
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
   );
+
+  // --- Branding -----------------------------------------------------------
+
+  /// Browser tab / window title and app name. Override at build time with:
+  ///
+  ///   flutter build web --dart-define=SITE_NAME="My Family Tree"
+  ///
+  /// Falls back to the localized app name (see `appTitle` in
+  /// `lib/l10n/app_strings.dart`) when not set.
+  static const String _siteNameOverride = String.fromEnvironment('SITE_NAME');
+
+  static String? get siteName =>
+      _siteNameOverride.isEmpty ? null : _siteNameOverride;
 }

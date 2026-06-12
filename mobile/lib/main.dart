@@ -51,7 +51,8 @@ class FamilyTreeApp extends StatelessWidget {
       listenable: theme,
       builder: (context, _) => MaterialApp(
         navigatorKey: navigatorKey,
-        onGenerateTitle: (context) => AppStrings.of(context).appTitle,
+        onGenerateTitle: (context) =>
+            AppConfig.siteName ?? AppStrings.of(context).appTitle,
         debugShowCheckedModeBanner: false,
         // Language: forced by AppConfig.locale, or follows the device when null.
         locale: AppConfig.locale,

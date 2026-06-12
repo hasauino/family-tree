@@ -34,6 +34,7 @@ services:
       context: ./mobile
       args:
         API_BASE_URL: ${BACKEND_URL}
+        SITE_NAME: ${SITE_NAME}
     ports:
       - "${WEB_PORT}:80"
 

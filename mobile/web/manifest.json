@@ -1,11 +1,11 @@
 {
-    "name": "family_tree_mobile",
-    "short_name": "family_tree_mobile",
+    "name": "__SITE_NAME__",
+    "short_name": "__SITE_NAME__",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "__SITE_NAME__",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
