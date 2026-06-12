@@ -1,0 +1,14 @@
+.dart_tool/
+.pub-cache/
+.pub/
+build/
+coverage/
+.git/
+android/
+ios/
+macos/
+linux/
+windows/
+test/
+integration_test/
+test_driver/

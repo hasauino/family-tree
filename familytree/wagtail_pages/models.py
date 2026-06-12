@@ -1,12 +1,12 @@
-from wagtail.admin.panels import FieldPanel
 from wagtail import blocks
+from wagtail.admin.panels import FieldPanel
 from wagtail.blocks import RawHTMLBlock
 from wagtail.fields import RichTextField, StreamField
-from wagtail.models import Page
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.models import Page
+
 
 class AboutPage(Page):
-
     body = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -15,7 +15,6 @@ class AboutPage(Page):
 
 
 class HelpPage(Page):
-
     body = StreamField(
         [
             ("paragraph", blocks.RichTextBlock()),

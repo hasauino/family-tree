@@ -12,6 +12,7 @@ services:
       PORT: ${PORT}
       SITE_NAME: ${SITE_NAME}
       DOMAIN_NAME: ${DOMAIN_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
       LANGUAGE_CODE: ${LANGUAGE_CODE}
       SECRET_KEY: ${SECRET_KEY}
       EMAIL_USE_TLS: ${EMAIL_USE_TLS}
@@ -27,4 +28,13 @@ services:
       - ./familytree/:/app
     ports:
       - "${PORT}:80"
+
+  web:
+    build:
+      context: ./mobile
+      args:
+        API_BASE_URL: ${BACKEND_URL}
+        SITE_NAME: ${SITE_NAME}
+    ports:
+      - "${WEB_PORT}:80"
 

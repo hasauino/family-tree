@@ -1,1 +1,1 @@
-from main.graphql.schema import schema
+from main.graphql.schema import schema as schema

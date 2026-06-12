@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.14
 RUN apt update
 RUN apt -y install cron
 COPY pyproject.toml ./pyproject.toml

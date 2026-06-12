@@ -23,27 +23,60 @@ It has the following features:
 
 ## Getting Started
 
-1- Install [docker compose](https://docs.docker.com/compose/install/).
+For admins, once the app is running:
 
-2- Adjust the configurations in the [.env](.env) file.
+- Default user name: admin
+- default password: admin
 
-3 :rocket:  start the server:
+- Admin page: `/edarah`
+- [Wagtail](https://wagtail.org/) editor (for editing home, and about pages): `/tahreer`
+
+- There is a normal user whose credentials are:
+  - Username: user1
+  - Password: user12345678
+
+### Docker (production)
+
+1. Install [docker compose](https://docs.docker.com/compose/install/).
+2. Adjust the configuration in the [.env](.env) file (domains, secrets, email, etc.).
+3. :rocket: start everything (backend + nginx + Flutter web app):
 
 ```bash
 docker compose up
 ```
 
-Go to [localhost:8000](http://localhost:8000/) (or the port you configured). For admins:
+The backend is served on `PORT` (behind nginx) and the Flutter web app on `WEB_PORT`, as configured in `.env`.
 
-- Default user name: admin
-- default password: admin
+### Docker (local)
 
-- Admin page: http://localhost:8000/edarah
-- [Wagtail](https://wagtail.org/) editor (for editing home, and about pages): http://localhost:8000/tahreer
+To run the same docker setup locally (e.g. `localhost` URLs instead of the real domains), use `.env.local` instead:
 
-- There is a normal user whose creditials are:
-  - Username: user1
-  - Password: user12345678
+```bash
+docker compose --env-file .env.local up
+```
+
+Go to [localhost:9000](http://localhost:9000/) for the backend and [localhost:9002](http://localhost:9002/) for the Flutter web app (or whichever `PORT`/`WEB_PORT` you set in `.env.local`).
+
+### Running directly (without Docker)
+
+Backend (Django):
+
+```bash
+hatch run migrate
+hatch run server
+```
+
+Go to [localhost:8000](http://localhost:8000/).
+
+Mobile/web app (Flutter), from the `mobile/` directory:
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+See [mobile/README.md](mobile/README.md) for platform-specific `API_BASE_URL` values (Android emulator, physical device, etc.).
 
 ## Development
 
@@ -55,27 +88,66 @@ Go to [localhost:8000](http://localhost:8000/) (or the port you configured). For
 git update-index --assume-unchanged .env
 ```
 
-- To source this file automatically when you run Django commands through poetry,  you can add [poetry-dotenv-plugin](https://pypi.org/project/poetry-dotenv-plugin/) to poetry.
-
-
-
-- For example, you can run Django development server as follows:
+- This project uses [ruff](https://docs.astral.sh/ruff/) for formatting and linting, enforced on commit via [pre-commit](https://pre-commit.com/) hooks. Install them once after cloning:
 
 ```bash
-poetry run familytree/manage.py runserver
+hatch run install-hooks
 ```
 
-this will use the environment variables define in `.env`. This way you can selected a different Database file, a different language ,or different project settings, etc..
+From then on, `git commit` will automatically format and fix your staged Python files (re-staging the result). You can also run the checks manually:
+
+```bash
+hatch run style  # check only
+hatch run fix    # check and auto-fix
+```
+
+- The [`.env`](.env) file is loaded automatically (via [python-dotenv](https://pypi.org/project/python-dotenv/)) whenever Django starts, so the environment variables defined there are picked up no matter how you run the project. This way you can select a different database file, a different language, or different project settings, etc.
+
+- For example, you can run the Django development server as follows:
+
+```bash
+hatch run server
+```
+
+- You can also open a Django shell (using [IPython](https://ipython.org/)):
+
+```bash
+hatch run shell
+```
+
+- Other common Django operations are also available as hatch scripts:
+
+```bash
+hatch run migrate
+hatch run makemigrations
+hatch run createsuperuser
+hatch run collectstatic
+```
+
+### Testing
+
+The test suite is written with [pytest](https://docs.pytest.org/) (via [pytest-django](https://pytest-django.readthedocs.io/)). Run it with:
+
+```bash
+hatch run test
+```
+
+This runs with coverage by default (via [pytest-cov](https://pytest-cov.readthedocs.io/)), printing a per-file report with the lines that are still missing coverage. You can pass any pytest arguments through, e.g. to run a specific file or skip coverage:
+
+```bash
+hatch run test familytree/main/tests/test_models.py
+hatch run test --no-cov
+```
 
 ### Localization
 
 ```bash
-poetry run familytree/manage.py makemessages -a
+hatch run makemessages
 ```
 
 then compile:
 
 ```bash
-poetry run familytree/manage.py compilemessages
+hatch run compilemessages
 ```
 

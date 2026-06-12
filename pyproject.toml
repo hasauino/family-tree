@@ -1,25 +1,94 @@
-[tool.poetry]
+[project]
 name = "familytree"
 version = "0.1.0"
 description = "A website for storing, browsing, and updating a family tree."
-authors = ["Hassan Umari <oh91@windowslive.com>"]
+authors = [
+    { name = "Hassan Umari", email = "oh91@windowslive.com" },
+]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=6.0,<7.0",
+    "wagtail>=7.0,<8.0",
+    "wand==0.6",
+    # Required by Django's ImageField (profile photo upload).
+    "pillow>=11.0,<12.0",
+    "graphene-django>=3.1,<4.0",
+    "django-cors-headers>=4.0,<5.0",
+    "gunicorn>=26.0,<27.0",
+    "django-pwa>=2.0,<3.0",
+    "python-dotenv>=1.0,<2.0",
+    # Transactional email (registration activation, password reset).
+    "resend>=2.0,<3.0",
+    # Verifies Google/Apple OIDC identity tokens (social sign-in). The
+    # [crypto] extra pulls in `cryptography` for the RS256 signature check.
+    "pyjwt[crypto]>=2.8,<3.0",
+    # Firebase Cloud Messaging push delivery. Optional at runtime: push is a
+    # no-op unless FIREBASE_CREDENTIALS_FILE is configured (see main/push.py).
+    "firebase-admin>=6.5,<7.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-django = ">=4.2,<5.0"
-django-registration = ">=3.3,<4.0"
-wagtail = ">=5.1,<6.0"
-wand = "0.6"
-graphene-django = ">=3.1,<4.0"
-gunicorn = ">=21.2,<22.0"
-django-pwa = "^1.1"
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
 
+[tool.hatch.envs.default]
+python = "3.14"
+dependencies = [
+    "ruff",
+    "ipython",
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "pre-commit",
+]
 
-[tool.poetry.group.dev.dependencies]
-yapf = "0.40.1"
+[tool.hatch.envs.default.scripts]
+server = "familytree/manage.py runserver {args}"
+makemessages = "familytree/manage.py makemessages -a {args}"
+compilemessages = "familytree/manage.py compilemessages {args}"
+shell = "familytree/manage.py shell {args}"
+makemigrations = "familytree/manage.py makemigrations {args}"
+migrate = "familytree/manage.py migrate {args}"
+createsuperuser = "familytree/manage.py createsuperuser {args}"
+collectstatic = "familytree/manage.py collectstatic {args}"
+test = "pytest {args}"
+install-hooks = "pre-commit install"
+fix = [
+    "ruff format {args:.}",
+    "ruff check --fix {args:.}",
+]
+style = [
+    "ruff format --check {args:.}",
+    "ruff check {args:.}",
+]
+
+[tool.ruff]
+extend-exclude = ["**/migrations/*"]
+line-length = 119
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.per-file-ignores]
+"familytree/project/settings/*.py" = ["F405"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "project.settings.test"
+pythonpath = ["familytree"]
+testpaths = ["familytree"]
+addopts = "--cov=familytree --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["familytree"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "familytree/manage.py",
+    "familytree/project/wsgi.py",
+    "familytree/project/settings/*",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

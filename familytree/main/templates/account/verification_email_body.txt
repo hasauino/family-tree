@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load read_settings %}
+
+{% translate "Dear" %} {{ user.first_name|default:user.get_username }},
+
+
+{% translate "Thank you for joining" %} {% read_settings "SITE_NAME" %}.
+
+{% translate "Enter this code in the app to verify your email address:" %}
+
+
+{{ code }}
+
+
+{% blocktranslate %}This code expires in {{ minutes }} minutes.{% endblocktranslate %}
+{% translate "If you didn't request this, you can ignore this email." %}
+
+
+{% translate "Best Regards" %},
+{% translate "Admins of" %} {% read_settings "SITE_NAME" %}

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<!-- Allow cleartext HTTP to local hosts (localhost / *.local / private IPs)
+	     so the app can reach the Django dev server during development. This is
+	     scoped to local networking only; it does not permit arbitrary HTTP. -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsLocalNetworking</key>
+			<true/>
+		</dict>
+		<!-- Profile photo picker (image_picker). -->
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Used to choose a profile picture.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Used to take a profile picture.</string>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>Family Tree Mobile</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>family_tree_mobile</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UIApplicationSceneManifest</key>
+		<dict>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<false/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>UIWindowScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>flutter</string>
+						<key>UISceneDelegateClassName</key>
+						<string>FlutterSceneDelegate</string>
+						<key>UISceneStoryboardFile</key>
+						<string>Main</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UIStatusBarHidden</key>
+		<false/>
+		<!-- ============================================================
+		     Social sign-in (Google / Apple / Facebook) — iOS setup.
+		     See mobile/AUTH_SETUP.md for the full guide. Each provider is
+		     also gated server-side, so it stays hidden until enabled in
+		     the backend. Uncomment a block and fill in real credentials to
+		     turn a provider on (left commented so the app builds as-is).
+
+		     1) Google + Facebook need their OAuth callback URL schemes:
+
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					REVERSED Google iOS client id, e.g.
+					<string>com.googleusercontent.apps.1234567890-abcdef</string>
+					fb + your Facebook app id, e.g.
+					<string>fb1234567890</string>
+				</array>
+			</dict>
+		</array>
+
+		2) Facebook also needs these (replace placeholders):
+
+		<key>FacebookAppID</key>
+		<string>1234567890</string>
+		<key>FacebookClientToken</key>
+		<string>YOUR_FACEBOOK_CLIENT_TOKEN</string>
+		<key>FacebookDisplayName</key>
+		<string>Family Tree</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>fbapi</string>
+			<string>fb-messenger-share-api</string>
+		</array>
+
+		3) Apple needs no Info.plist entry. In Xcode add the
+		   "Sign in with Apple" capability to the Runner target
+		   (Signing & Capabilities), which creates the entitlement.
+		     ============================================================ -->
+
+	<!-- Push notifications (Firebase Cloud Messaging): allow the app to be woken
+	     by remote notifications in the background. In addition, in Xcode add the
+	     "Push Notifications" capability to the Runner target and upload an APNs
+	     auth key to the Firebase console (needs a paid Apple Developer account). -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+	</dict>
+</plist>
