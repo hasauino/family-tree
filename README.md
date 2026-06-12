@@ -23,27 +23,60 @@ It has the following features:
 
 ## Getting Started
 
-1- Install [docker compose](https://docs.docker.com/compose/install/).
+For admins, once the app is running:
 
-2- Adjust the configurations in the [.env](.env) file.
+- Default user name: admin
+- default password: admin
 
-3 :rocket:  start the server:
+- Admin page: `/edarah`
+- [Wagtail](https://wagtail.org/) editor (for editing home, and about pages): `/tahreer`
+
+- There is a normal user whose credentials are:
+  - Username: user1
+  - Password: user12345678
+
+### Docker (production)
+
+1. Install [docker compose](https://docs.docker.com/compose/install/).
+2. Adjust the configuration in the [.env](.env) file (domains, secrets, email, etc.).
+3. :rocket: start everything (backend + nginx + Flutter web app):
 
 ```bash
 docker compose up
 ```
 
-Go to [localhost:8000](http://localhost:8000/) (or the port you configured). For admins:
+The backend is served on `PORT` (behind nginx) and the Flutter web app on `WEB_PORT`, as configured in `.env`.
 
-- Default user name: admin
-- default password: admin
+### Docker (local)
 
-- Admin page: http://localhost:8000/edarah
-- [Wagtail](https://wagtail.org/) editor (for editing home, and about pages): http://localhost:8000/tahreer
+To run the same docker setup locally (e.g. `localhost` URLs instead of the real domains), use `.env.local` instead:
 
-- There is a normal user whose creditials are:
-  - Username: user1
-  - Password: user12345678
+```bash
+docker compose --env-file .env.local up
+```
+
+Go to [localhost:9000](http://localhost:9000/) for the backend and [localhost:9002](http://localhost:9002/) for the Flutter web app (or whichever `PORT`/`WEB_PORT` you set in `.env.local`).
+
+### Running directly (without Docker)
+
+Backend (Django):
+
+```bash
+hatch run migrate
+hatch run server
+```
+
+Go to [localhost:8000](http://localhost:8000/).
+
+Mobile/web app (Flutter), from the `mobile/` directory:
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+See [mobile/README.md](mobile/README.md) for platform-specific `API_BASE_URL` values (Android emulator, physical device, etc.).
 
 ## Development
 

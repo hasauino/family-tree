@@ -118,6 +118,9 @@ def get_bookmark_depth(person, links):
 
 
 def calculate_link_width(width_min, width_max, tree_depth, link_depth):
+    if tree_depth == 1:
+        # All links are at depth 1, so there's no range to interpolate over.
+        return width_max
     slope = (width_max - width_min) / (1 - tree_depth)
     c = (tree_depth * width_max - width_min) / (tree_depth - 1)
     return slope * link_depth + c
