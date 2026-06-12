@@ -9,6 +9,20 @@ ALLOWED_HOSTS = [DOMAIN]
 
 CSRF_TRUSTED_ORIGINS = [f"https://{DOMAIN}", f"http://{DOMAIN}"]
 
+# The Flutter web app is served from a different domain (FRONTEND_URL), so it
+# needs to call the GraphQL API cross-site. Allow that origin to send
+# credentialed requests, and trust it for CSRF/cookies.
+FRONTEND_URL = os.environ.get("FRONTEND_URL")
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+    CORS_ALLOW_CREDENTIALS = True
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+
+    SESSION_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SECURE = True
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
