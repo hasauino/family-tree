@@ -2,10 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../auth/auth_service.dart';
 import '../widgets/account_menu_button.dart';
 import '../config.dart';
+import '../deep_link.dart';
 import '../l10n/app_strings.dart';
 import '../models/family_node.dart';
 import '../notifications/notification_bell.dart';
@@ -24,14 +26,22 @@ class TreePage extends StatefulWidget {
     required this.auth,
     required this.theme,
     this.initialPersonId,
+    this.initialPath,
   });
 
   final AuthService auth;
   final ThemeController theme;
 
   /// The person to center the tree on when the page first opens.
-  /// Falls back to [AppConfig.rootPersonId] when null.
+  /// Falls back to [AppConfig.rootPersonId] when null. Ignored when
+  /// [initialPath] is set.
   final int? initialPersonId;
+
+  /// When set, the page opens straight into the "from ancestor → to
+  /// descendant" path view instead of a single person's tree — the same
+  /// destination the path picker produces, used by shared `/path/<from>/<to>`
+  /// links. Takes precedence over [initialPersonId].
+  final ({int from, int to})? initialPath;
 
   @override
   State<TreePage> createState() => _TreePageState();
@@ -66,7 +76,12 @@ class _TreePageState extends State<TreePage>
             tween.lerp(Curves.easeInOut.transform(_panController.value));
       }
     });
-    _loadRootCentered(widget.initialPersonId ?? AppConfig.rootPersonId);
+    final path = widget.initialPath;
+    if (path != null) {
+      _loadPathCentered(path.from, path.to);
+    } else {
+      _loadRootCentered(widget.initialPersonId ?? AppConfig.rootPersonId);
+    }
   }
 
   @override
@@ -271,6 +286,50 @@ class _TreePageState extends State<TreePage>
     });
   }
 
+  String _nameOf(int id) => _controller.nodeData[id]?.label ?? '#$id';
+
+  /// The on-screen rectangle of [ctx]'s widget, used to anchor the share
+  /// sheet's popover on iPad (ignored on phones). Null when not laid out.
+  Rect? _shareOrigin(BuildContext ctx) {
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return null;
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
+  /// Opens the native share sheet (Web Share API / clipboard on the web) with
+  /// a public link to [id]'s tree.
+  void _sharePerson(int id, {Rect? origin}) {
+    final t = AppStrings.of(context);
+    Share.share(
+      '${t.sharePersonBody(_nameOf(id))}\n${personShareUri(id)}',
+      subject: t.shareSubject,
+      sharePositionOrigin: origin,
+    );
+  }
+
+  /// Shares a public link to the from→to path view.
+  void _sharePath(int from, int to, {Rect? origin}) {
+    final t = AppStrings.of(context);
+    Share.share(
+      '${t.sharePathBody(_nameOf(from), _nameOf(to))}\n${pathShareUri(from, to)}',
+      subject: t.shareSubject,
+      sharePositionOrigin: origin,
+    );
+  }
+
+  /// Shares whatever the tree is currently showing: the active from→to path,
+  /// or otherwise the root person's tree. Triggered by the action-bar button.
+  void _shareCurrent(BuildContext buttonContext) {
+    final origin = _shareOrigin(buttonContext);
+    final info = _controller.pathInfo;
+    if (_controller.pathActive && info != null) {
+      _sharePath(info.fromId, info.toId, origin: origin);
+    } else {
+      final id = _controller.rootId;
+      if (id != null) _sharePerson(id, origin: origin);
+    }
+  }
+
   /// Summarizes the freshly loaded route in a bottom sheet: how the two people
   /// are related and how many generations separate them. No-op if the load
   /// failed (an error banner is shown instead).
@@ -351,6 +410,21 @@ class _TreePageState extends State<TreePage>
                 ),
                 const SizedBox(height: 12),
                 ...lines,
+                const SizedBox(height: 12),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Builder(
+                    builder: (btnCtx) => TextButton.icon(
+                      onPressed: () => _sharePath(
+                        info.fromId,
+                        info.toId,
+                        origin: _shareOrigin(btnCtx),
+                      ),
+                      icon: const Icon(Icons.share_outlined),
+                      label: Text(t.shareTooltip),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -398,6 +472,13 @@ class _TreePageState extends State<TreePage>
                   tooltip: t.fitTreeTooltip,
                   icon: const Icon(Icons.fit_screen),
                   onPressed: _fitToWindow,
+                ),
+                Builder(
+                  builder: (btnCtx) => IconButton(
+                    tooltip: t.shareTooltip,
+                    icon: const Icon(Icons.share_outlined),
+                    onPressed: () => _shareCurrent(btnCtx),
+                  ),
                 ),
                 ThemeToggleButton(theme: widget.theme, t: t),
                 IconButton(

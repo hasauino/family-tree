@@ -17,6 +17,10 @@ COPY . .
 RUN flutter pub get
 RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL} --dart-define=SITE_NAME="${SITE_NAME}"
 RUN sed -i "s/__SITE_NAME__/${SITE_NAME}/g" build/web/index.html build/web/manifest.json
+# Ensure the App Links / Universal Links verification files are in the served
+# output. Some Flutter versions copy web/.well-known automatically and some
+# skip dot-directories; this is idempotent either way.
+RUN mkdir -p build/web/.well-known && cp web/.well-known/* build/web/.well-known/
 
 FROM nginx:alpine
 COPY --from=build /app/build/web /usr/share/nginx/html

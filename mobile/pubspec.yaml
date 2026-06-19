@@ -68,6 +68,15 @@ dependencies:
   # Cairo font (Latin + Arabic) for consistent, RTL-friendly typography.
   google_fonts: ^6.2.1
 
+  # Opening shared links: receives the launch URL (cold start) and any links
+  # tapped while running, as an Android App Link / iOS Universal Link / web
+  # address. See lib/deep_link_service.dart.
+  app_links: ^6.3.2
+
+  # Native share sheet (and the Web Share API / clipboard on web) for sharing
+  # a person's tree or a from→to path link.
+  share_plus: ^10.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

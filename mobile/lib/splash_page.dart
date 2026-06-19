@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 
 import 'auth/auth_service.dart';
+import 'deep_link.dart';
+import 'deep_link_service.dart';
 import 'home/home_screen.dart';
 import 'theme_controller.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key, required this.auth, required this.theme});
+  const SplashPage({
+    super.key,
+    required this.auth,
+    required this.theme,
+    this.deepLinks,
+    this.initialLink,
+  });
 
   final AuthService auth;
   final ThemeController theme;
+  final DeepLinkService? deepLinks;
+
+  /// When the app was launched from a share link, the tree it points at is
+  /// opened on top of the home screen once the splash finishes.
+  final DeepLink? initialLink;
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -50,6 +63,10 @@ class _SplashPageState extends State<SplashPage>
         transitionDuration: const Duration(milliseconds: 500),
       ),
     );
+    // If the app was launched from a share link, open its tree on top of the
+    // home screen (so Back returns to home as usual).
+    final link = widget.initialLink;
+    if (link != null) widget.deepLinks?.open(link);
   }
 
   @override

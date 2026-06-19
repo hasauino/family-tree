@@ -72,6 +72,14 @@ class AppStrings {
           .replaceFirst('{name}', name)
           .replaceFirst('{count}', '$count');
 
+  // Sharing (person tree / from→to path)
+  String get shareTooltip => _t('shareTooltip');
+  String get shareSubject => _t('shareSubject');
+  String sharePersonBody(String name) =>
+      _t('sharePersonBody').replaceFirst('{name}', name);
+  String sharePathBody(String from, String to) =>
+      _t('sharePathBody').replaceFirst('{from}', from).replaceFirst('{to}', to);
+
   // Search
   String get searchTooltip => _t('searchTooltip');
   String get searchHint => _t('searchHint');
@@ -419,6 +427,10 @@ class AppStrings {
       'treePathApart': '{count} generations apart',
       'treePathMeetAt': 'They meet at {name}',
       'treePathGenerationsAway': '{name}: {count} generations away',
+      'shareTooltip': 'Share',
+      'shareSubject': 'Family Tree',
+      'sharePersonBody': "Explore {name}'s family tree:",
+      'sharePathBody': 'See how {from} and {to} are related:',
       'searchTooltip': 'Search by name',
       'searchHint': 'Search by name',
       'searchError': 'Search failed. Check your connection and try again.',
@@ -675,6 +687,10 @@ class AppStrings {
       'treePathApart': 'يفصل بينهما {count} أجيال',
       'treePathMeetAt': 'يلتقيان عند {name}',
       'treePathGenerationsAway': '{name}: يبعد {count} أجيال',
+      'shareTooltip': 'مشاركة',
+      'shareSubject': 'شجرة العائلة',
+      'sharePersonBody': 'استكشف شجرة عائلة {name}:',
+      'sharePathBody': 'شاهد صلة القرابة بين {from} و {to}:',
       'searchTooltip': 'البحث بالاسم',
       'searchHint': 'البحث بالاسم',
       'searchError': 'فشل البحث. تحقّق من اتصالك وحاول مرة أخرى.',

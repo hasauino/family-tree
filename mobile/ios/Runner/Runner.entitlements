@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Universal Links: open shared https://omaritree.com/person/<id> and
+	     /path/<from>/<to> links in the app. Verified against
+	     https://omaritree.com/.well-known/apple-app-site-association.
+	     Keep the host in sync with AppConfig.shareBaseUrl. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:omaritree.com</string>
+	</array>
+</dict>
+</plist>

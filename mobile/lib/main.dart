@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'auth/auth_service.dart';
 import 'config.dart';
+import 'deep_link.dart';
+import 'deep_link_service.dart';
 import 'l10n/app_strings.dart';
 import 'notifications/push_service.dart';
 import 'splash_page.dart';
@@ -16,7 +18,7 @@ import 'widgets/glass.dart';
 /// from a tapped notification, without a BuildContext.
 final navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // On the web, the browser shows its own context menu on right-click, which
   // swallows the gesture before Flutter's onSecondaryTap can fire. Disable it
@@ -35,14 +37,39 @@ void main() {
   // Initialise push notifications in the background. No-op if Firebase isn't
   // configured for this platform (see PushService).
   PushService(auth: auth, theme: theme, navigatorKey: navigatorKey).init();
-  runApp(FamilyTreeApp(auth: auth, theme: theme));
+  // Open shared links (App Links / Universal Links / web address). Subscribe
+  // to links tapped while running, and resolve the one the app launched with
+  // so the splash can route straight to it.
+  final deepLinks =
+      DeepLinkService(auth: auth, theme: theme, navigatorKey: navigatorKey);
+  deepLinks.listen();
+  final DeepLink? initialLink = await deepLinks.initialLink();
+  runApp(FamilyTreeApp(
+    auth: auth,
+    theme: theme,
+    deepLinks: deepLinks,
+    initialLink: initialLink,
+  ));
 }
 
 class FamilyTreeApp extends StatelessWidget {
-  const FamilyTreeApp({super.key, required this.auth, required this.theme});
+  const FamilyTreeApp({
+    super.key,
+    required this.auth,
+    required this.theme,
+    this.deepLinks,
+    this.initialLink,
+  });
 
   final AuthService auth;
   final ThemeController theme;
+
+  /// Opens shared links once the splash finishes. Null in tests, which don't
+  /// exercise deep linking.
+  final DeepLinkService? deepLinks;
+
+  /// The link the app was launched from, opened once the splash finishes.
+  final DeepLink? initialLink;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +96,12 @@ class FamilyTreeApp extends StatelessWidget {
           ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
         ),
         builder: (context, child) => _GradientBackground(child: child),
-        home: SplashPage(auth: auth, theme: theme),
+        home: SplashPage(
+          auth: auth,
+          theme: theme,
+          deepLinks: deepLinks,
+          initialLink: initialLink,
+        ),
       ),
     );
   }

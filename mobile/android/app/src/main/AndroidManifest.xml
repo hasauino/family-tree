@@ -24,6 +24,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- App Links: open shared https://omaritree.com/person/<id> and
+                 /path/<from>/<to> links directly in the app. `autoVerify`
+                 makes Android verify ownership against
+                 https://omaritree.com/.well-known/assetlinks.json (served by
+                 the web deployment) so they open without an "open with"
+                 chooser. Keep the host in sync with AppConfig.shareBaseUrl. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="omaritree.com" android:pathPrefix="/person" />
+                <data android:pathPrefix="/path" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

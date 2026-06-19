@@ -11,6 +11,7 @@
 /// The Django dev server is started with `python manage.py runserver`.
 library;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart' show Locale;
 
 class AppConfig {
@@ -113,4 +114,29 @@ class AppConfig {
 
   static String? get siteName =>
       _siteNameOverride.isEmpty ? null : _siteNameOverride;
+
+  // --- Sharing / deep links ----------------------------------------------
+
+  static const String _shareBaseOverride =
+      String.fromEnvironment('SHARE_BASE_URL');
+
+  /// Public base URL (no trailing slash) that shareable links to a person's
+  /// tree or a from→to path point at — also the host the native Android App
+  /// Links / iOS Universal Links are verified against.
+  ///
+  ///   * On the web, defaults to the current serving origin so links always
+  ///     match wherever the app is hosted (no rebuild needed to move domains).
+  ///   * On mobile, defaults to the production site below.
+  ///
+  /// Override either at build time with:
+  ///
+  ///   flutter build web --dart-define=SHARE_BASE_URL=https://omaritree.com
+  ///
+  /// Keep this in sync with the host in `android/app/src/main/AndroidManifest.xml`
+  /// and `ios/Runner/Runner.entitlements` when changing the production domain.
+  static String get shareBaseUrl {
+    if (_shareBaseOverride.isNotEmpty) return _shareBaseOverride;
+    if (kIsWeb) return Uri.base.origin;
+    return 'https://omaritree.com';
+  }
 }

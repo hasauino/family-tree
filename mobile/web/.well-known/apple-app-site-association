@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["LCQ66ZY7P4.com.familytree.familyTreeMobile"],
+        "components": [
+          { "/": "/person/*", "comment": "Open a person's tree" },
+          { "/": "/path/*", "comment": "Open a from-to path view" }
+        ]
+      }
+    ]
+  }
+}
