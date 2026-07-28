@@ -4,7 +4,7 @@
 
 This is a platfrom for storing, browsing, and updating a family tree, made using [Django](https://www.djangoproject.com/).
 
-[Demo](http://new.omaritree.com/)
+[Demo](http://omaritree.com/)
 
 
 
